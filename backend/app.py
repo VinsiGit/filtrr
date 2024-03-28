@@ -82,7 +82,7 @@ def login():
         else:
             access_token = create_access_token(identity={'username': username, 'role': user['role']}, expires_delta=timedelta(hours=168))
 
-        return jsonify(access_token=access_token), 200
+        return jsonify({"access_token": access_token, "role": user['role']}), 200
     return jsonify({"msg": "Bad username or password"}), 401
 
 def check_role(*roles):
