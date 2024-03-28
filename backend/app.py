@@ -390,7 +390,7 @@ def add_mail():
     preprocessed_data = preprocessor.preprocess(data)
     keywords = preprocessed_data['keywords']
 
-    label = random.choice(['IRRELEVAMT', 'BI_ENGINEER', 'DATA_ENGINEER'])
+    label = random.choice(['IRRELEVANT', 'BI_ENGINEER', 'DATA_ENGINEER'])
     certainty = random.random()
 
     end_time = time()
