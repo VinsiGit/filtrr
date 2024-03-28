@@ -28,7 +28,7 @@ def hash_input(input):
 
 
 # Get the MongoDB connection details from environment variables
-mongo_host = e.get('MONGO_HOST', 'db') # 'db' is the default name of the MongoDB service within the Docker network TODO: change to localhost for local development 
+mongo_host = e.get('MONGO_HOST', 'localhost') # 'db' is the default name of the MongoDB service within the Docker network TODO: change to localhost for local development 
 mongo_port = int(e.get('MONGO_PORT', '27017'))
 mongo_username = e.get('MONGO_USERNAME', 'root')
 mongo_password = e.get('MONGO_PASSWORD', 'mongo')
@@ -233,31 +233,43 @@ def get_data():
     else:
         unique_labels = [label]
 
-    # Dynamically Build Aggregation Pipeline
-    group_stage = {
-        "$group": {
-            "_id": {
-                "$dateToString": {"format": "%Y-%m-%d", "date": "$date"}
-            },
-            "total": {"$sum": 1},
-            "average_processing_time": {"$avg": "$datetime_elapsed"}
-        }
-    }
-
-    for label in unique_labels:
-        group_stage["$group"][label] = {
-            "$sum": {
-                "$cond": [{"$eq": ["$label", label]}, 1, 0]
-            }
-        }
-
-    pipeline = [
-        {"$match": query},
-        group_stage,
-        {"$addFields": {"date": "$_id" }},
-        {"$project": {"_id": 0} }
-    ]
     
+    pipeline = [
+    {"$match": query},
+
+    # Stage 1: Group by date and label
+    {"$group": {
+        "_id": {
+            "date": {"$dateToString": {"format": "%Y-%m-%d", "date": "$date"}},
+            "label": "$label"
+        },
+        "label_count": {"$sum": 1}
+    }},
+
+    # Stage 2: Group by date to aggregate all labels together
+    {"$group": {
+        "_id": "$_id.date",
+        "labels_info": {
+            "$push": {
+                "label": "$_id.label",
+                "count": "$label_count"
+            }
+        },
+        "total": {"$sum": "$label_count"},
+        "average_processing_time": {"$avg": "$datetime_elapsed"},  # This will require adjustments
+    }},
+
+    # Optional: Stage 3: Project the final structure if necessary
+    {"$project": {
+        "date": "$_id",
+        "total": 1,
+        "labels_info": 1,
+        "average_processing_time": 1,
+        "_id": 0
+    }}
+    ]
+
+
 
     # Execute the aggregation query
     count = db.mails.count_documents(query)
@@ -268,31 +280,26 @@ def get_data():
 
     current_date = start_date
     while current_date <= end_date:
-        date_str = current_date.strftime('%Y-%m-%d')
-        if not any(item['date'] == date_str for item in json_result):
-            json_result.append({
-                "date": date_str,
-                "total": 0,
-                "average_processing_time": 0
-            })
-            for label in unique_labels:
-                json_result[-1][label] = 0
+        current_date_str = current_date.strftime('%Y-%m-%d')
+        if not any(d['date'] == current_date_str for d in json_result):
+            json_result.append({"date": current_date_str, "total": 0, "labels_info": []})
         current_date += timedelta(days=1)
+        
     
     json_result = sorted(json_result, key=lambda x: x['date'])
 
-    report = {
-        "start_date": start_date.strftime('%Y-%m-%d'),
-        "end_date": end_date.strftime('%Y-%m-%d'),
-        "labels": unique_labels,
-        "data": json_result,
-        "rating": rating,
-        "source": source,
-        "total": count
-    }
+    # report = {
+    #     "start_date": start_date.strftime('%Y-%m-%d'),
+    #     "end_date": end_date.strftime('%Y-%m-%d'),
+    #     "labels": unique_labels,
+    #     "data": json_result,
+    #     "rating": rating,
+    #     "source": source,
+    #     "total": count
+    # }
 
 
-    return jsonify(report), 200
+    return jsonify(json_result), 200
 
 @app.route('/api/certainty', methods=['GET'])
 @check_role('admin', 'demo')
