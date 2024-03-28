@@ -28,7 +28,7 @@ def hash_input(input):
 
 
 # Get the MongoDB connection details from environment variables
-mongo_host = e.get('MONGO_HOST', 'localhost') # 'db' is the default name of the MongoDB service within the Docker network TODO: change to localhost for local development 
+mongo_host = e.get('MONGO_HOST', 'db') # 'db' is the default name of the MongoDB service within the Docker network TODO: change to localhost for local development 
 mongo_port = int(e.get('MONGO_PORT', '27017'))
 mongo_username = e.get('MONGO_USERNAME', 'root')
 mongo_password = e.get('MONGO_PASSWORD', 'mongo')
@@ -46,8 +46,7 @@ jwt = JWTManager(app)
 
 # Create a list of users
 users = [
-    {'username': 'admin', 'password_hash': generate_password_hash(e.get('ADMIN_PASSWORD', 'password')), 'role': 'admin'},
-    {'username': 'demo', 'password_hash': generate_password_hash('password'), 'role': 'demo'}
+    {'username': 'admin', 'password_hash': generate_password_hash(e.get('ADMIN_PASSWORD', 'password')), 'role': 'admin'}
 ]
 
 # Check if any users exist
@@ -78,8 +77,8 @@ def login():
     user = db.users.find_one({'username': username})
     if user and check_password_hash(user['password_hash'], password):
         # Include the user's role in the JWT
-        if user['role'] == 'demo':
-            access_token = create_access_token(identity={'username': username, 'role': user['role']}, expires_delta=timedelta(minutes=1))
+        if user['role'] == 'trial':
+            access_token = create_access_token(identity={'username': username, 'role': user['role']}, expires_delta=timedelta(minutes=5))
         else:
             access_token = create_access_token(identity={'username': username, 'role': user['role']}, expires_delta=timedelta(hours=168))
 
@@ -156,7 +155,7 @@ def delete_user():
 
 
 @app.route('/api/mails', methods=['GET'])
-@check_role('admin', 'demo')
+@check_role('admin')
 def get_mails():
     # Extract query parameters
     rating = request.args.get('rating', type=float, default="all_ratings")
@@ -193,7 +192,7 @@ def get_mails():
 
 
 @app.route('/api/stats', methods=['GET'])
-@check_role('admin', 'demo')
+@check_role('admin')
 def get_data():
     # Extract query parameters
     rating = request.args.get('rating', type=float, default="all_ratings")
@@ -243,32 +242,32 @@ def get_data():
             "date": {"$dateToString": {"format": "%Y-%m-%d", "date": "$date"}},
             "label": "$label"
         },
-        "label_count": {"$sum": 1}
+        "label_count": {"$sum": 1},
+        "datetime_elapsed": {"$avg": "$datetime_elapsed"}
     }},
 
     # Stage 2: Group by date to aggregate all labels together
     {"$group": {
         "_id": "$_id.date",
-        "labels_info": {
+        "labels_count": {
             "$push": {
                 "label": "$_id.label",
                 "count": "$label_count"
             }
         },
+        "average_processing_time": {"$avg": "$datetime_elapsed"}, 
         "total": {"$sum": "$label_count"},
-        "average_processing_time": {"$avg": "$datetime_elapsed"},  # This will require adjustments
     }},
 
     # Optional: Stage 3: Project the final structure if necessary
     {"$project": {
         "date": "$_id",
         "total": 1,
-        "labels_info": 1,
+        "labels_count": 1,
         "average_processing_time": 1,
         "_id": 0
     }}
     ]
-
 
 
     # Execute the aggregation query
@@ -278,31 +277,40 @@ def get_data():
     # Convert the results to a list of dicts
     json_result = list(results)
 
+    # Fill in missing dates with 0 values
     current_date = start_date
     while current_date <= end_date:
         current_date_str = current_date.strftime('%Y-%m-%d')
         if not any(d['date'] == current_date_str for d in json_result):
-            json_result.append({"date": current_date_str, "total": 0, "labels_info": []})
+            json_result.append({"date": current_date_str, "total": 0, "labels_count": []})
         current_date += timedelta(days=1)
         
+    # Fill in missing labels with 0 values
+    for item in json_result:
+        item['date'] = item['date'].split('T')[0]
+        for label in unique_labels:
+            if not any(d['label'] == label for d in item['labels_count']):
+                item['labels_count'].append({"label": label, "count": 0})
+        item['labels_count'] = sorted(item['labels_count'], key=lambda x: x['label'])
+
     
     json_result = sorted(json_result, key=lambda x: x['date'])
 
-    # report = {
-    #     "start_date": start_date.strftime('%Y-%m-%d'),
-    #     "end_date": end_date.strftime('%Y-%m-%d'),
-    #     "labels": unique_labels,
-    #     "data": json_result,
-    #     "rating": rating,
-    #     "source": source,
-    #     "total": count
-    # }
+    report = {
+        "start_date": start_date.strftime('%Y-%m-%d'),
+        "end_date": end_date.strftime('%Y-%m-%d'),
+        "labels": unique_labels,
+        "data": json_result,
+        "rating": rating,
+        "source": source,
+        "total": count
+    }
 
 
-    return jsonify(json_result), 200
+    return jsonify(report), 200
 
 @app.route('/api/certainty', methods=['GET'])
-@check_role('admin', 'demo')
+@check_role('admin')
 def get_cetainty():
     # Extract query parameters
     source = request.args.get('source', default="all_sources")
@@ -352,7 +360,7 @@ def get_cetainty():
 
 
 @app.route('/api', methods=['POST'])
-@check_role('admin', 'demo', 'user')
+@check_role('admin', 'user')
 def add_mail():
     if request.content_type != 'application/json':
         return jsonify({"error": "Unsupported Media Type"}), 415
@@ -407,7 +415,7 @@ def add_mail():
 
 
 @app.route('/api/rating', methods=['PUT'])
-@check_role('admin', 'demo', 'user')
+@check_role('admin', 'user')
 def update_rating():
     data = request.json
 
@@ -431,6 +439,11 @@ def get_settings():
     # settings.pop('_id', None)
     return jsonify({"settings": "TODO"}), 200
 
+
+@app.route('/api/tokencheck', methods=['GET'])
+@jwt_required()
+def token_check():
+    return jsonify({"msg": "Token is valid"}), 200
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')
