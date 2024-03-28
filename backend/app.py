@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 from time import time
 from functools import wraps
 import random
+from preprocessor import Preprocessor
 
 
 def hash_input(input):
@@ -28,7 +29,7 @@ def hash_input(input):
 
 
 # Get the MongoDB connection details from environment variables
-mongo_host = e.get('MONGO_HOST', 'db') # 'db' is the default name of the MongoDB service within the Docker network TODO: change to localhost for local development 
+mongo_host = e.get('MONGO_HOST', 'localhost') # 'db' is the default name of the MongoDB service within the Docker network TODO: change to localhost for local development 
 mongo_port = int(e.get('MONGO_PORT', '27017'))
 mongo_username = e.get('MONGO_USERNAME', 'root')
 mongo_password = e.get('MONGO_PASSWORD', 'mongo')
@@ -380,18 +381,20 @@ def add_mail():
         existing_record['already_exists'] = True
         return jsonify(existing_record), 200
     
+    # Preprocess the data
+    preprocessor = Preprocessor()
 
     start_time = time()
 
-    # TODO: process the data
+    data['text_body'] = data['body']
+    preprocessed_data = preprocessor.preprocess(data)
+    keywords = preprocessed_data['keywords']
+
+    label = random.choice(['IRRELEVAMT', 'BI_ENGINEER', 'DATA_ENGINEER'])
+    certainty = random.random()
 
     end_time = time()
     processing_time = end_time - start_time
-
-    # Generate a random response
-    label = random.choice(["BI_ENGINEER", "IRRELEVANT", "DATA_ENGINEER"])
-    certainty = random.random()
-    keywords = ["een", "twee", "drie", "vier", "vijf"]
 
     # Make the response in JSON format
     response = {

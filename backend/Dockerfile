@@ -10,6 +10,12 @@ COPY . /app
 # Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Install any needed packages specified in model_requirements.txt
+RUN pip install --no-cache-dir -r model_requirements.txt
+
+# Download the stopwords from nltk
+RUN python -m nltk.downloader stopwords
+
 # Expose the port that Gunicorn will run on
 EXPOSE 5000
 

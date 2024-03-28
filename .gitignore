@@ -4,3 +4,4 @@ preprocessor
 *.json
 output.txt
 models/
+__pycache__/
