@@ -1,33 +1,17 @@
 const site = "https://s144272.devops-ap.be/api"; 
-//"http://localhost:9090/" // https://s139913.devopps.be/9090 https://s144272.devops-ap.be/api/site
 
 let initialAppState = document.getElementById("app-body").innerHTML;
-const xValues = [];
-const yValues = [];
 
-let myChart = new Chart('myChart', {
-  type: 'line',
-  data: {
-    labels: xValues,
-      datasets: [{
-          data: yValues,
-          backgroundColor:  "rgba(0,0,255,1.0)",
-          fill: false,
+let label1color = "#6460af";
+let label2color = "#b872de";
 
-      }]
-  },
-  options: {
-      legend: { display: false },
-      scales: {
-          yAxes: [{
-              ticks: {
-                  beginAtZero: true,
-                  max: 1 // since probabilities range from 0 to 1
-              }
-          }]
-      }
-  }
-});
+let shadowcolor = "#607D8B";
+let shadowOpacity = 0.1;
+
+let radial_textcolor = "#46494c";
+let radial_trackcolor = "#F5F4FF";
+let radial_backgroundcolor = "#ffffff";
+
 
 // This function is called when Office.js is fully loaded.
 Office.onReady((info) => {
@@ -72,6 +56,7 @@ function initializeData() {
 }
 
 function updateData(data, new_data) {
+  console.log(new_data.label);
   data.label = new_data.label;
   data.certainty = new_data.certainty
 }
@@ -87,7 +72,7 @@ function updateDataOnItemChange(data) {
 
   item.body.getAsync("text", function(result) {
     if (result.status === Office.AsyncResultStatus.Succeeded) {
-      data.content = result.value ;
+      data.body = result.value ;
       const sendSwitch = document.getElementById("sendSwitch");
       if (sendSwitch.checked) {
         sendEmailBodyToServer(data).then(new_data => {
@@ -111,13 +96,79 @@ export async function downloadEmailBody(body) {
   document.body.removeChild(link);
 } 
 
+let chartInstance = null;
+
 export async function display(data) {
   const item_class = document.getElementById("item-class")
   const item_proba = document.getElementById("item-proba")
 
   item_class.innerHTML = "<b>Class:</b> <br/>" + data.label;
   item_proba.innerHTML = "<b>Probability:</b> <br/>" + data.certainty;
+
+  let chartOptions = {
+    series: [Math.round((data.certainty*100) * 100) / 100], //round to 2 decimal places
+    chart: {
+      id: "certaintyWheel",
+      height: 350,
+      type: "radialBar"
+    },
+    colors: [label1color],  
+    plotOptions: {
+      radialBar: {
+        hollow: {
+          margin: 0,
+          size: "65%",
+          background: radial_backgroundcolor
+        },
+        track: {
+          background: radial_trackcolor,
+          dropShadow: {
+            enabled: true,
+            top: 1,
+            left: 1,
+            blur: 2,
+            opacity: shadowOpacity,
+            color: shadowcolor
+          }
+        },
+        dataLabels: {
+          name: {
+            offsetY: -10,
+            color: radial_textcolor,
+            fontSize: "13px"
+          },
+          value: {
+            color: radial_textcolor,
+            fontSize: "30px",
+            show: true
+          }
+        }
+      }
+    },
+    fill: {
+      type: "gradient",
+      gradient: {
+        shade: "dark",
+        type: "vertical",
+        gradientToColors: [label2color],
+        stops: [0, 200]
+      }
+    },
+    stroke: {
+      lineCap: "round"
+    },
+    labels: [data.label]
+  };
+
+  if (chartInstance) {
+    chartInstance.updateSeries([Math.round((data.certainty*100) * 100) / 100]);
+    chartInstance.updateOptions(chartOptions);
+  } else {
+    chartInstance = new ApexCharts(document.querySelector("#chart"), chartOptions);
+    chartInstance.render();
+  }
 }
+
 
 export async function checkServerStatus() {
   try {
@@ -138,17 +189,22 @@ export async function checkServerStatus() {
   }
 }
 
+
 export async function sendEmailBodyToServer(data) {
     document.getElementById("loading-screen").style.display = "block";
     console.log(data.body);
     try {
+        const BearerData = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTcxMTYyODY2MSwianRpIjoiMmY3OTQyOTctYTA5OC00MmNmLTk0MmMtODI0ZTQ4N2U3N2IyIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6eyJ1c2VybmFtZSI6ImFkZGluIiwicm9sZSI6InVzZXIifSwibmJmIjoxNzExNjI4NjYxLCJjc3JmIjoiZWM2MjM3YzktMDdmMC00YmIwLWEwZTktNDI1YmU0ZDg4ZDRjIiwiZXhwIjoxNzEyMjMzNDYxfQ.SHf665JkfvzXFBG1EA0zzQ5tMaC1X83MIceI5JzCBUA";
+              
+
         const response = await fetch(site, {
             method: 'POST',
             headers: {
                 'Source':"Outlook",
                 'Content-Type': 'application/json',
+                'Authorization': `Bearer ${BearerData}` // .access_token
             },
-            body: JSON.stringify({ body: data.body }),
+            body: JSON.stringify({ "body": data.body }),
         });
 
         if (!response.ok) {
@@ -156,11 +212,7 @@ export async function sendEmailBodyToServer(data) {
         }
         
         const responseData = await response.json();
-        // Update the chart data
         console.log(responseData);
-        xValues.push(xValues.length + 1); // add a new x-value
-        yValues.push(responseData.certainty.toFixed(10)); // add a new y-value
-        myChart.update();
 
         // Remove the check server button if it exists
         const checkServerButton = document.getElementById("check-server");
@@ -170,7 +222,7 @@ export async function sendEmailBodyToServer(data) {
 
         return responseData;
     } catch (error) {
-      document.getElementById("app-body").innerHTML = "The server is currently offline. Please try again later.";
+      document.getElementById("app-body").innerHTML = site+"/login"; // "The server is currently offline. Please try again later.";
 
       // Create the check server button
       const checkServerButton = document.createElement("button");
@@ -189,36 +241,3 @@ export async function sendEmailBodyToServer(data) {
 
 
 
-
-  // const bodyData = {
-  //   body: "Your body content here"
-  // };
-  
-  // const response = await fetch('https://s144272.devops-ap.be/api/site', {
-  //   method: 'POST',
-  //   headers: {
-  //     'Content-Type': 'application/json'
-  //   },
-  //   body: JSON.stringify(bodyData)
-  // });
-  
-  // const data = await response.json(); // Extract data from the response
-
-
-
-  // const response = await fetch('https://s144272.devops-ap.be/api/site');
-  // const data = await response.json(); // Extract data from the response
-
-
-
-  // for (let item of data) {
-
-      
-    
-  //   if (item.body) { // Check if the item has a 'body' property
-
-  //     if (subject == test) {
-  //       output += item.body + "<br/>";
-  //     }
-  //   }
-  // }
