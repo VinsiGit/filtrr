@@ -29,7 +29,7 @@ def hash_input(input):
 
 
 # Get the MongoDB connection details from environment variables
-mongo_host = e.get('MONGO_HOST', 'db') # 'db' is the default name of the MongoDB service within the Docker network TODO: change to localhost for local development 
+mongo_host = e.get('MONGO_HOST', 'localhost') # 'db' is the default name of the MongoDB service within the Docker network TODO: change to localhost for local development 
 mongo_port = int(e.get('MONGO_PORT', '27017'))
 mongo_username = e.get('MONGO_USERNAME', 'root')
 mongo_password = e.get('MONGO_PASSWORD', 'mongo')
@@ -288,13 +288,12 @@ def get_data():
         
     # Fill in missing labels with 0 values
     for item in json_result:
-        item['date'] = item['date'].split('T')[0]
         for label in unique_labels:
             if not any(d['label'] == label for d in item['labels_count']):
                 item['labels_count'].append({"label": label, "count": 0})
-        item['labels_count'] = sorted(item['labels_count'], key=lambda x: x['label'])
+        item['labels_count'] = sorted(item['labels_count'], key=lambda x: (x['label'] != "IRRELEVANT", x['label']))
 
-    
+    # Sort the results by date
     json_result = sorted(json_result, key=lambda x: x['date'])
 
     report = {
