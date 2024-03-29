@@ -9,10 +9,13 @@ export interface LabelData {
 }
 
 export interface DayData {
-    BI_ENGINEER: number;
-    DATA_ENGINEER: number;
-    IRRELEVANT: number;
     average_processing_time: number;
     date: string;
+    labels_count: LabelCount[];
     total: number;
+}
+
+export interface LabelCount {
+    count: number;
+    label: string;
 }

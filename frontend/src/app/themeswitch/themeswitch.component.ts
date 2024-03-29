@@ -48,6 +48,7 @@ export class ThemeswitchComponent {
         },
       },
       yaxis: {
+        stepSize: 1,
         labels: {
           style: {
             colors: this.theme.chart_axistextcolor,
