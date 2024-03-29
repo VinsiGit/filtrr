@@ -1,0 +1,35 @@
+version: "3"
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.rule=Host(`s144272.devops-ap.be`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.backend.tls=true"
+      - "traefik.http.routers.backend.tls.certresolver=letsencrypt"
+    restart: always
+    networks:
+      - proxy
+
+  
+  frontend:
+    image: nginx:1.22
+    volumes:
+      - ./frontend/dist/frontend:/usr/share/nginx/html:ro  # Map Angular build artifacts
+    labels:
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefik.http.routers.frontend.rule=Host(`s144272.devops-ap.be`) && !PathPrefix(`/api`)"
+      - "traefik.http.routers.frontend.tls=true"
+      - "traefik.http.routers.frontend.tls.certresolver=letsencrypt"
+    networks:
+      - proxy
+  
+
+
+
+networks:
+  proxy:
+    external: true
+    name: traefik
