@@ -1,16 +1,9 @@
-<!-- src/app/login/login.component.html -->
 <div class="module">
+	<h1>Login</h1>
     <form (submit)="login()">
-      <div>
-        <label for="username">Username:</label>
-        <input type="text" [(ngModel)]="username" name="username" required>
-      </div>
-      <div>
-        <label for="password">Password:</label>
-        <input type="password" [(ngModel)]="password" name="password" required>
-      </div>
-      <button type="submit">Login</button>
-      <p *ngIf="errorMessage">{{ errorMessage }}</p>
+    	<input type="text" name="u" placeholder="Username" required="required" [(ngModel)]="username"/>
+        <input type="password" name="p" placeholder="Password" required="required" [(ngModel)]="password"/>
+        <button type="submit" class="btn btn-primary btn-block btn-large">Let me in.</button>
+        <p *ngIf="errorMessage">{{ errorMessage }}</p>
     </form>
-  </div>
-  
+</div>

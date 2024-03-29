@@ -1,34 +1,45 @@
 // src/app/login/login.component.ts
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../auth.service';
-import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+import { PagetitleService } from '../pagetitle.service';
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit{
   username: string = '';
   password: string = '';
   errorMessage: string = '';
 
-  constructor(private authService: AuthService, private router: Router) {
+  constructor(private auth: AuthService, private http: HttpClient, private title: PagetitleService) {
     const accessToken = localStorage.getItem('access_token');
-    console.log(accessToken);
-    //TODO: check if token is deprecated and a new login is required
     if (accessToken) {
-      this.authService.isLoggedIn = true;
-      this.loginsuccess();
-    }
+      // Call API to check if token is valid
+      this.http.get('https://s144272.devops-ap.be/api/mails').subscribe({
+        next: () => {
+          // Token is valid, perform login success action
+          this.auth.loginsuccess();
+        },
+        error: (error) => {
+          if (error.status === 401) {
+            // Unauthorized, perform logout action
+            this.auth.logout();
+          } else {
+            console.error('Error checking token:', error);
+          }
+        }
+      });
    }
+  }
 
   login(): void {
-    this.authService.login(this.username, this.password).subscribe({
+    this.auth.login(this.username, this.password).subscribe({
       next: (data) => {
-        console.log('Login successful', data); //debug line -> remove in production
         localStorage.setItem('access_token', data.access_token);
-        this.loginsuccess();
+        this.auth.loginsuccess();
       },
       error: (error) => {
         this.errorMessage = 'Invalid username or password';
@@ -37,9 +48,7 @@ export class LoginComponent {
     });
   }
 
-  loginsuccess() {
-    console.log('Login successful');
-    this.authService.isLoggedIn = true;
-    this.router.navigate(['dashboard']);
+  ngOnInit(){
+    this.title.pageTitle = "login";
   }
 }
