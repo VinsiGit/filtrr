@@ -135,7 +135,7 @@ table {
 }
 
 main {
-	margin: 1rem;
+	margin: 1vw;
 }
 
 html {
@@ -145,25 +145,7 @@ html {
 	transition: background-color 0.3s;
 }
 
-/* -> doesn't have to be here anymore but i'll keep this here for readability
-:root {
-	--shadow: 0px 1px 22px -12px #607D8B;
-	--nav-color: #f05964;
-	--nav-color-hover: #eb5364;
-	--nav-color-text: white;
-	--nav-color-background: white;
-	--nav-background-gradient: linear-gradient(180deg, rgba(240, 83, 101, 1) 0%, rgba(246, 142, 95, 1) 100%);
-	--page-color-background: #f0f4f8;
-	--page-background-gradient: radial-gradient(circle, rgba(255, 255, 255, 1) 0%, rgba(241, 241, 241, 1) 100%);
-	--page-color-text: #46494c;
-	--page-color-inactive: #f0f4f8;
-	--module-color-border: white;
-	--module-color-background: white;
-	--module-color-text: #757575;
-	--module-color-highlight-complementary: #7a6ce4;
-	--module-color-highlight-monochrome: #f05365;
-}
-*/
+/*:root variables are fully moved to themeswitch.component.ts and are therefore not necessary anymore here*/
 
 * {
 	-webkit-font-smoothing: antialiased;

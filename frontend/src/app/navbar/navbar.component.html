@@ -1,6 +1,7 @@
 <nav>
     <div class="bar">
         <h1>{{ this.pagetitle }}</h1>
+        <button class="logoutbutton" (click)="this.logout()" *ngIf="this.isLoggedIn === true">log out</button>
     </div>
     <div class="container">
         <div class="navbar">
