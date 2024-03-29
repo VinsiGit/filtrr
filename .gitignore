@@ -5,4 +5,7 @@ preprocessor
 output.txt
 models/
 __pycache__/
-.venv/
+node_modules/
+addin/dist/
+.vscode/
+*.gs
