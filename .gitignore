@@ -5,3 +5,4 @@ preprocessor
 output.txt
 models/
 __pycache__/
+.venv/
