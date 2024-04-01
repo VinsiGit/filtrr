@@ -10,7 +10,7 @@ import { AuthService } from '../auth.service';
 })
 
 export class NavbarComponent implements OnInit {
-  
+  navpinned: boolean = false;
 
   constructor(private title: PagetitleService, private auth: AuthService) {
   }
@@ -21,6 +21,10 @@ export class NavbarComponent implements OnInit {
 
   get isLoggedIn() {
     return this.auth.isLoggedIn;
+  }
+
+  toggleNavPinned() {
+    this.navpinned = !this.navpinned;
   }
 
   logout() {

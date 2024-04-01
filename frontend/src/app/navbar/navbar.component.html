@@ -3,8 +3,8 @@
         <h1>{{ this.pagetitle }}</h1>
         <button class="logoutbutton" (click)="this.logout()" *ngIf="this.isLoggedIn === true">log out</button>
     </div>
-    <div class="container">
-        <div class="navbar">
+    <div class="container" [ngClass]="{ 'pinned': navpinned }">
+        <div class="navbar" [ngClass]="{ 'pinned': navpinned }">
             <div class="logo">
                 <svg version="1.1" viewBox="0 0 1000 1000">
                     <g>
@@ -41,6 +41,10 @@
             </ul>
             <footer class="switch">
                 <app-themeswitch></app-themeswitch>
+                <a (click)="toggleNavPinned()" class="lock_nav">
+                    <img class="lock" *ngIf="this.navpinned" src="..\..\assets\pngs\lock_icon_closed.png">
+                    <img class="lock" *ngIf="!this.navpinned" src="..\..\assets\pngs\lock_icon_open.png">
+                </a>
             </footer>
         </div>
     </div>

@@ -121,11 +121,12 @@
 
   .themestatus {
     font-size: .9rem; 
+    font-weight: bolder;
+    color: var(--module-color-background);
   }
 
-/*
   .darkmodetext {
-    top: .5rem;
+    display: flex;
+    flex-direction: column;
   }  
-*/
   
