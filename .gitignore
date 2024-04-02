@@ -10,3 +10,4 @@ addin/dist/
 .vscode/
 *.gs
 .venv/
+.devcontainer/
