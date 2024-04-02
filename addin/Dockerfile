@@ -14,7 +14,7 @@ RUN npm run build
 FROM nginx:alpine as production
 
 # Copy the sttic files to the Nginx document root
-COPY --from=builder /app/dist /app
+COPY --from=builder /app/dist /app/addin
 
 COPY nginx.conf /etc/nginx/nginx.conf
 
