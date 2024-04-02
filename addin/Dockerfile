@@ -11,7 +11,7 @@ COPY . .
 RUN npm run build
 
 # Use the Nginx image from Docker Hub as the base image
-FROM nginx:alpine
+FROM nginx:alpine as production
 
 # Copy the sttic files to the Nginx document root
 COPY --from=builder /app/dist /app
@@ -20,6 +20,3 @@ COPY nginx.conf /etc/nginx/nginx.conf
 
 # Expose port 80
 EXPOSE 80
-
-# Start Nginx when the container starts
-CMD ["nginx", "-g", "daemon off;"]
