@@ -1,5 +1,6 @@
 from preprocessor import TextPreprocessor
 from sklearn.feature_extraction.text import TfidfVectorizer
+import joblib
 import mlflow
 from prefect import task, flow
 import json
@@ -58,8 +59,10 @@ def preprocess_flow(mails_file_path: str = 'data.json', keyword_file_path: str =
 @flow(name='Vectorizer Flow')
 def vectorizer_flow(mails,parameters):
     @task()
-    def extract_keywords_from_training_data():
-        pass
+    def extract_keywords_from_training_data(mails):
+        keywords = [keyword for mail in mails for keyword in mail['keywords']]
+        return keywords
 
     @task()
-    def fit_vectorizer():
+    def fit_vectorizer(parameters,keywords):
+        pass
