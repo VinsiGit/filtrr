@@ -194,3 +194,4 @@ def train_model_flow(mails: List[Dict], train_test_parameters: dict, adaboost_pa
         #TODO: fix bugs
         #TODO: create main flow
         #TODO: ask prof about mlflow related stuff
+        #TODO: add error handeling
