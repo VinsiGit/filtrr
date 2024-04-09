@@ -8,14 +8,13 @@ class TextPreprocessor:
     """
     Class for preprocessing text data, including loading keywords and extracting relevant tokens.
     """
-    def __init__(self, keyword_file_path: str):
+    def __init__(self):
         """
         Initialize TextPreprocessor.
 
         Parameters:
         - keyword_file_path (str): Path to the JSON file containing keywords.
         """
-        self._keyword_file_path = keyword_file_path
         self._keywords: List[str] = []
 
         self.stemmer = SnowballStemmer('english')
@@ -27,9 +26,9 @@ class TextPreprocessor:
         self.__stopwords.update(stopwords.words('german'))
 
 
-    def load_keywords(self):
-        def read_keywords() -> List[str]:
-            with open(file=self._keyword_file_path, mode='r', encoding='utf-8') as f:
+    def load_keywords(self,keyword_file_path:str):
+        def read_keywords(file_path) -> List[str]:
+            with open(file=file_path, mode='r', encoding='utf-8') as f:
                 keywords_json = json.load(f)
                 return keywords_json.get('keywords', [])
 
@@ -38,7 +37,7 @@ class TextPreprocessor:
             stemmed_keyword = self.stemmer.stem(cleaned_keyword)
             return stemmed_keyword
 
-        keywords = read_keywords()
+        keywords = read_keywords(keyword_file_path)
         normalized_keywords = [normalize_keyword(keyword) for keyword in keywords]
         self._keywords = list(set(normalized_keywords))
         self._keywords.sort()

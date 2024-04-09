@@ -1,68 +1,196 @@
-from preprocessor import TextPreprocessor
-from sklearn.feature_extraction.text import TfidfVectorizer
-import joblib
-import mlflow
 from prefect import task, flow
-import json
+from preprocessor import TextPreprocessor
+from sklearn.ensemble import BaggingClassifier, AdaBoostClassifier
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics import accuracy_score
+from sklearn.model_selection import train_test_split
 from typing import List, Dict
+import json
+import mlflow
 
-@flow(name="Load Parameters Flow")
-def parameter_flow(parameter_file_path: str = 'parameters.json'):
-    @task(name="Read Parameters From File",timeout_seconds=2,retries=3)
-    def read_parameters(file_path):
+@flow(name="Load Parameters Flow", description="Load parameters from a JSON file and extract model-specific parameters.")
+def load_parameters_flow(parameter_file_path: str = 'parameters.json') -> tuple:
+    """
+    Flow to load parameters from a JSON file and extract model-specific parameters.
+
+    Args:
+        parameter_file_path (str): Path to the parameter JSON file.
+
+    Returns:
+        tuple: Tuple containing train-test split parameters, vectorizer parameters,
+               AdaBoost parameters, and Bagging parameters.
+    """
+    @task(name="Read Parameters From File", description="Read parameters from a JSON file.")
+    def read_parameters(file_path: str) -> dict:
         with open(file=file_path, mode='r', encoding='utf-8') as f:
             return json.load(f)
 
-    @task(name="Extract Model Specific Parameters")
-    def extract_params(params):
-
-        tries_p = params.get('tries', 1)
+    @task(name="Extract Model Specific Parameters", description="Extract model-specific parameters from loaded parameters.")
+    def extract_params(params: dict) -> tuple:
         random_state_p = params.get('random_state', None)
         trn_tst_p = params.get('train_test_split', {'test_size': 0.15})
 
         vectorizer_p = params.get('tfidf_vectorizer', {})
-        adaboost_p = params.get('ada_boost', {"n_estimators": 50, "learning_rate": 1.0})
-        bagging_p = params.get('bagging_classifier', {"n_estimators": 125})
+        adaboost_p = params.get('ada_boost', {"n_estimators": 2, "learning_rate": 1.0})
+        bagging_p = params.get('bagging_classifier', {"n_estimators": 200})
 
         adaboost_p.update({'random_state': random_state_p})
         bagging_p.update({'random_state': random_state_p})
 
-        return tries_p, random_state_p, trn_tst_p, vectorizer_p, adaboost_p, bagging_p
+        return trn_tst_p, vectorizer_p, adaboost_p, bagging_p
 
     parameters = read_parameters(parameter_file_path)
     return extract_params(parameters)
 
-@flow(name="Preprocess Data Flow")
-def preprocess_flow(mails_file_path: str = 'data.json', keyword_file_path: str = 'keywords.json') -> List[Dict]:
-    @task(name="Import Mails",timeout_seconds=2,retries=3)
+
+@flow(name="Preprocess Data Flow", description="Read and preprocess mails from JSON files.")
+def preprocess_data_flow(mails_file_path: str = 'data.json', keyword_file_path: str = 'keywords.json') -> tuple:
+    """
+    Flow to read and preprocess mails from JSON files.
+
+    Args:
+        mails_file_path (str): Path to the JSON file containing mails data.
+        keyword_file_path (str): Path to the JSON file containing keywords data.
+
+    Returns:
+        tuple: Tuple containing preprocessed mails and text preprocessor instance.
+    """
+    @task(name="Import Mails", description="Read mails data from JSON file.")
     def read_mails(mails_file: str) -> List[Dict]:
         with open(file=mails_file, mode='r', encoding='utf-8') as f:
             m = json.load(f)
         return m
 
-    @task(name="Preprocess Mails")
-    def preprocess_mails(ms: List[Dict], keyword_file: str) -> List[Dict]:
-        preprocessor = TextPreprocessor(keyword_file_path=keyword_file)
-        preprocessor.load_keywords()
+    @task(name="Preprocess Mails", description="Preprocess mails using text preprocessor.")
+    def preprocess_mails(data: List[Dict], keyword_file: str) -> tuple:
+        p = TextPreprocessor()
+        p.load_keywords(keyword_file_path=keyword_file)
 
         mails_preprocessed = []
-        for m in ms:
-            preprocessed_mail = preprocessor.preprocess(m)
+        for m in data:
+            preprocessed_mail = p.preprocess(m)
             mails_preprocessed.append(preprocessed_mail)
-        return mails_preprocessed
+        return mails_preprocessed, p
 
     mails = read_mails(mails_file=mails_file_path)
-    preprocessed_mails = preprocess_mails(mails=mails, keyword_file=keyword_file_path)
+    preprocessed_mails, preprocessor = preprocess_mails(data=mails, keyword_file=keyword_file_path)
 
-    return preprocessed_mails
+    return preprocessed_mails, preprocessor
 
-@flow(name='Vectorizer Flow')
-def vectorizer_flow(mails,parameters):
-    @task()
-    def extract_keywords_from_training_data(mails):
-        keywords = [keyword for mail in mails for keyword in mail['keywords']]
+
+@flow(name='Prepare Data For Model Training', description="Prepare data for training the model.")
+def prepare_training_data_flow(mails: List[Dict]) -> tuple:
+    """
+    Flow to prepare data for training the model.
+
+    Args:
+        mails (List[Dict]): List of mails data.
+
+    Returns:
+        tuple: Tuple containing all keywords and prepared training data.
+    """
+    @task(name="Get All Keywords", description="Extract all keywords from mails data.")
+    def get_all_keywords(data: List[Dict]) -> List[str]:
+        keywords = [keyword for mail in data for keyword in mail['keywords']]
         return keywords
 
-    @task()
-    def fit_vectorizer(parameters,keywords):
-        pass
+    @task(name="Prepare Training Data", description="Prepare training data with keywords and labels.")
+    def prepare_train_data(data: List[Dict]) -> tuple:
+        keywords_per_mail = []
+        label_per_mail = []
+        for mail in data:
+            keywords_per_mail.append(mail['keywords'])
+            label_per_mail.append(mail['label'])
+        return keywords_per_mail, label_per_mail
+
+    return get_all_keywords(data=mails), prepare_train_data(data=mails)
+
+
+@flow(name="Train Vectorizer Flow", description="Train TF-IDF vectorizer for text data.")
+def train_vectorizer_flow(keywords: List[str], vectorizer_parameters: dict) -> TfidfVectorizer:
+    """
+    Flow to train TF-IDF vectorizer for text data.
+
+    Args:
+        keywords (List[str]): List of keywords.
+        vectorizer_parameters (dict): Parameters for TF-IDF vectorizer.
+
+    Returns:
+        TfidfVectorizer: Trained TF-IDF vectorizer.
+    """
+    @task(name="Assign Parameters to Vectorizer", description="Assign parameters to TF-IDF vectorizer.")
+    def assign_parameters(v_params: dict) -> TfidfVectorizer:
+        v = TfidfVectorizer(**v_params)
+        return v
+
+    @task(name="Train Vectorizer", description="Train TF-IDF vectorizer with keywords data.")
+    def train_vectorizer(data: List[str], v: TfidfVectorizer) -> TfidfVectorizer:
+        v.fit(data)
+        return v
+
+    vectorizer = assign_parameters(v_params=vectorizer_parameters)
+    return train_vectorizer(data=keywords, v=vectorizer)
+
+
+@flow(name="Train Model With MLflow", description="Train model using AdaBoost and Bagging classifiers with MLflow logging.")
+def train_model_flow(mails: List[Dict], train_test_parameters: dict, adaboost_parameters: dict,
+                     bagging_parameters: dict, vectorizer: TfidfVectorizer, preprocessor: TextPreprocessor) -> None:
+    """
+    Flow to train model using AdaBoost and Bagging classifiers with MLflow logging.
+
+    Args:
+        mails (List[Dict]): List of mails data.
+        train_test_parameters (dict): Parameters for train-test split.
+        adaboost_parameters (dict): Parameters for AdaBoost classifier.
+        bagging_parameters (dict): Parameters for Bagging classifier.
+        vectorizer (TfidfVectorizer): Trained TF-IDF vectorizer.
+        preprocessor (TextPreprocessor): Text preprocessor instance.
+    """
+    @task(name="Split Data", description="Split data into training and testing sets.")
+    def split_data(x: List[str], y: List[str], trn_tst_params: dict, vect: TfidfVectorizer) -> tuple:
+        x = vect.transform(x)
+        x_trn, x_tst, y_trn, y_tst = train_test_split(x, y, **trn_tst_params)
+        return x_trn, x_tst, y_trn, y_tst
+
+    @task(name="Assign Parameters to Classifier", description="Assign parameters to AdaBoost and Bagging classifiers.")
+    def assign_parameters(a_params: dict, b_params: dict) -> BaggingClassifier:
+        ada = AdaBoostClassifier(**a_params)
+        clf = BaggingClassifier(ada, **b_params)
+        return clf
+
+    @task(name="Train Classifier", description="Train the classifier using training data.")
+    def train_classifier(x_trn, y_trn, clf) -> BaggingClassifier:
+        clf.fit(x_trn, y_trn)
+        return clf
+
+    @task(name="Test Classifier", description="Test the trained classifier on test data.")
+    def test_classifier(x_tst, y_tst, clf) -> float:
+        y_pred = clf.predict(x_tst)
+        acc = accuracy_score(y_tst, y_pred)
+        return acc
+
+    with mlflow.start_run():
+        mlflow.log_params(train_test_parameters)
+        mlflow.log_params(adaboost_parameters)
+        mlflow.log_params(bagging_parameters)
+
+        mlflow.sklearn.log_model(vectorizer, "vectorizer")
+        mlflow.sklearn.log_model(preprocessor, "preprocessor")
+
+        x_train, x_test, y_train, y_test = split_data(mails, train_test_parameters['test_size'], vectorizer)
+
+        classifier = assign_parameters(adaboost_parameters, bagging_parameters)
+
+        trained_classifier = train_classifier(x_train, y_train, classifier)
+
+        test_accuracy = test_classifier(x_test, y_test, trained_classifier)
+
+        mlflow.sklearn.log_model(trained_classifier, "trained_model")
+        mlflow.log_metric("test_accuracy", test_accuracy)
+
+        #TODO: get these models in a database
+        #TODO: solve run id issue (via global param probs??)
+        #TODO: test code
+        #TODO: fix bugs
+        #TODO: create main flow
+        #TODO: ask prof about mlflow related stuff
