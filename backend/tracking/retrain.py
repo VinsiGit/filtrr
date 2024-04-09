@@ -13,7 +13,7 @@ def load_parameters_flow(parameter_file_path: str = 'parameters.json') -> tuple:
     """
     Flow to load parameters from a JSON file and extract model-specific parameters.
 
-    Args:
+    Parameters:
         parameter_file_path (str): Path to the parameter JSON file.
 
     Returns:
@@ -48,7 +48,7 @@ def preprocess_data_flow(mails_file_path: str = 'data.json', keyword_file_path: 
     """
     Flow to read and preprocess mails from JSON files.
 
-    Args:
+    Parameters:
         mails_file_path (str): Path to the JSON file containing mails data.
         keyword_file_path (str): Path to the JSON file containing keywords data.
 
@@ -83,7 +83,7 @@ def prepare_training_data_flow(mails: List[Dict]) -> tuple:
     """
     Flow to prepare data for training the model.
 
-    Args:
+    Parameters:
         mails (List[Dict]): List of mails data.
 
     Returns:
@@ -111,7 +111,7 @@ def train_vectorizer_flow(keywords: List[str], vectorizer_parameters: dict) -> T
     """
     Flow to train TF-IDF vectorizer for text data.
 
-    Args:
+    Parameters:
         keywords (List[str]): List of keywords.
         vectorizer_parameters (dict): Parameters for TF-IDF vectorizer.
 
@@ -138,7 +138,7 @@ def train_model_flow(mails: List[Dict], train_test_parameters: dict, adaboost_pa
     """
     Flow to train model using AdaBoost and Bagging classifiers with MLflow logging.
 
-    Args:
+    Parameters:
         mails (List[Dict]): List of mails data.
         train_test_parameters (dict): Parameters for train-test split.
         adaboost_parameters (dict): Parameters for AdaBoost classifier.
