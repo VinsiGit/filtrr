@@ -1,4 +1,4 @@
 export const environment = {
     production: true,
-    hostname: 'vinnievirtuoso.online',
+    hostname: 's144272.devops-ap.be',
 };
