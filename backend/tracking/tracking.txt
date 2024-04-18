@@ -24,6 +24,7 @@ charset-normalizer==3.3.2
 click==8.1.7
 cloudpickle==3.0.0
 colorama==0.4.6
+colorlog==6.8.2
 comm==0.2.2
 contourpy==1.2.0
 coolname==2.2.0
@@ -98,6 +99,7 @@ notebook==7.1.2
 notebook_shim==0.2.4
 numpy==1.26.4
 oauthlib==3.2.2
+optuna==3.6.1
 orjson==3.10.0
 overrides==7.7.0
 packaging==23.2
