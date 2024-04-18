@@ -3,13 +3,16 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Router } from '@angular/router';
+import { environment } from './interfaces/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private loginUrl = 'https://s144272.devops-ap.be/api/login'; // URL to web api
+  hostname: string | undefined = environment.hostname;
+  private loginUrl = `https://${this.hostname}/api/login`; // URL to web api
   isLoggedIn: boolean = false;
+  
 
   constructor(private http: HttpClient, private router: Router) { }
 

@@ -17,7 +17,7 @@ import {
 } from "ng-apexcharts";
 import { ActivatedRoute } from "@angular/router";
 import { AnalyticsdataService } from "../analyticsdata.service";
-import { LabelData, DayData, LabelCount } from "../dataresponse";
+import { LabelData, DayData, LabelCount } from "../interfaces/dataresponse";
 
 export interface ChartOptions {
   series: ApexAxisChartSeries;

@@ -3,6 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../auth.service';
 import { HttpClient } from '@angular/common/http';
 import { PagetitleService } from '../pagetitle.service';
+import { environment } from '../interfaces/environment';
 
 @Component({
   selector: 'app-login',
@@ -13,12 +14,13 @@ export class LoginComponent implements OnInit{
   username: string = '';
   password: string = '';
   errorMessage: string = '';
+  hostname: string | undefined = environment.hostname;
 
   constructor(private auth: AuthService, private http: HttpClient, private title: PagetitleService) {
     const accessToken = localStorage.getItem('access_token');
     if (accessToken) {
       // Call API to check if token is valid
-      this.http.get('https://s144272.devops-ap.be/api/mails').subscribe({
+      this.http.get(`https://${this.hostname}/api/mails`).subscribe({
         next: () => {
           // Token is valid, perform login success action
           this.auth.loginsuccess();
