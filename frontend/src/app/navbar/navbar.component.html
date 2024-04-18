@@ -3,8 +3,8 @@
         <h1>{{ this.pagetitle }}</h1>
         <button class="logoutbutton" (click)="this.logout()" *ngIf="this.isLoggedIn === true">log out</button>
     </div>
-    <div class="container">
-        <div class="navbar">
+    <div class="container" [ngClass]="{ 'pinned': navpinned }">
+        <div class="navbar" [ngClass]="{ 'pinned': navpinned }">
             <div class="logo">
                 <svg version="1.1" viewBox="0 0 1000 1000">
                     <g>
@@ -16,31 +16,35 @@
             <ul>
                 <li>
                     <a [routerLink]="['/dashboard']">
-                        <span class="icon">1</span>
+                        <img src="..\..\assets\pngs\dashboard4.png" class="icon">
                         <span class="text">dashboard</span>
                     </a>
                 </li>
                 <li>
                     <a [routerLink]="['/paste-in']">
-                        <span class="icon">2</span>
+                        <img src="..\..\assets\pngs\paste-in3.png" class="icon">
                         <span class="text">paste-in</span>
                     </a>
                 </li>
                 <li>
                     <a [routerLink]="['/settings']">
-                        <span class="icon">3</span>
+                        <img src="..\..\assets\pngs\settings1.png" class="icon">
                         <span class="text">settings</span>
                     </a>
                 </li>
                 <li>
                     <a [routerLink]="['/retrain']">
-                        <span class="icon">4</span>
+                        <img src="..\..\assets\pngs\retrain5.png" class="icon">
                         <span class="text">retrain model</span>
                     </a>
                 </li>
             </ul>
             <footer class="switch">
                 <app-themeswitch></app-themeswitch>
+                <a (click)="toggleNavPinned()" class="lock_nav">
+                    <img class="lock" *ngIf="this.navpinned" src="..\..\assets\pngs\lock_icon_closed.png">
+                    <img class="lock" *ngIf="!this.navpinned" src="..\..\assets\pngs\lock_icon_open.png">
+                </a>
             </footer>
         </div>
     </div>
