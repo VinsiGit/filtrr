@@ -37,7 +37,9 @@ class TextPreprocessor:
             stemmed_keyword = self.stemmer.stem(cleaned_keyword)
             return stemmed_keyword
 
+
         keywords = read_keywords(keyword_file_path)
+
         normalized_keywords = [normalize_keyword(keyword) for keyword in keywords]
         self._keywords = list(set(normalized_keywords))
         self._keywords.sort()

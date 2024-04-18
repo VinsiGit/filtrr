@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 from time import time
 from functools import wraps
 import random
+from preprocessor import Preprocessor
 
 
 def hash_input(input):
@@ -46,8 +47,7 @@ jwt = JWTManager(app)
 
 # Create a list of users
 users = [
-    {'username': 'admin', 'password_hash': generate_password_hash(e.get('ADMIN_PASSWORD', 'password')), 'role': 'admin'},
-    {'username': 'demo', 'password_hash': generate_password_hash('password'), 'role': 'demo'}
+    {'username': 'admin', 'password_hash': generate_password_hash(e.get('ADMIN_PASSWORD', 'password')), 'role': 'admin'}
 ]
 
 # Check if any users exist
@@ -78,12 +78,12 @@ def login():
     user = db.users.find_one({'username': username})
     if user and check_password_hash(user['password_hash'], password):
         # Include the user's role in the JWT
-        if user['role'] == 'demo':
-            access_token = create_access_token(identity={'username': username, 'role': user['role']}, expires_delta=timedelta(minutes=1))
+        if user['role'] == 'trial':
+            access_token = create_access_token(identity={'username': username, 'role': user['role']}, expires_delta=timedelta(minutes=5))
         else:
             access_token = create_access_token(identity={'username': username, 'role': user['role']}, expires_delta=timedelta(hours=168))
 
-        return jsonify(access_token=access_token), 200
+        return jsonify({"access_token": access_token, "role": user['role']}), 200
     return jsonify({"msg": "Bad username or password"}), 401
 
 def check_role(*roles):
@@ -156,7 +156,7 @@ def delete_user():
 
 
 @app.route('/api/mails', methods=['GET'])
-@check_role('admin', 'demo')
+@check_role('admin')
 def get_mails():
     # Extract query parameters
     rating = request.args.get('rating', type=float, default="all_ratings")
@@ -193,7 +193,7 @@ def get_mails():
 
 
 @app.route('/api/stats', methods=['GET'])
-@check_role('admin', 'demo')
+@check_role('admin')
 def get_data():
     # Extract query parameters
     rating = request.args.get('rating', type=float, default="all_ratings")
@@ -233,31 +233,43 @@ def get_data():
     else:
         unique_labels = [label]
 
-    # Dynamically Build Aggregation Pipeline
-    group_stage = {
-        "$group": {
-            "_id": {
-                "$dateToString": {"format": "%Y-%m-%d", "date": "$date"}
-            },
-            "total": {"$sum": 1},
-            "average_processing_time": {"$avg": "$datetime_elapsed"}
-        }
-    }
-
-    for label in unique_labels:
-        group_stage["$group"][label] = {
-            "$sum": {
-                "$cond": [{"$eq": ["$label", label]}, 1, 0]
-            }
-        }
-
-    pipeline = [
-        {"$match": query},
-        group_stage,
-        {"$addFields": {"date": "$_id" }},
-        {"$project": {"_id": 0} }
-    ]
     
+    pipeline = [
+    {"$match": query},
+
+    # Stage 1: Group by date and label
+    {"$group": {
+        "_id": {
+            "date": {"$dateToString": {"format": "%Y-%m-%d", "date": "$date"}},
+            "label": "$label"
+        },
+        "label_count": {"$sum": 1},
+        "datetime_elapsed": {"$avg": "$datetime_elapsed"}
+    }},
+
+    # Stage 2: Group by date to aggregate all labels together
+    {"$group": {
+        "_id": "$_id.date",
+        "labels_count": {
+            "$push": {
+                "label": "$_id.label",
+                "count": "$label_count"
+            }
+        },
+        "average_processing_time": {"$avg": "$datetime_elapsed"}, 
+        "total": {"$sum": "$label_count"},
+    }},
+
+    # Optional: Stage 3: Project the final structure if necessary
+    {"$project": {
+        "date": "$_id",
+        "total": 1,
+        "labels_count": 1,
+        "average_processing_time": 1,
+        "_id": 0
+    }}
+    ]
+
 
     # Execute the aggregation query
     count = db.mails.count_documents(query)
@@ -266,19 +278,22 @@ def get_data():
     # Convert the results to a list of dicts
     json_result = list(results)
 
+    # Fill in missing dates with 0 values
     current_date = start_date
     while current_date <= end_date:
-        date_str = current_date.strftime('%Y-%m-%d')
-        if not any(item['date'] == date_str for item in json_result):
-            json_result.append({
-                "date": date_str,
-                "total": 0,
-                "average_processing_time": 0
-            })
-            for label in unique_labels:
-                json_result[-1][label] = 0
+        current_date_str = current_date.strftime('%Y-%m-%d')
+        if not any(d['date'] == current_date_str for d in json_result):
+            json_result.append({"date": current_date_str, "total": 0, "labels_count": []})
         current_date += timedelta(days=1)
-    
+        
+    # Fill in missing labels with 0 values
+    for item in json_result:
+        for label in unique_labels:
+            if not any(d['label'] == label for d in item['labels_count']):
+                item['labels_count'].append({"label": label, "count": 0})
+        item['labels_count'] = sorted(item['labels_count'], key=lambda x: (x['label'] != "IRRELEVANT", x['label']))
+
+    # Sort the results by date
     json_result = sorted(json_result, key=lambda x: x['date'])
 
     report = {
@@ -295,7 +310,7 @@ def get_data():
     return jsonify(report), 200
 
 @app.route('/api/certainty', methods=['GET'])
-@check_role('admin', 'demo')
+@check_role('admin')
 def get_cetainty():
     # Extract query parameters
     source = request.args.get('source', default="all_sources")
@@ -345,7 +360,7 @@ def get_cetainty():
 
 
 @app.route('/api', methods=['POST'])
-@check_role('admin', 'demo', 'user')
+@check_role('admin', 'user')
 def add_mail():
     if request.content_type != 'application/json':
         return jsonify({"error": "Unsupported Media Type"}), 415
@@ -365,18 +380,20 @@ def add_mail():
         existing_record['already_exists'] = True
         return jsonify(existing_record), 200
     
+    # Preprocess the data
+    preprocessor = Preprocessor()
 
     start_time = time()
 
-    # TODO: process the data
+    data['text_body'] = data['body']
+    preprocessed_data = preprocessor.preprocess(data)
+    keywords = preprocessed_data['keywords']
+
+    label = random.choice(['IRRELEVANT', 'BI_ENGINEER', 'DATA_ENGINEER'])
+    certainty = random.random()
 
     end_time = time()
     processing_time = end_time - start_time
-
-    # Generate a random response
-    label = random.choice(["BI_ENGINEER", "IRRELEVANT", "DATA_ENGINEER"])
-    certainty = random.random()
-    keywords = ["een", "twee", "drie", "vier", "vijf"]
 
     # Make the response in JSON format
     response = {
@@ -400,7 +417,7 @@ def add_mail():
 
 
 @app.route('/api/rating', methods=['PUT'])
-@check_role('admin', 'demo', 'user')
+@check_role('admin', 'user')
 def update_rating():
     data = request.json
 
@@ -424,6 +441,11 @@ def get_settings():
     # settings.pop('_id', None)
     return jsonify({"settings": "TODO"}), 200
 
+
+@app.route('/api/tokencheck', methods=['GET'])
+@jwt_required()
+def token_check():
+    return jsonify({"msg": "Token is valid"}), 200
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')

@@ -48,6 +48,7 @@ export class ThemeswitchComponent {
         },
       },
       yaxis: {
+        stepSize: 1,
         labels: {
           style: {
             colors: this.theme.chart_axistextcolor,
@@ -102,6 +103,8 @@ export class ThemeswitchComponent {
       document.documentElement.style.setProperty('--page-background-gradient', 'radial-gradient(circle, rgba(75,80,134,1) 0%, rgba(49,53,110,1) 100%)');
       document.documentElement.style.setProperty('--page-color-text', '#edf2f9');
       document.documentElement.style.setProperty('--page-color-inactive', '#47426b');
+      document.documentElement.style.setProperty('--page-color-button', '#292841');
+      document.documentElement.style.setProperty('--page-color-button-pressed', '#ff9190');
       document.documentElement.style.setProperty('--module-color-border', '#312f51');
       document.documentElement.style.setProperty('--module-color-background', '#312f51');
       document.documentElement.style.setProperty('--module-color-text', '#7d7b8c');
@@ -134,6 +137,8 @@ export class ThemeswitchComponent {
       document.documentElement.style.setProperty('--page-background-gradient', 'radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(241,241,241,1) 100%)');
       document.documentElement.style.setProperty('--page-color-text', '#46494c');
       document.documentElement.style.setProperty('--page-color-inactive', '#f0f4f8');
+      document.documentElement.style.setProperty('--page-color-button', '#e5ebf0');
+      document.documentElement.style.setProperty('--page-color-button-pressed', '#ff9190');
       document.documentElement.style.setProperty('--module-color-border', 'white');
       document.documentElement.style.setProperty('--module-color-background', 'white');
       document.documentElement.style.setProperty('--module-color-text', '#80848b');

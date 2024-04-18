@@ -11,7 +11,6 @@
   align-items: center;
 }
 
-
 .navbar {
   position: fixed;
   border-radius: 1.5rem;
@@ -23,7 +22,7 @@
   background: var(--nav-background-gradient); 
 }
 
-.navbar:hover {
+.navbar:hover, .navbar.pinned {
   height: 100%;
 }
 
@@ -38,7 +37,46 @@
   gap: 1rem;
 }
 
-.navbar a, .navbar .switch {
+.navbar:hover ul, .navbar.pinned ul {
+  border-top: 1px solid;
+  border-bottom: 1px solid;
+  border-image: linear-gradient(to right, #ffffff3a 70%, transparent 30%) 100% 1;
+}
+
+.navbar:hover li, .navbar.pinned li {
+  background: inherit;
+  border-bottom: 1px solid;
+  border-image: linear-gradient(to right, #ffffff2f  80%, transparent 20%) 100% 1;
+}
+
+.navbar:hover li:before, .navbar.pinned li:before {
+  pointer-events: none; 
+  content: '';
+  position: absolute;
+  height: 5rem;
+  width: 100%;
+}
+
+.navbar:hover li:hover:before, .navbar.pinned li:hover:before {
+  background: inherit;
+  box-shadow: inset 0 0 2000px rgba(255, 255, 255, 0.055);
+  filter: blur(10px);
+}
+
+.navbar:hover li:last-child, .navbar.pinned li:last-child {
+  border-bottom: none;
+}
+
+.text {
+  font-size: 2vh;
+  text-align: center;
+}
+
+.icon {
+  height: 2rem;
+}
+
+.navbar a, .navbar footer {
   display: none;
 }
 
@@ -53,11 +91,11 @@
   transition: opacity 0.4s ease;
 }
 
-.navbar:hover a .text, .navbar:hover .switch {
+.navbar:hover a .text, .navbar:hover footer, .navbar.pinned a .text, .navbar.pinned footer {
   opacity: 1;
 }
 
-.navbar:hover a{
+.navbar:hover a, .navbar.pinned a {
   display: flex;
   align-items: center;
   color: var(--nav-color-text);
@@ -66,19 +104,16 @@
   width: 100%;
 }
 
-.navbar:hover .switch {
-  display: flex;
-  /*
-  flex-direction: row;
+.navbar:hover footer, .navbar.pinned footer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   align-items: center;
-  gap: 1rem;
-  */
   position: absolute;
-  bottom: 1.5rem;
+  bottom: 1rem;
   left: 1rem;
 }
 
-.navbar a:hover {
+.navbar a:hover, .navbar.pinned a:hover {
   background-color: var(--nav-color-hover);
 }
 
@@ -87,7 +122,7 @@
   width: 0px;
 }
 
-.container:hover {
+.container:hover, .container.pinned {
   width: 16vw;
 }
 
@@ -98,6 +133,9 @@
   height: 6rem;
   background-color: var(--nav-color-background);
   box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
 }
 
 h1 {
@@ -116,3 +154,57 @@ svg {
   fill: var(--nav-color-text);
 }
 
+.lock_nav {
+  display: flexbox;
+  max-width: 1.5rem;
+  position: relative;
+  right: -5rem;
+}
+
+.lock {
+  height: 1.5rem;
+}
+
+.logoutbutton {
+  z-index: 1002;
+  position: absolute;
+  background-color: var(--page-color-button);
+  border: 1px solid transparent;
+  border-radius: .75rem;
+  box-sizing: border-box;
+  color: #FFFFFF;
+  cursor: pointer;
+  flex: 0 0 auto;
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.5rem;
+  padding: .75rem 1.2rem;
+  text-align: center;
+  text-decoration: none #6B7280 solid;
+  text-decoration-thickness: auto;
+  transition-duration: .2s;
+  transition-property: background-color,border-color,color,fill,stroke;
+  transition-timing-function: cubic-bezier(.4, 0, 0.2, 1);
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  width: auto;
+  height: 50%;
+  right: 3rem;
+}
+
+.logoutbutton:hover {
+  background-color: var(--page-color-button-pressed);
+}
+
+.logoutbutton:focus {
+  box-shadow: none;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
+
+@media (min-width: 768px) {
+  .logoutbutton {
+    padding: .75rem 1.5rem;
+  }
+}

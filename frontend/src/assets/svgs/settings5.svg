@@ -1,0 +1,20 @@
+<?xml version="1.0" ?>
+<svg height="30px" version="1.1" viewBox="0 0 33 30" width="33px" fill="#edf2f9"
+    xmlns="http://www.w3.org/2000/svg"
+    xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title/>
+    <desc/>
+    <defs/>
+    <g fill-rule="evenodd" id="Music" stroke="none" stroke-width="1">
+        <g id="Icons" transform="translate(-210.000000, -208.000000)">
+            <g id="Mixer" transform="translate(210.000000, 208.000000)">
+                <rect height="29.7142857" id="Rectangle" rx="1.5" width="3" x="3.28571429" y="0"/>
+                <rect height="29.7142857" id="Rectangle" rx="1.5" width="3" x="14.7142857" y="0"/>
+                <rect height="29.7142857" id="Rectangle" rx="1.5" width="3" x="26.1428571" y="0"/>
+                <rect height="9.14285714" id="Rectangle" rx="1.5" transform="translate(4.785714, 8.000000) rotate(90.000000) translate(-4.785714, -8.000000) " width="3" x="3.28571429" y="3.42857143"/>
+                <rect height="9.14285714" id="Rectangle" rx="1.5" transform="translate(27.642857, 8.000000) rotate(90.000000) translate(-27.642857, -8.000000) " width="3" x="26.1428571" y="3.42857143"/>
+                <rect height="9.14285714" id="Rectangle" rx="1.5" transform="translate(16.214286, 20.571429) rotate(90.000000) translate(-16.214286, -20.571429) " width="3" x="14.7142857" y="16"/>
+            </g>
+        </g>
+    </g>
+</svg>

@@ -2,6 +2,7 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    position: relative;
   }
   
   .radio-btn {
@@ -108,5 +109,24 @@
   .radio-btn.active {
     background-color: #27173a;
   }
-  
+
+  .container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .7vw;
+    font-size: .7rem; 
+    color: var(--nav-color-text)
+  }
+
+  .themestatus {
+    font-size: .9rem; 
+    font-weight: bolder;
+    color: var(--module-color-background);
+  }
+
+  .darkmodetext {
+    display: flex;
+    flex-direction: column;
+  }  
   

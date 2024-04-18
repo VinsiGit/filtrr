@@ -4,7 +4,7 @@
     grid-template-rows: 1fr 1fr;
     min-width: 96.5vw;
     width: 100%;
-    gap: 2rem;
+    gap: 2vw;
 }
 
 .mailamount {

@@ -1,12 +1,13 @@
 from prefect import task, flow
 from preprocessor import TextPreprocessor
-from sklearn.ensemble import BaggingClassifier, AdaBoostClassifier
+from sklearn.ensemble import AdaBoostClassifier
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 from typing import List, Dict
 import json
 import mlflow
+import optuna
 
 @flow(name="Load Parameters Flow", description="Load parameters from a JSON file and extract model-specific parameters.")
 def load_parameters_flow(parameter_file_path: str = 'parameters.json') -> tuple:
@@ -32,34 +33,37 @@ def load_parameters_flow(parameter_file_path: str = 'parameters.json') -> tuple:
 
         vectorizer_p = params.get('tfidf_vectorizer', {})
         adaboost_p = params.get('ada_boost', {"n_estimators": 2, "learning_rate": 1.0})
-        bagging_p = params.get('bagging_classifier', {"n_estimators": 200})
 
         adaboost_p.update({'random_state': random_state_p})
-        bagging_p.update({'random_state': random_state_p})
 
-        return trn_tst_p, vectorizer_p, adaboost_p, bagging_p
+        return trn_tst_p, vectorizer_p, adaboost_p
 
     parameters = read_parameters(parameter_file_path)
     return extract_params(parameters)
 
 
 @flow(name="Preprocess Data Flow", description="Read and preprocess mails from JSON files.")
-def preprocess_data_flow(mails_file_path: str = 'data.json', keyword_file_path: str = 'keywords.json') -> tuple:
+def preprocess_data_flow(mails_file_path: str = 'data.json', keyword_file_path: str = 'keywords.json', get_mails_from_file:bool=True) -> tuple:
     """
     Flow to read and preprocess mails from JSON files.
 
     Parameters:
         mails_file_path (str): Path to the JSON file containing mails data.
         keyword_file_path (str): Path to the JSON file containing keywords data.
+        get_mails_from_file (bool): A bool to specify where the data source is located T: data.json, F: mongodb
+
 
     Returns:
         tuple: Tuple containing preprocessed mails and text preprocessor instance.
     """
-    @task(name="Import Mails", description="Read mails data from JSON file.")
-    def read_mails(mails_file: str) -> List[Dict]:
+    @task(name="Import Mails From 'data.json'", description="Read mails data from JSON file.")
+    def read_mails_from_file(mails_file: str) -> List[Dict]:
         with open(file=mails_file, mode='r', encoding='utf-8') as f:
             m = json.load(f)
         return m
+
+    # TODO: LANDER POWER PLEASE PUT ZE MONGODB CONNECTION HERE TO ASK ZE DATA FROM ZE DATABASE JAWOL
+    # def read_mails_from_database() -> List[Dict]:
 
     @task(name="Preprocess Mails", description="Preprocess mails using text preprocessor.")
     def preprocess_mails(data: List[Dict], keyword_file: str) -> tuple:
@@ -72,7 +76,12 @@ def preprocess_data_flow(mails_file_path: str = 'data.json', keyword_file_path: 
             mails_preprocessed.append(preprocessed_mail)
         return mails_preprocessed, p
 
-    mails = read_mails(mails_file=mails_file_path)
+    mails = None
+    if get_mails_from_file:
+        mails = read_mails_from_file(mails_file=mails_file_path)
+    else:
+        mails = None
+
     preprocessed_mails, preprocessor = preprocess_mails(data=mails, keyword_file=keyword_file_path)
 
     return preprocessed_mails, preprocessor
@@ -134,7 +143,7 @@ def train_vectorizer_flow(keywords: List[str], vectorizer_parameters: dict) -> T
 
 @flow(name="Train Model With MLflow", description="Train model using AdaBoost and Bagging classifiers with MLflow logging.")
 def train_model_flow(mails: List[Dict], train_test_parameters: dict, adaboost_parameters: dict,
-                     bagging_parameters: dict, vectorizer: TfidfVectorizer, preprocessor: TextPreprocessor) -> None:
+                    vectorizer: TfidfVectorizer, preprocessor: TextPreprocessor) -> None:
     """
     Flow to train model using AdaBoost and Bagging classifiers with MLflow logging.
 
@@ -142,7 +151,6 @@ def train_model_flow(mails: List[Dict], train_test_parameters: dict, adaboost_pa
         mails (List[Dict]): List of mails data.
         train_test_parameters (dict): Parameters for train-test split.
         adaboost_parameters (dict): Parameters for AdaBoost classifier.
-        bagging_parameters (dict): Parameters for Bagging classifier.
         vectorizer (TfidfVectorizer): Trained TF-IDF vectorizer.
         preprocessor (TextPreprocessor): Text preprocessor instance.
     """
@@ -153,13 +161,12 @@ def train_model_flow(mails: List[Dict], train_test_parameters: dict, adaboost_pa
         return x_trn, x_tst, y_trn, y_tst
 
     @task(name="Assign Parameters to Classifier", description="Assign parameters to AdaBoost and Bagging classifiers.")
-    def assign_parameters(a_params: dict, b_params: dict) -> BaggingClassifier:
-        ada = AdaBoostClassifier(**a_params)
-        clf = BaggingClassifier(ada, **b_params)
+    def assign_parameters(a_params: dict) -> AdaBoostClassifier:
+        clf = AdaBoostClassifier(**a_params)
         return clf
 
     @task(name="Train Classifier", description="Train the classifier using training data.")
-    def train_classifier(x_trn, y_trn, clf) -> BaggingClassifier:
+    def train_classifier(x_trn, y_trn, clf) -> AdaBoostClassifier:
         clf.fit(x_trn, y_trn)
         return clf
 
@@ -172,14 +179,13 @@ def train_model_flow(mails: List[Dict], train_test_parameters: dict, adaboost_pa
     with mlflow.start_run():
         mlflow.log_params(train_test_parameters)
         mlflow.log_params(adaboost_parameters)
-        mlflow.log_params(bagging_parameters)
 
         mlflow.sklearn.log_model(vectorizer, "vectorizer")
         mlflow.sklearn.log_model(preprocessor, "preprocessor")
 
         x_train, x_test, y_train, y_test = split_data(mails, train_test_parameters['test_size'], vectorizer)
 
-        classifier = assign_parameters(adaboost_parameters, bagging_parameters)
+        classifier = assign_parameters(adaboost_parameters)
 
         trained_classifier = train_classifier(x_train, y_train, classifier)
 
@@ -195,3 +201,4 @@ def train_model_flow(mails: List[Dict], train_test_parameters: dict, adaboost_pa
         #TODO: create main flow
         #TODO: ask prof about mlflow related stuff
         #TODO: add error handeling
+        #TODO: do the optuna stuffs
