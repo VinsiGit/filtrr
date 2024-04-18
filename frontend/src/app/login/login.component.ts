@@ -3,7 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../auth.service';
 import { HttpClient } from '@angular/common/http';
 import { PagetitleService } from '../pagetitle.service';
-import { environment } from '../interfaces/environment';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-login',

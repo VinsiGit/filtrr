@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { LabelData } from './interfaces/dataresponse';
-import { environment } from './interfaces/environment';
+import { environment } from '../environments/environment';
 import { lastValueFrom } from 'rxjs';
 
 @Injectable({
