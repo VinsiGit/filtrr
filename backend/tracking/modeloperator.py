@@ -9,6 +9,9 @@ class Operator:
     def load_models(self):
         def load_preprocessor():
             pass
+            based = True
+            if based:
+                load_vectorizer()
 
         def load_vectorizer():
             pass
