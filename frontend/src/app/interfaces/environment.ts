@@ -1,6 +1,9 @@
-import 'dotenv/config'; // Load dotenv config
-
 export const environment = {
     production: false,
-    hostname: process.env['HOSTNAME'],
+    hostname: 's144272.devops-ap.be',
+};
+
+export const environment = {
+    production: true,
+    hostname: 'vinnievirtuoso.online',
 };

@@ -2,7 +2,6 @@ import { enableProdMode } from '@angular/core';
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 import { environment } from './app/interfaces/environment';
 import { AppModule } from './app/app.module';
-import 'dotenv/config'; // Load dotenv config
 
 if (environment.production) {
   enableProdMode();
