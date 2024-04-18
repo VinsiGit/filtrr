@@ -1,12 +1,14 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { lastValueFrom } from 'rxjs';
-import { Email, PasteInText } from './email';
+import { Email, PasteInText } from './interfaces/email';
+import { environment } from '../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PostService {
+  hostname: string | undefined = environment.hostname;
 
   constructor(private http: HttpClient) { 
   }
@@ -14,6 +16,6 @@ export class PostService {
   async postMail(mail: PasteInText): Promise<any> {
     const headers = new HttpHeaders().set('Source', 'site');
     const options = { headers: headers };
-    return await lastValueFrom(this.http.post("https://s144272.devops-ap.be/api", mail, options));
+    return await lastValueFrom(this.http.post(`https://${this.hostname}/api`, mail, options));
   }
 }

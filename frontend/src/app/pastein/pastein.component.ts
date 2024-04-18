@@ -2,7 +2,7 @@ import { Component, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { PostService } from '../post.service';
 import { PagetitleService } from '../pagetitle.service';
-import { Email } from '../email';
+import { Email } from '../interfaces/email';
 
 import {
   ApexNonAxisChartSeries,

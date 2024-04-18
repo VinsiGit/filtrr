@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { LabelData } from './dataresponse';
+import { LabelData } from './interfaces/dataresponse';
+import { environment } from '../environments/environment';
 import { lastValueFrom } from 'rxjs';
 
 @Injectable({
@@ -8,10 +9,12 @@ import { lastValueFrom } from 'rxjs';
 })
 export class AnalyticsdataService {
 
+  hostname: string | undefined = environment.hostname;
+
   constructor(private http: HttpClient) { }
 
   private getQueryData(params: string): Promise<LabelData> {
-    return lastValueFrom(this.http.get<LabelData>(`https://s144272.devops-ap.be/api/stats${params}`));
+    return lastValueFrom(this.http.get<LabelData>(`https://${this.hostname}/api/stats${params}`));
   }
 
   private formatDate(date: Date): string {

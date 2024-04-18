@@ -1,9 +1,11 @@
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { AuthService } from './auth.service';
+import { environment } from '../environments/environment';
 
 describe('AuthService', () => {
   let service: AuthService;
+  let hostname: string | undefined = environment.hostname;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -29,7 +31,7 @@ describe('AuthService', () => {
         done();
       });
 
-      const req = TestBed.inject(HttpTestingController).expectOne('https://s144272.devops-ap.be/api/login');
+      const req = TestBed.inject(HttpTestingController).expectOne(`https://${hostname}/api/login`);
       expect(req.request.method).toEqual('POST');
       req.flush({ success: true });
     });
@@ -43,7 +45,7 @@ describe('AuthService', () => {
         expect(service.isLoggedIn).toBeTrue();
       });
 
-      const req = TestBed.inject(HttpTestingController).expectOne('https://s144272.devops-ap.be/api/login');
+      const req = TestBed.inject(HttpTestingController).expectOne(`https://${hostname}/api/login`);
       req.flush({ success: true });
     });
 
@@ -56,7 +58,7 @@ describe('AuthService', () => {
         expect(service.isLoggedIn).toBeFalsy();
       });
 
-      const req = TestBed.inject(HttpTestingController).expectOne('https://s144272.devops-ap.be/api/login');
+      const req = TestBed.inject(HttpTestingController).expectOne(`https://${hostname}/api/login`);
       req.flush({ success: false }, { status: 400, statusText: 'Bad Request' });
       expect(service.isLoggedIn).toBe(initialIsLoggedInValue);
     });
