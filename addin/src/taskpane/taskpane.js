@@ -1,19 +1,30 @@
-const site = "https://s144272.devops-ap.be/api"; 
+// Constants for colors and site URL
+const SITE_URL = "https://s144272.devops-ap.be/api";
+const INITIAL_APP_STATE = document.getElementById("app-body").innerHTML;
+const COLORS = {
+  label1: "#6460af",
+  label2: "#b872de",
+  shadow: "#607D8B",
+  radialText: "#46494c",
+  radialTrack: "#F5F4FF",
+  radialBackground: "#ffffff",
+};
+const SHADOW_OPACITY = 0.1;
 
-let initialAppState = document.getElementById("app-body").innerHTML;
+function initializeData() {
+  return {
+    item_id: "",
+    sender: "",
+    sender_email: "",
+    datetime_received: 0,
+    subject: "",
+    body: "",
+    label: "",
+    certainty: 0,
+  }
+}
 
-let label1color = "#6460af";
-let label2color = "#b872de";
-
-let shadowcolor = "#607D8B";
-let shadowOpacity = 0.1;
-
-let radial_textcolor = "#46494c";
-let radial_trackcolor = "#F5F4FF";
-let radial_backgroundcolor = "#ffffff";
-
-
-// This function is called when Office.js is fully loaded.
+// Function to run when Office.js is fully loaded
 Office.onReady((info) => {
   if (info.host === Office.HostType.Outlook) {
     document.getElementById("app-body").style.display = "flex";
@@ -21,38 +32,31 @@ Office.onReady((info) => {
   }
 });
 
-// This function gets the body of the email in text format
+// Main function to run
 export async function run() {
-  let data = initializeData();
+  const data = initializeData();
   const sendSwitch = document.getElementById("sendSwitch");
 
-  sendSwitch.addEventListener("change", function() {
+  sendSwitch.addEventListener("change", function () {
     if (this.checked) {
-      sendEmailBodyToServer(data).then(new_data => {
-        updateData(data, new_data);
-        display(data);
-      }).catch(error => {
-        console.error('Error:', error);
-      });        
+      document.getElementById("ui").style.display = "inline";
+
+      sendEmailBodyToServer(data)
+        .then((new_data) => {
+          updateData(data, new_data);
+          display(data);
+        })
+        .catch(console.error);
+    } else {
+      // Code to disable UI goes here
+      // For example, if you have a div with id "ui", you can disable it like this:
+      document.getElementById("ui").style.display = "none";
     }
   });
 
-  Office.context.mailbox.addHandlerAsync(Office.EventType.ItemChanged, function() {
+  Office.context.mailbox.addHandlerAsync(Office.EventType.ItemChanged, function () {
     updateDataOnItemChange(data);
   });
-}
-
-function initializeData() {
-  return {
-    "item_id": "",
-    "sender": "",
-    "sender_email": "",
-    "datetime_received": 0,
-    "subject": "",
-    "body":"",
-    "label":"",
-    "certainty":0 
-  }
 }
 
 function updateData(data, new_data) {
@@ -112,33 +116,33 @@ export async function display(data) {
       height: 350,
       type: "radialBar"
     },
-    colors: [label1color],  
+    colors: [COLORS.label1],  
     plotOptions: {
       radialBar: {
         hollow: {
           margin: 0,
           size: "65%",
-          background: radial_backgroundcolor
+          background: COLORS.radialBackground
         },
         track: {
-          background: radial_trackcolor,
+          background: COLORS.radialTrack,
           dropShadow: {
             enabled: true,
             top: 1,
             left: 1,
             blur: 2,
-            opacity: shadowOpacity,
-            color: shadowcolor
+            opacity: SHADOW_OPACITY,
+            color:  COLORS.shadow
           }
         },
         dataLabels: {
           name: {
             offsetY: -10,
-            color: radial_textcolor,
+            color:  COLORS.radialText,
             fontSize: "13px"
           },
           value: {
-            color: radial_textcolor,
+            color: COLORS.radialText,
             fontSize: "30px",
             show: true
           }
@@ -150,7 +154,7 @@ export async function display(data) {
       gradient: {
         shade: "dark",
         type: "vertical",
-        gradientToColors: [label2color],
+        gradientToColors: [COLORS.label2],
         stops: [0, 200]
       }
     },
@@ -172,7 +176,7 @@ export async function display(data) {
 
 export async function checkServerStatus() {
   try {
-    const response = await fetch(site, { method: 'GET' });
+    const response = await fetch(SITE_URL, { method: 'GET' });
     if (response.ok) {
 
       // Remove the check server button
@@ -180,7 +184,7 @@ export async function checkServerStatus() {
       if (checkServerButton) {
         checkServerButton.remove();
       }
-      document.getElementById("app-body").innerHTML = initialAppState;
+      document.getElementById("app-body").innerHTML = INITIAL_APP_STATE;
 
       console.log('The server is offline.');
     }
@@ -194,10 +198,10 @@ export async function sendEmailBodyToServer(data) {
     document.getElementById("loading-screen").style.display = "block";
     console.log(data.body);
     try {
-        const BearerData = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTcxMTYyODY2MSwianRpIjoiMmY3OTQyOTctYTA5OC00MmNmLTk0MmMtODI0ZTQ4N2U3N2IyIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6eyJ1c2VybmFtZSI6ImFkZGluIiwicm9sZSI6InVzZXIifSwibmJmIjoxNzExNjI4NjYxLCJjc3JmIjoiZWM2MjM3YzktMDdmMC00YmIwLWEwZTktNDI1YmU0ZDg4ZDRjIiwiZXhwIjoxNzEyMjMzNDYxfQ.SHf665JkfvzXFBG1EA0zzQ5tMaC1X83MIceI5JzCBUA";
+        const BearerData = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTcxMzQyODQxNiwianRpIjoiMjBmMWMxNmItNjBhOS00NTVjLWE3NjUtNGU3NGE1YzA0NmQ5IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6eyJ1c2VybmFtZSI6ImFkbWluIiwicm9sZSI6ImFkbWluIn0sIm5iZiI6MTcxMzQyODQxNiwiY3NyZiI6IjY4NjcyNDA2LTRkOTUtNGRlYS1iZWYwLTQ2MWFhOGRiOGY4MSIsImV4cCI6MTcxNDAzMzIxNn0.zeotClcJrS_eFUbXp_Z00fmKUCm165dy3VQ_PIqMnbY";
               
 
-        const response = await fetch(site, {
+        const response = await fetch(SITE_URL, {
             method: 'POST',
             headers: {
                 'Source':"Outlook",
@@ -222,7 +226,7 @@ export async function sendEmailBodyToServer(data) {
 
         return responseData;
     } catch (error) {
-      document.getElementById("app-body").innerHTML = site+"/login"; // "The server is currently offline. Please try again later.";
+      document.getElementById("app-body").innerHTML = SITE_URL+"/login"; // "The server is currently offline. Please try again later.";
 
       // Create the check server button
       const checkServerButton = document.createElement("button");
