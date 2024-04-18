@@ -1,0 +1,22 @@
+<div class="container">
+    <div class="radio-btn" [class.active]="darkModeEnabled" (click)="toggleDarkMode()">
+        <div class="cloud">
+            <div class="cloud1"></div>
+            <div class="cloud2"></div>
+            <div class="cloud3"></div>
+        </div>
+        <div class="stars">
+            <div class="star1"></div>
+            <div class="star2"></div>
+            <div class="star3"></div>
+        </div>
+        <div class="radio-inner" [class.active]="darkModeEnabled"></div>
+    </div>
+    <div class="darkmodetext">
+        <span>dark mode: </span>
+        <span class="themestatus" *ngIf="darkModeEnabled; else disabled">enabled</span>
+        <ng-template #disabled>
+            <span class="themestatus">disabled</span>
+        </ng-template>
+    </div>
+</div>

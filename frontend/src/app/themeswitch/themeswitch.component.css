@@ -1,0 +1,132 @@
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    position: relative;
+  }
+  
+  .radio-btn {
+    width: 75px;
+    height: 40px;
+    padding: 5px;
+    background-color: #50afe4;
+    border-radius: 50px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: background-color 0.6s; /* Add transition for background color */  
+  }
+  
+  .radio-btn .radio-inner {
+    position: relative;
+    width: 30px;
+    height: 30px;
+    background-color: #ffc207;
+    border-radius: 50%;
+    transition: all 0.6s;
+  }
+
+  .cloud, .stars {
+    position: absolute;
+    top: 12px;
+  }
+
+  .cloud {
+    left: 60%;
+  }
+
+  .stars {
+    right: 60%;
+  }
+
+  .cloud1, .cloud2, .cloud3, .star1, .star2, .star3 {
+    position: absolute;
+    border-radius: 50%;
+    background-color: white;
+  }
+
+  .cloud1 {
+    top: 7px;
+    width: 14px;
+    height: 8px;
+  }
+
+  .cloud2 {
+    top: 5px;
+    width: 14px;
+    height: 10px;
+    left: 7px;
+  }
+
+  .cloud3 {
+    width: 14px;
+    height: 12px;
+    left: 3px;
+  }
+
+  .star1 {
+    width: 3px;
+    height: 3px;
+    right: 2px;
+  }
+
+  .star2 {
+    top: 3px;
+    width: 4px;
+    height: 4px;
+    right: 12px;
+  }
+
+  .star3 {
+    top: 12px;
+    width: 5px;
+    height: 5px;
+    right: 0px;
+  }
+  
+  .radio-btn .radio-inner::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -60%;
+    width: 100%;
+    height: 100%;
+    background-color: #50afe4;
+    border-radius: 50%;
+    transform: scale(0);
+    transition: all 0.6s;
+  }
+  
+  .radio-btn .radio-inner.active {
+    transform: translateX(calc(75px - 40px));
+  }
+  
+  .radio-btn .radio-inner.active::before {
+    left: -12.5px;
+    transform: scale(1);
+    background-color: #27173a;
+  }
+
+  .radio-btn.active {
+    background-color: #27173a;
+  }
+
+  .container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .7vw;
+    font-size: .7rem; 
+    color: var(--nav-color-text)
+  }
+
+  .themestatus {
+    font-size: .9rem; 
+    font-weight: bolder;
+    color: var(--module-color-background);
+  }
+
+  .darkmodetext {
+    display: flex;
+    flex-direction: column;
+  }  
+  
