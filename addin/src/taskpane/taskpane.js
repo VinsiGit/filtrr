@@ -11,18 +11,16 @@ const COLORS = {
 };
 const SHADOW_OPACITY = 0.1;
 
-function initializeData() {
-  return {
-    item_id: "",
-    sender: "",
-    sender_email: "",
-    datetime_received: 0,
-    subject: "",
-    body: "",
-    label: "",
-    certainty: 0,
-  }
-}
+const initializeData = () => ({
+  item_id: "",
+  sender: "",
+  sender_email: "",
+  datetime_received: 0,
+  subject: "",
+  body: "",
+  label: "",
+  certainty: 0,
+});
 
 // Function to run when Office.js is fully loaded
 Office.onReady((info) => {
@@ -39,12 +37,18 @@ export async function run() {
 
   sendSwitch.addEventListener("change", function () {
     if (this.checked) {
+      document.getElementById("ui").style.display = "inline";
+
       sendEmailBodyToServer(data)
         .then((new_data) => {
           updateData(data, new_data);
           display(data);
         })
         .catch(console.error);
+    } else {
+      // Code to disable UI goes here
+      // For example, if you have a div with id "ui", you can disable it like this:
+      document.getElementById("ui").style.display = "none";
     }
   });
 
@@ -53,47 +57,36 @@ export async function run() {
   });
 }
 
-
-function updateData(data, new_data) {
-  console.log(new_data.label);
+const updateData = (data, new_data) => {
   data.label = new_data.label;
-  data.certainty = new_data.certainty
-}
+  data.certainty = new_data.certainty;
+};
 
-function updateDataOnItemChange(data) {
-  let mail = Office.context.mailbox
-  let item = mail.item;
-  data.item_id = item.itemId
+const updateDataOnItemChange = async (data) => {
+  const mail = Office.context.mailbox;
+  const item = mail.item;
+  data.item_id = item.itemId;
   data.sender = item.sender.displayName;
   data.sender_email = item.sender.emailAddress;
   data.datetime_received = item.dateTimeCreated.getTime();
-  data.subject = mail.item.subject
+  data.subject = mail.item.subject;
 
-  item.body.getAsync("text", function(result) {
-    if (result.status === Office.AsyncResultStatus.Succeeded) {
-      data.body = result.value ;
-      const sendSwitch = document.getElementById("sendSwitch");
-      if (sendSwitch.checked) {
-        sendEmailBodyToServer(data).then(new_data => {
-          updateData(data, new_data);
-          display(data);
-        }).catch(error => {
-          console.error('Error:', error);
-        });
+  const result = await item.body.getAsync("text");
+  if (result.status === Office.AsyncResultStatus.Succeeded) {
+    data.body = result.value;
+    const sendSwitch = document.getElementById("sendSwitch");
+    if (sendSwitch.checked) {
+      try {
+        const new_data = await sendEmailBodyToServer(data);
+        updateData(data, new_data);
+        display(data);
+      } catch (error) {
+        console.error('Error:', error);
       }
     }
-  }); 
-}
+  }
+};
 
-export async function downloadEmailBody(body) {
-  let blob = new Blob([body], { type: "text/plain" });
-  let link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = "emailBody.txt";
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-} 
 
 let chartInstance = null;
 
