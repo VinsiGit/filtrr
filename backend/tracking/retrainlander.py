@@ -8,6 +8,8 @@ from typing import List, Dict
 import json
 import mlflow
 import optuna
+from pymongo import MongoClient
+from os import environ as e
 
 @flow(name="Load Parameters Flow", description="Load parameters from a JSON file and extract model-specific parameters.")
 def load_parameters_flow(parameter_file_path: str = 'parameters.json') -> tuple:
@@ -65,6 +67,32 @@ def preprocess_data_flow(mails_file_path: str = 'data.json', keyword_file_path: 
     # TODO: LANDER POWER PLEASE PUT ZE MONGODB CONNECTION HERE TO ASK ZE DATA FROM ZE DATABASE JAWOL
     # def read_mails_from_database() -> List[Dict]:
 
+    @task(name="Import Mails From Mongodb", description="Read mails data from MongoDB.")
+    def read_mails_from_database() -> List[Dict]:
+        # Get the MongoDB connection details from environment variables
+        mongo_host = e.get('MONGO_HOST', 'localhost')
+        mongo_port = int(e.get('MONGO_PORT', '27017'))
+        mongo_username = e.get('MONGO_USERNAME', 'root')
+        mongo_password = e.get('MONGO_PASSWORD', 'mongo')
+
+        # Connect to the MongoDB server
+        client = MongoClient(host=mongo_host, port=mongo_port, username=mongo_username, password=mongo_password)
+        
+        # Get the MongoDB database
+        db = client['filtrr_db']
+
+        # Get the MongoDB collection
+        collection = db['mails']
+
+        # Get all the mails from the collection
+        mails = list(collection.find({"rating": 1}))
+
+        # Close the MongoDB connection
+        client.close()
+
+        return mails
+    
+
     @task(name="Preprocess Mails", description="Preprocess mails using text preprocessor.")
     def preprocess_mails(data: List[Dict], keyword_file: str) -> tuple:
         p = TextPreprocessor()
@@ -80,11 +108,13 @@ def preprocess_data_flow(mails_file_path: str = 'data.json', keyword_file_path: 
     if get_mails_from_file:
         mails = read_mails_from_file(mails_file=mails_file_path)
     else:
-        mails = None
+        mails = read_mails_from_database()
 
-    preprocessed_mails, preprocessor = preprocess_mails(data=mails, keyword_file=keyword_file_path)
+    # preprocessed_mails, preprocessor = preprocess_mails(data=mails, keyword_file=keyword_file_path)
 
-    return preprocessed_mails, preprocessor
+    # return preprocessed_mails, preprocessor
+
+    return mails
 
 
 @flow(name='Prepare Data For Model Training', description="Prepare data for training the model.")
