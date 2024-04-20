@@ -1,15 +1,18 @@
-from prefect import task, flow
+from prefect import task, flow, logging
 from preprocessor import TextPreprocessor
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
-from typing import List, Dict
+from typing import List, Dict, Tuple
 import json
 import mlflow
+from mlflow import MlflowClient
 import optuna
+import datetime
 
-@flow(name="Load Parameters Flow", description="Load parameters from a JSON file and extract model-specific parameters.")
+@flow(name="Load Parameters Flow", description="Load parameters from a JSON \
+file and extract model-specific parameters.")
 def load_parameters_flow(parameter_file_path: str = 'parameters.json') -> tuple:
     """
     Flow to load parameters from a JSON file and extract model-specific parameters.
@@ -24,7 +27,8 @@ def load_parameters_flow(parameter_file_path: str = 'parameters.json') -> tuple:
     @task(name="Read Parameters From File", description="Read parameters from a JSON file.")
     def read_parameters(file_path: str) -> dict:
         with open(file=file_path, mode='r', encoding='utf-8') as f:
-            return json.load(f)
+            j = json.load(f)
+            return j
 
     @task(name="Extract Model Specific Parameters", description="Extract model-specific parameters from loaded parameters.")
     def extract_params(params: dict) -> tuple:
@@ -111,8 +115,9 @@ def prepare_training_data_flow(mails: List[Dict]) -> tuple:
             keywords_per_mail.append(mail['keywords'])
             label_per_mail.append(mail['label'])
         return keywords_per_mail, label_per_mail
-
-    return get_all_keywords(data=mails), prepare_train_data(data=mails)
+    keywords = get_all_keywords(data=mails)
+    keywords_p_mail, label_p_mail =prepare_train_data(data=mails)
+    return keywords, keywords_p_mail, label_p_mail
 
 
 @flow(name="Train Vectorizer Flow", description="Train TF-IDF vectorizer for text data.")
@@ -142,63 +147,118 @@ def train_vectorizer_flow(keywords: List[str], vectorizer_parameters: dict) -> T
 
 
 @flow(name="Train Model With MLflow", description="Train model using AdaBoost and Bagging classifiers with MLflow logging.")
-def train_model_flow(mails: List[Dict], train_test_parameters: dict, adaboost_parameters: dict,
+def train_model_flow(x: list, y: list, train_test_parameters: dict, adaboost_parameters: dict,
                     vectorizer: TfidfVectorizer, preprocessor: TextPreprocessor) -> None:
     """
     Flow to train model using AdaBoost and Bagging classifiers with MLflow logging.
 
     Parameters:
-        mails (List[Dict]): List of mails data.
+        x (list): list of keywords per mail
+        y (list): list of labels per mail
         train_test_parameters (dict): Parameters for train-test split.
         adaboost_parameters (dict): Parameters for AdaBoost classifier.
         vectorizer (TfidfVectorizer): Trained TF-IDF vectorizer.
         preprocessor (TextPreprocessor): Text preprocessor instance.
     """
     @task(name="Split Data", description="Split data into training and testing sets.")
-    def split_data(x: List[str], y: List[str], trn_tst_params: dict, vect: TfidfVectorizer) -> tuple:
-        x = vect.transform(x)
-        x_trn, x_tst, y_trn, y_tst = train_test_split(x, y, **trn_tst_params)
+    def split_data(x: List[List[str]], y: List[str], trn_tst_params: dict, vect: TfidfVectorizer) -> tuple:
+        transformed_x = []
+        for keywords_mail in x:
+            mail_text = ' '.join(keywords_mail)
+            transformed_x.append(mail_text)
+        sparse_m = vect.transform(transformed_x)
+        x_trn, x_tst, y_trn, y_tst = train_test_split(sparse_m, y, **trn_tst_params)
         return x_trn, x_tst, y_trn, y_tst
 
-    @task(name="Assign Parameters to Classifier", description="Assign parameters to AdaBoost and Bagging classifiers.")
-    def assign_parameters(a_params: dict) -> AdaBoostClassifier:
-        clf = AdaBoostClassifier(**a_params)
-        return clf
+    @task(name="Get Best Classifier", description="Uses optuna to get the best set of hyperparams to train the model")
+    def get_best_classifier(x_trn, x_tst, y_trn, y_tst, a_params) -> Tuple[AdaBoostClassifier, Dict, float]:
 
-    @task(name="Train Classifier", description="Train the classifier using training data.")
-    def train_classifier(x_trn, y_trn, clf) -> AdaBoostClassifier:
+        def objective(trial):
+            pms = {} # Ugly ass code, does some great shit tho!
+            for key, value in a_params.items():
+                if key == "random_state":
+                    continue
+                if isinstance(value[0], (bool, str)):
+                    pms[key] = trial.suggest_categorical(name=str(key), choices=value)
+                else:
+                    if isinstance(value[0], int):
+                        pms[key] = trial.suggest_int(name=str(key), low=value[0], high=value[1])
+                    else:
+                        pms[key] = trial.suggest_float(name=str(key), low=value[0], high=value[1])
+
+            model = AdaBoostClassifier(**pms)
+            model.fit(x_trn, y_trn)
+            y_pred = model.predict(x_tst)
+            accuracy = accuracy_score(y_tst, y_pred)
+            return accuracy
+
+        storage = "sqlite:///optuna.db"
+
+        pruner = optuna.pruners.MedianPruner()
+        sampler = optuna.samplers.TPESampler()
+
+        current_datetime = datetime.datetime.now()
+        formatted_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
+        study = optuna.create_study(study_name=f"Model Optimization - {formatted_datetime}", direction='maximize',
+                                    sampler=sampler, pruner=pruner, storage=storage)
+        study.optimize(objective, n_trials=500)
+
+        params = study.best_params
+        acc = study.best_value
+
+        clf = AdaBoostClassifier(**params)
         clf.fit(x_trn, y_trn)
-        return clf
+        return clf, params, acc
 
-    @task(name="Test Classifier", description="Test the trained classifier on test data.")
-    def test_classifier(x_tst, y_tst, clf) -> float:
-        y_pred = clf.predict(x_tst)
-        acc = accuracy_score(y_tst, y_pred)
-        return acc
+    sqlite_uri = "sqlite:///mlflow.db"
+    experiment_name = "FiltrrModelTracking"
+
+    mlflow.set_tracking_uri(sqlite_uri)
+    client = MlflowClient(tracking_uri=sqlite_uri)
+    if experiment_name not in [exp.name for exp in client.search_experiments()]:
+        mlflow.create_experiment(experiment_name)
+    mlflow.set_experiment(experiment_name)
 
     with mlflow.start_run():
-        mlflow.log_params(train_test_parameters)
-        mlflow.log_params(adaboost_parameters)
+        mlflow.set_tag("developer", "red panda 🕊️")
 
+        x_train, x_test, y_train, y_test = split_data(x,y, train_test_parameters, vectorizer) # use x and y here
+        trained_classifier, best_parameters, best_accuracy = get_best_classifier(x_train, x_test, y_train, y_test, adaboost_parameters)
+
+        mlflow.log_params(train_test_parameters)
         mlflow.sklearn.log_model(vectorizer, "vectorizer")
         mlflow.sklearn.log_model(preprocessor, "preprocessor")
+        mlflow.sklearn.log_model(trained_classifier, "model")
 
-        x_train, x_test, y_train, y_test = split_data(mails, train_test_parameters['test_size'], vectorizer)
+        vectorizer_uri = f"runs:/{mlflow.active_run().info.run_id}/vectorizer"
+        preprocessor_uri = f"runs:/{mlflow.active_run().info.run_id}/preprocessor"
+        adaboost_uri = f"runs:/{mlflow.active_run().info.run_id}/model"
 
-        classifier = assign_parameters(adaboost_parameters)
+        mlflow.register_model(vectorizer_uri, "Vectorizer")
+        mlflow.register_model(preprocessor_uri, "Preprocessor")
+        mlflow.register_model(adaboost_uri, "Model")
 
-        trained_classifier = train_classifier(x_train, y_train, classifier)
+        mlflow.log_params({"Test Parameters": adaboost_parameters})
+        mlflow.log_params({"Accuracy": best_accuracy})
+        mlflow.log_params({"Best Parameters": best_parameters})
 
-        test_accuracy = test_classifier(x_test, y_test, trained_classifier)
 
-        mlflow.sklearn.log_model(trained_classifier, "trained_model")
-        mlflow.log_metric("test_accuracy", test_accuracy)
 
-        #TODO: get these models in a database
-        #TODO: solve run id issue (via global param probs??)
-        #TODO: test code
-        #TODO: fix bugs
-        #TODO: create main flow
-        #TODO: ask prof about mlflow related stuff
-        #TODO: add error handeling
-        #TODO: do the optuna stuffs
+
+
+@flow(name="Main flow", description="Main flow that runs all other flows for the full train cycle of a model")
+def main_flow():
+    """
+    Main flow for training an AdaBoost classifier on email data.
+
+    This flow loads parameters, preprocesses data, prepares training data,
+    trains a TF-IDF vectorizer, and trains an AdaBoost classifier.
+    """
+
+    trn_tst_parameters, vectorizer_parameters, adaboost_parameters = load_parameters_flow()
+    preprocessed_mails, preprocessor = preprocess_data_flow()
+    keywords, keywords_per_mail, label_per_mail = prepare_training_data_flow(preprocessed_mails)
+    vectorizer = train_vectorizer_flow(keywords, vectorizer_parameters)
+    train_model_flow(keywords_per_mail, label_per_mail, trn_tst_parameters,
+                     adaboost_parameters, vectorizer, preprocessor)
+

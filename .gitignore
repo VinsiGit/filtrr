@@ -7,3 +7,6 @@ models/
 /backend/tracking/data.json
 /backend/tracking/keywords.json
 /backend/tracking/parameters.json
+mlruns
+*.db
+*prefect*
