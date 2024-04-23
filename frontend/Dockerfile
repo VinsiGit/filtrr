@@ -14,7 +14,7 @@ RUN npm install --save --legacy-peer-deps
 COPY . .
 
 # Build the Angular app
-RUN npm run ng build -- --configuration=production
+RUN ng build --prod
 
 # Use a lightweight image for the production environment
 FROM nginx:alpine as production
