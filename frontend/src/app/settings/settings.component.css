@@ -74,7 +74,7 @@ div.input-block {
   div.input-block input {
     color: var(--page-color-text);
     padding: 8px 14px;
-    background: var(--module-color-background);
+    background: var(--page-color-background);
     border-radius: .5rem;
     border: 2px solid var(--page-color-inactive);
     outline:none;
@@ -94,9 +94,10 @@ div.input-block {
     pointer-events: none;
   }
   div.input-block input:valid + span.placeholder, div.input-block input:focus + span.placeholder {
-    transform: scale(0.8) translateY(-23px) translateX(-8px);
-    padding-left: 5px;
-    padding-right: 5px;
-    color: var(--page-color-text);
-    background: var(--module-color-background);
+    transform: scale(0.8) translateY(-16px) translateX(-8px);
+    padding-left: 8px;
+    padding-right: 8px;
+    color: var(--module-color-text);
+    background: var(--page-color-background);
+    height: 2px;
   }
