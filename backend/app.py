@@ -445,7 +445,8 @@ def get_settings():
 @app.route('/api/tokencheck', methods=['GET'])
 @jwt_required()
 def token_check():
-    return jsonify({"msg": "Token is valid"}), 200
+    role = get_jwt_identity()['role']
+    return jsonify({"msg": "Token is valid", "role": role}), 200
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')
