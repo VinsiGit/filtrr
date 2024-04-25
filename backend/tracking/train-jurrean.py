@@ -1,15 +1,17 @@
-from prefect import task, flow, logging
+from mlflow import MlflowClient
+from prefect import task, flow
+from prefect.logging import get_logger
 from preprocessor import TextPreprocessor
 from sklearn.ensemble import AdaBoostClassifier
+from sklearn.tree import DecisionTreeClassifier
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score
 from sklearn.model_selection import train_test_split
 from typing import List, Dict, Tuple
+import datetime
 import json
 import mlflow
-from mlflow import MlflowClient
 import optuna
-import datetime
 
 @flow(name="Load Parameters Flow", description="Load parameters from a JSON \
 file and extract model-specific parameters.")
@@ -26,9 +28,15 @@ def load_parameters_flow(parameter_file_path: str = 'parameters.json') -> tuple:
     """
     @task(name="Read Parameters From File", description="Read parameters from a JSON file.")
     def read_parameters(file_path: str) -> dict:
-        with open(file=file_path, mode='r', encoding='utf-8') as f:
-            j = json.load(f)
-            return j
+        #TODO: change this to a request
+        log = get_logger()
+        try:
+            with open(file=file_path, mode='r', encoding='utf-8') as f:
+                j = json.load(f)
+                return j
+        except FileNotFoundError:
+            log.info(f"Error: File '{file_path}' not found.")
+            return {}
 
     @task(name="Extract Model Specific Parameters", description="Extract model-specific parameters from loaded parameters.")
     def extract_params(params: dict) -> tuple:
@@ -36,18 +44,21 @@ def load_parameters_flow(parameter_file_path: str = 'parameters.json') -> tuple:
         trn_tst_p = params.get('train_test_split', {'test_size': 0.15})
 
         vectorizer_p = params.get('tfidf_vectorizer', {})
-        adaboost_p = params.get('ada_boost', {"n_estimators": 2, "learning_rate": 1.0})
+        adaboost_p = params.get('ada_boost', {'n_estimators': 38, 'learning_rate': 0.02})
+        tree_p = params.get('decision_tree', {'splitter': 'best', 'max_depth': 4, 'criterion': 'gini'})
+        # 90,9% acc - 93,6% pre - 93,9% rec
 
         adaboost_p.update({'random_state': random_state_p})
+        tree_p.update({'random_state': random_state_p})
 
-        return trn_tst_p, vectorizer_p, adaboost_p
+        return trn_tst_p, vectorizer_p, adaboost_p, tree_p
 
     parameters = read_parameters(parameter_file_path)
     return extract_params(parameters)
 
 
 @flow(name="Preprocess Data Flow", description="Read and preprocess mails from JSON files.")
-def preprocess_data_flow(mails_file_path: str = 'data.json', keyword_file_path: str = 'keywords.json', get_mails_from_file:bool=True) -> tuple:
+def preprocessor_flow(mails_file_path: str = 'data.json', keyword_file_path: str = 'keywords.json', get_mails_from_file:bool=True) -> tuple:
     """
     Flow to read and preprocess mails from JSON files.
 
@@ -80,7 +91,7 @@ def preprocess_data_flow(mails_file_path: str = 'data.json', keyword_file_path: 
             mails_preprocessed.append(preprocessed_mail)
         return mails_preprocessed, p
 
-    mails = None
+    mails = {}
     if get_mails_from_file:
         mails = read_mails_from_file(mails_file=mails_file_path)
     else:
@@ -147,7 +158,7 @@ def train_vectorizer_flow(keywords: List[str], vectorizer_parameters: dict) -> T
 
 
 @flow(name="Train Model With MLflow", description="Train model using AdaBoost and Bagging classifiers with MLflow logging.")
-def train_model_flow(x: list, y: list, train_test_parameters: dict, adaboost_parameters: dict,
+def train_model_flow(x: list, y: list, train_test_parameters: dict, adaboost_parameters: dict, tree_parameters: dict,
                     vectorizer: TfidfVectorizer, preprocessor: TextPreprocessor) -> None:
     """
     Flow to train model using AdaBoost and Bagging classifiers with MLflow logging.
@@ -171,44 +182,84 @@ def train_model_flow(x: list, y: list, train_test_parameters: dict, adaboost_par
         return x_trn, x_tst, y_trn, y_tst
 
     @task(name="Get Best Classifier", description="Uses optuna to get the best set of hyperparams to train the model")
-    def get_best_classifier(x_trn, x_tst, y_trn, y_tst, a_params) -> Tuple[AdaBoostClassifier, Dict, float]:
+    def get_best_classifier(x_trn, x_tst, y_trn, y_tst, a_params, t_params) -> Tuple[AdaBoostClassifier, Dict,
+    float, float, Dict, float, float, float]:
 
-        def objective(trial):
-            pms = {} # Ugly ass code, does some great shit tho!
-            for key, value in a_params.items():
-                if key == "random_state":
-                    continue
-                if isinstance(value[0], (bool, str)):
-                    pms[key] = trial.suggest_categorical(name=str(key), choices=value)
+        def objective1(trial):
+            t_pms = {}
+            for key, value in t_params.items():
+                if not isinstance(value, list):
+                    t_pms[key] = value
+                elif isinstance(value[0], (bool, str)):
+                    t_pms[key] = trial.suggest_categorical(name=str(key), choices=value)
+                elif isinstance(value[0], int):
+                    t_pms[key] = trial.suggest_int(name=str(key), low=value[0], high=value[1])
                 else:
-                    if isinstance(value[0], int):
-                        pms[key] = trial.suggest_int(name=str(key), low=value[0], high=value[1])
-                    else:
-                        pms[key] = trial.suggest_float(name=str(key), low=value[0], high=value[1])
+                    t_pms[key] = trial.suggest_float(name=str(key), low=value[0], high=value[1], step=value[2])
 
-            model = AdaBoostClassifier(**pms)
-            model.fit(x_trn, y_trn)
-            y_pred = model.predict(x_tst)
+            tree = DecisionTreeClassifier(**t_pms)
+            tree.fit(x_trn, y_trn)
+            y_pred = tree.predict(x_tst)
             accuracy = accuracy_score(y_tst, y_pred)
-            return accuracy
+            precision = precision_score(y_tst, y_pred, average='macro', zero_division=0)
+            return accuracy, precision
 
         storage = "sqlite:///optuna.db"
 
-        pruner = optuna.pruners.MedianPruner()
+        pruner = optuna.pruners.MedianPruner(n_startup_trials=40)
         sampler = optuna.samplers.TPESampler()
 
         current_datetime = datetime.datetime.now()
-        formatted_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
-        study = optuna.create_study(study_name=f"Model Optimization - {formatted_datetime}", direction='maximize',
+        formatted_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S.%f")
+
+        study1 = optuna.create_study(study_name=f"Tree Optimization - {formatted_datetime} - Step 1",
+                                    directions=['maximize','maximize'],
                                     sampler=sampler, pruner=pruner, storage=storage)
-        study.optimize(objective, n_trials=500)
+        study1.optimize(objective1, n_trials=75)
 
-        params = study.best_params
-        acc = study.best_value
+        trial1 = study1.best_trials.pop()
+        params1 = trial1.params
+        tree = DecisionTreeClassifier(**params1)
+        a_params.update({"estimator":tree})
+        acc1 = trial1.values[0]
+        pre1 = trial1.values[1]
 
-        clf = AdaBoostClassifier(**params)
+        def objective2(trial):
+            a_pms = {}
+            for key, value in a_params.items():
+                if not isinstance(value, list):
+                    a_pms[key] = value
+                elif isinstance(value[0], (bool, str)):
+                    a_pms[key] = trial.suggest_categorical(name=str(key), choices=value)
+                elif isinstance(value[0], int):
+                    a_pms[key] = trial.suggest_int(name=str(key), low=value[0], high=value[1])
+                else:
+                    a_pms[key] = trial.suggest_float(name=str(key), low=value[0], high=value[1], step=value[2])
+
+            model = AdaBoostClassifier(**a_pms)
+            model.fit(x_trn, y_trn)
+
+            y_pred = model.predict(x_tst)
+
+            accuracy = accuracy_score(y_tst, y_pred)
+            precision = precision_score(y_tst, y_pred, average='macro', zero_division=0)
+            recall = recall_score(y_tst,y_pred, average='macro', zero_division=0)
+            return accuracy, precision, recall
+
+        study2 = optuna.create_study(study_name=f"Model Optimization - {formatted_datetime} - Step 2",
+                                    directions=['maximize','maximize','maximize'],
+                                    sampler=sampler, pruner=pruner, storage=storage)
+        study2.optimize(objective2, n_trials=250)
+
+        trial2 = study2.best_trials.pop()
+        params2 = trial2.params
+        acc2 = trial2.values[0]
+        pre2 = trial2.values[1]
+        rec2 = trial2.values[2]
+
+        clf = AdaBoostClassifier(**params2, estimator=tree)
         clf.fit(x_trn, y_trn)
-        return clf, params, acc
+        return clf, params1, acc1, pre1, params2, acc2, pre2, rec2
 
     sqlite_uri = "sqlite:///mlflow.db"
     experiment_name = "FiltrrModelTracking"
@@ -219,11 +270,13 @@ def train_model_flow(x: list, y: list, train_test_parameters: dict, adaboost_par
         mlflow.create_experiment(experiment_name)
     mlflow.set_experiment(experiment_name)
 
-    with mlflow.start_run():
+    with (mlflow.start_run()):
         mlflow.set_tag("developer", "red panda 🕊️")
 
         x_train, x_test, y_train, y_test = split_data(x,y, train_test_parameters, vectorizer) # use x and y here
-        trained_classifier, best_parameters, best_accuracy = get_best_classifier(x_train, x_test, y_train, y_test, adaboost_parameters)
+
+        trained_classifier, parameters1, accuracy1, precision1, parameters2, accuracy2, precision2, recall2 = (
+        get_best_classifier(x_train, x_test, y_train, y_test, adaboost_parameters, tree_parameters))
 
         mlflow.log_params(train_test_parameters)
         mlflow.sklearn.log_model(vectorizer, "vectorizer")
@@ -238,10 +291,16 @@ def train_model_flow(x: list, y: list, train_test_parameters: dict, adaboost_par
         mlflow.register_model(preprocessor_uri, "Preprocessor")
         mlflow.register_model(adaboost_uri, "Model")
 
-        mlflow.log_params({"Test Parameters": adaboost_parameters})
-        mlflow.log_params({"Accuracy": best_accuracy})
-        mlflow.log_params({"Best Parameters": best_parameters})
+        mlflow.log_params({"TREE - Test Parameters": tree_parameters})
+        mlflow.log_params({"TREE - Best Parameters": parameters1})
+        mlflow.log_params({"TREE - Accuracy": accuracy1})
+        mlflow.log_params({"TREE - Precision": precision1})
 
+        mlflow.log_params({"MODEL - Test Parameters": adaboost_parameters})
+        mlflow.log_params({"MODEL - Accuracy": accuracy2})
+        mlflow.log_params({"MODEL - Best Parameters": parameters2})
+        mlflow.log_params({"MODEL - Precision": precision2})
+        mlflow.log_params({"MODEL - Recall": recall2})
 
 
 
@@ -255,10 +314,12 @@ def main_flow():
     trains a TF-IDF vectorizer, and trains an AdaBoost classifier.
     """
 
-    trn_tst_parameters, vectorizer_parameters, adaboost_parameters = load_parameters_flow()
-    preprocessed_mails, preprocessor = preprocess_data_flow()
+    trn_tst_parameters, vectorizer_parameters, adaboost_parameters, tree_parameters = load_parameters_flow()
+
+    preprocessed_mails, preprocessor = preprocessor_flow()
     keywords, keywords_per_mail, label_per_mail = prepare_training_data_flow(preprocessed_mails)
+
     vectorizer = train_vectorizer_flow(keywords, vectorizer_parameters)
     train_model_flow(keywords_per_mail, label_per_mail, trn_tst_parameters,
-                     adaboost_parameters, vectorizer, preprocessor)
+                     adaboost_parameters, tree_parameters, vectorizer, preprocessor)
 

@@ -3,6 +3,7 @@ import re
 from nltk.corpus import stopwords
 from nltk.stem import SnowballStemmer
 from typing import List, Dict
+from prefect.logging import get_logger
 
 class TextPreprocessor:
     """
@@ -27,10 +28,15 @@ class TextPreprocessor:
 
 
     def load_keywords(self,keyword_file_path:str):
+        log = get_logger()
         def read_keywords(file_path) -> List[str]:
-            with open(file=file_path, mode='r', encoding='utf-8') as f:
-                keywords_json = json.load(f)
-                return keywords_json.get('keywords', [])
+            try:
+                with open(file=file_path, mode='r', encoding='utf-8') as f:
+                    keywords_json = json.load(f)
+                    return keywords_json.get('keywords', [])
+            except FileNotFoundError:
+                log.info(f"File '{file_path}' not found.")
+                return ["data analytics", "machine learning", "cloud computing", "devops", "infrastructure-as-code"]
 
         def normalize_keyword(keyword: str) -> str:
             cleaned_keyword = re.sub(r'[^a-zA-Z0-9\s]', '', keyword.lower())
@@ -56,7 +62,7 @@ class TextPreprocessor:
         - dict: Email data with additional 'keywords' field.
         """
         def get_tokens(mail_body: str) -> List[str]:
-            for pattern in [r'\r', r'\n', r'[^A-Za-z0-9\s]', r'\s+']:
+            for pattern in [r'\r', r'\n', r'\t', r'[^A-Za-z0-9\s]', r'\s+']:
                 mail_body = re.sub(pattern, ' ', mail_body)
             mail_body = mail_body.lower()
             mail_body = mail_body.strip()
