@@ -1,33 +1,27 @@
 <div class="module">
-    <form>
-        <div>
-            <label>user type: </label>
-            <select name="user types" id="usertypes"> 
-                <option value="User">User</option> 
-                <option value="Admin">Admin</option> 
-            </select>
+    <form (ngSubmit)="addUser()">
+      <div>
+        <label>User type: </label>
+        <select name="user types" id="usertypes" [(ngModel)]="userType">
+          <option value="user">User</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+      <div class="credentials">
+        <div class="input-block">
+          <input type="text" name="username" required [(ngModel)]="username" />
+          <span class="placeholder">Username</span>
         </div>
-        <div class="credentials">
-            <div class="input-block">
-                <input type="text" name="u" required="required" [(ngModel)]="username"/>
-                <span class="placeholder">
-                    Username
-                </span>
-              </div>
-            <div class="input-block">
-                <input type="text" name="u" required="required" [(ngModel)]="password"/>
-                <span class="placeholder">
-                    Password
-                </span>
-              </div>
-            <div class="input-block">
-                <input type="text" name="u" required="required" [(ngModel)]="password_confirm"/>
-                <span class="placeholder">
-                    Confirm Password
-                </span>
-              </div>
+        <div class="input-block">
+          <input type="password" name="password" required [(ngModel)]="password" />
+          <span class="placeholder">Password</span>
         </div>
-        <button type="submit">add user</button>
-        <p class="errormessage" *ngIf="errorMessage">please enter a password</p>
+        <div class="input-block">
+          <input type="password" name="password_confirm" required [(ngModel)]="password_confirm" />
+          <span class="placeholder">Confirm Password</span>
+        </div>
+      </div>
+      <button type="submit">Add User</button>
+      <p class="errormessage" *ngIf="errorMessage">Error: {{ errorMessage }}</p>
     </form>
-</div>
+  </div>

@@ -22,12 +22,14 @@ export class AuthService {
 
   logout(){
     localStorage.removeItem('access_token');
+    localStorage.removeItem('account_type');
     this.isLoggedIn = false;
     this.router.navigate(['login']);
   }
 
-  loginsuccess() {
+  loginsuccess(role: string) {
     console.log('Login successful');
+    localStorage.setItem('account_type', role);
     this.isLoggedIn = true;
     this.router.navigate(['dashboard']);
   }

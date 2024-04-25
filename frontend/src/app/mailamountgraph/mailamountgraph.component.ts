@@ -45,11 +45,6 @@ export class MailamountgraphComponent implements OnInit {
   public chartOptions: Partial<ChartOptions> | any;
 
   datapoints: ApexAxisChartSeries = [];
-  /*
-  datapoints_bi_eng: number[] = [];
-  datapoints_data_eng: number[] = [];
-  datapoints_irrelevant: number[] = [];
-  */
   days: string[] = [];
 
 
@@ -164,51 +159,5 @@ export class MailamountgraphComponent implements OnInit {
       this.datapoints.push({ name, data });
     });
   }
-
-
-
-  /*
-  async loadChartData(): Promise<void> {
-    this.datapoints = [];
-    this.days = [];
-
-    const responseData: LabelData = await this.data.getDataBetween(undefined, undefined);
-
-    console.log(responseData);
-
-    responseData.data.forEach((dayData: DayData) => {
-        const transformedData = dayData.labels_count.map((labelCount: LabelCount) => ({
-            name: labelCount.label.replace('_', ' ').toLowerCase(),
-            data: [labelCount.count]
-        }));
-        this.datapoints.push(...transformedData);
-        this.days.push(dayData.date);
-    });
-
-  }
-  */
-
-  /*
-  async loadChartData(): Promise<void> {
-
-    const responseData: LabelData = await this.data.getDataBetween(undefined, undefined);
-    let responseData_bi_eng: number[] = [];
-    let responseData_data_eng: number[] = [];
-    let responseData_irrelevant: number[] = [];
-    this.days = [];
-
-    responseData.data.forEach((dayData: DayData) => {
-      responseData_bi_eng.push(dayData.BI_ENGINEER);
-      responseData_data_eng.push(dayData.DATA_ENGINEER);
-      responseData_irrelevant.push(dayData.IRRELEVANT);
-      this.days.push(dayData.date);
-    });
-
-    this.datapoints_bi_eng = responseData_bi_eng;
-    this.datapoints_data_eng = responseData_data_eng;
-    this.datapoints_irrelevant = responseData_irrelevant;
-  }
-  */
-
 }
 
