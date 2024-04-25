@@ -8,3 +8,5 @@ models/
 mlruns
 *.db
 *prefect*
+.devcontainer/
+__pycache__/

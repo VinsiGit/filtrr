@@ -10,7 +10,7 @@ from time import time
 from functools import wraps
 import random
 from preprocessor import Preprocessor
-from tracking.retrainlander import load_parameters_flow, preprocess_data_flow
+from tracking.retrainlander import preprocess_data_flow
 
 
 def hash_input(input):
@@ -30,10 +30,14 @@ def hash_input(input):
 
 
 # Get the MongoDB connection details from environment variables
-mongo_host = e.get('MONGO_HOST', 'db') # 'db' is the default name of the MongoDB service within the Docker network TODO: change to localhost for local development 
+mongo_host = e.get('MONGO_HOST', 'host.docker.internal') # 'db' is the default name of the MongoDB service within the Docker network TODO: change to localhost for local development 
 mongo_port = int(e.get('MONGO_PORT', '27017'))
 mongo_username = e.get('MONGO_USERNAME', 'root')
 mongo_password = e.get('MONGO_PASSWORD', 'mongo')
+
+print(mongo_host, mongo_port, mongo_username, mongo_password)
+
+
 
 # Create a MongoDB client
 client = MongoClient(host=mongo_host, port=mongo_port, username=mongo_username, password=mongo_password)
@@ -441,6 +445,12 @@ def get_settings():
     # settings = db.settings.find_one()
     # settings.pop('_id', None)
     return jsonify({"settings": "TODO"}), 200
+
+@app.route('/api/retrain', methods=['POST'])
+@check_role('admin')
+def retrain():
+    mails = preprocess_data_flow(get_mails_from_file=False)
+    return mails, 200
 
 
 @app.route('/api/tokencheck', methods=['GET'])
