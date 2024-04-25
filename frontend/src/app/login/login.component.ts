@@ -20,7 +20,7 @@ export class LoginComponent implements OnInit{
     const accessToken = localStorage.getItem('access_token');
     if (accessToken) {
       // Call API to check if token is valid
-      this.http.get(`https://${this.hostname}/api/mails`).subscribe({
+      this.http.get(`https://${this.hostname}/api/tokencheck`).subscribe({
         next: () => {
           // Token is valid, perform login success action
           this.auth.loginsuccess();

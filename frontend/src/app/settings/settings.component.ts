@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { PagetitleService } from '../pagetitle.service';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-settings',
@@ -7,6 +8,11 @@ import { PagetitleService } from '../pagetitle.service';
   styleUrls: ['./settings.component.css']
 })
 export class SettingsComponent implements OnInit{
+  username: string = '';
+  password: string = '';
+  password_confirm: string = '';
+  errorMessage: string = '';
+  hostname: string | undefined = environment.hostname;
 
   constructor(private title: PagetitleService) {
   }
