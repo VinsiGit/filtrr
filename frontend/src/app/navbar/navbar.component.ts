@@ -1,5 +1,5 @@
 import { Component, OnInit  } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { PagetitleService } from '../pagetitle.service';
 import { AuthService } from '../auth.service';
 
@@ -11,8 +11,15 @@ import { AuthService } from '../auth.service';
 
 export class NavbarComponent implements OnInit {
   navpinned: boolean = false;
+  accountType: string | null = null;
 
-  constructor(private title: PagetitleService, private auth: AuthService) {
+
+  constructor(private title: PagetitleService, private auth: AuthService, private router: Router) {
+    this.router.events.subscribe(event => {
+      if (event instanceof NavigationEnd) {
+        this.accountType = localStorage.getItem('account_type');
+      }
+    });
   }
 
   get pagetitle() {

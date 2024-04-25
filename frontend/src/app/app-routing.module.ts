@@ -6,6 +6,7 @@ import { SettingsComponent } from './settings/settings.component';
 import { RetrainComponent } from './retrain/retrain.component';
 import { LoginComponent } from './login/login.component';
 import { AuthGuard } from './auth.guard';
+import { AdminGuard } from './admin-guard.guard';
 
 
 const routes: Routes = [
@@ -26,12 +27,12 @@ const routes: Routes = [
   {
     path: "settings",
     component: SettingsComponent,
-    canActivate: [AuthGuard]
+    canActivate: [AuthGuard, AdminGuard]
   },
   {
     path: "retrain",
     component: RetrainComponent,
-    canActivate: [AuthGuard]
+    canActivate: [AuthGuard, AdminGuard]
   },
   {
     path: "",
