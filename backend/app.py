@@ -9,8 +9,8 @@ from datetime import datetime, timedelta
 from time import time
 from functools import wraps
 import random
-# from preprocessor import Preprocessor
-# from tracking.retrainlander import preprocess_data_flow
+from preprocessor import Preprocessor
+from tracking.retrainlander import preprocess_data_flow
 
 
 def hash_input(input):
@@ -446,11 +446,11 @@ def get_settings():
     # settings.pop('_id', None)
     return jsonify({"settings": "TODO"}), 200
 
-# @app.route('/api/retrain', methods=['POST'])
-# @check_role('admin')
-# def retrain():
-#     mails = preprocess_data_flow(get_mails_from_file=False)
-#     return mails, 200
+@app.route('/api/retrain', methods=['POST'])
+@check_role('admin')
+def retrain():
+    mails = preprocess_data_flow(get_mails_from_file=False)
+    return mails, 200
 
 
 @app.route('/api/tokencheck', methods=['GET'])
