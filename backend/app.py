@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 from time import time
 from functools import wraps
 import random
-# from tracking.preprocessor import TextPreprocessor
+from tracking.preprocessor import TextPreprocessor
 # from tracking.retrainlander import preprocess_data_flow
 
 
@@ -387,7 +387,7 @@ def add_mail():
     
     # Preprocess the data
     preprocessor = TextPreprocessor()
-    TextPreprocessor.load_keywords(keywords_path='./tracking/keywords.json')
+    preprocessor.load_keywords(keyword_file_path='./tracking/keywords.json')
 
     start_time = time()
 
