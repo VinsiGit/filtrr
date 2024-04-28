@@ -11,3 +11,4 @@ addin/dist/
 *.gs
 .venv/
 .devcontainer/
+__pycache__/
