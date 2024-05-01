@@ -15,7 +15,7 @@ import { ThemeswitchComponent } from './themeswitch/themeswitch.component';
 import { MailamountgraphComponent } from './mailamountgraph/mailamountgraph.component';
 import { NgApexchartsModule } from 'ng-apexcharts';
 import { LoginComponent } from './login/login.component';
-import { AuthInterceptor } from './auth.interceptor';
+import { AuthInterceptor } from './guards/auth.interceptor';
 
 @NgModule({
   declarations: [

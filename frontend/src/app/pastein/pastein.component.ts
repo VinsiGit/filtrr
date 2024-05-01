@@ -1,7 +1,7 @@
 import { Component, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { PostService } from '../post.service';
-import { PagetitleService } from '../pagetitle.service';
+import { PostService } from '../services/post.service';
+import { PagetitleService } from '../services/pagetitle.service';
 import { Email } from '../interfaces/email';
 
 import {
@@ -10,7 +10,7 @@ import {
   ApexChart,
   ChartComponent
 } from "ng-apexcharts";
-import { ThemeService } from '../theme.service';
+import { ThemeService } from '../services/theme.service';
 
 export type ChartOptions = {
   series: ApexNonAxisChartSeries;

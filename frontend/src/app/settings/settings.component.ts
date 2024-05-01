@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { PagetitleService } from '../pagetitle.service';
+import { PagetitleService } from '../services/pagetitle.service';
 import { environment } from '../../environments/environment';
-import { PostService } from '../post.service';
 import { User } from '../interfaces/user';
+import { UserService } from '../services/user.service';
 
 @Component({
   selector: 'app-settings',
@@ -18,7 +18,11 @@ export class SettingsComponent {
   userType: string = 'user'; // default value
   errorMessage: string = '';
 
-  constructor(private postService: PostService) { }
+  constructor(private userService: UserService, private title: PagetitleService) { }
+
+  ngOnInit() {
+    this.title.pageTitle = "settings";
+  }
 
   addUser() {
     if (this.password !== this.password_confirm) {
@@ -32,7 +36,7 @@ export class SettingsComponent {
       role: this.userType
     };
 
-    this.postService.addUser(newUser).subscribe(
+    this.userService.addUser(newUser).subscribe(
       (response) => {
         // Handle success
         console.log('User added successfully', response);

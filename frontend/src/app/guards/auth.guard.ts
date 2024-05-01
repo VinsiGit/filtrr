@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { CanActivate, Router } from '@angular/router';
-import { AuthService } from './auth.service'; // You need to implement AuthService to check if the user is logged in or not
+import { AuthService } from '../services/auth.service'; // You need to implement AuthService to check if the user is logged in or not
 
 @Injectable({
   providedIn: 'root'

@@ -5,8 +5,8 @@ import { DashboardComponent } from './dashboard/dashboard.component';
 import { SettingsComponent } from './settings/settings.component';
 import { RetrainComponent } from './retrain/retrain.component';
 import { LoginComponent } from './login/login.component';
-import { AuthGuard } from './auth.guard';
-import { AdminGuard } from './admin-guard.guard';
+import { AuthGuard } from './guards/auth.guard';
+import { AdminGuard } from './guards/admin-guard.guard';
 
 
 const routes: Routes = [
@@ -36,7 +36,7 @@ const routes: Routes = [
   },
   {
     path: "",
-    redirectTo: "dashboard",
+    redirectTo: "paste-in",
     pathMatch: "full"
   }
 ];

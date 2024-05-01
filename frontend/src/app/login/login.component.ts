@@ -1,8 +1,8 @@
 // src/app/login/login.component.ts
 import { Component, OnInit } from '@angular/core';
-import { AuthService } from '../auth.service';
+import { AuthService } from '../services/auth.service';
 import { HttpClient } from '@angular/common/http';
-import { PagetitleService } from '../pagetitle.service';
+import { PagetitleService } from '../services/pagetitle.service';
 import { environment } from '../../environments/environment';
 
 @Component({

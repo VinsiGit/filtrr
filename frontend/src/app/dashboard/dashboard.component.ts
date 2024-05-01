@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { PagetitleService } from '../pagetitle.service';
+import { PagetitleService } from '../services/pagetitle.service';
 
 @Component({
   selector: 'app-dashboard',
