@@ -1,0 +1,25 @@
+# Welcome to your prefect.yaml file! You can use this file for storing and managing
+# configuration for deploying your flows. We recommend committing this file to source
+# control along with your flow code.
+
+# Generic metadata about this project
+name: tracking
+prefect-version: '2.16.6'
+
+# The pull section allows you to provide instructions for cloning this project in remote locations
+pull:
+  - name: prefect.deployments.steps.set_working_directory
+    directory: "/mnt/c/Users/jurre/OneDrive - AP Hogeschool Antwerpen/Documenten/2023-2024/Sem2/AI project 2023-2024/Filtrr/backend/tracking"
+
+definitions:
+  work_pools:
+    work_pool:
+      name: main_pool
+      work_queue_name: default
+
+deployments:
+  - name: deployment-1
+    entrypoint: train_model_flow.py:main_flow
+    schedule: {}
+    work_pool:
+      name: main-pool

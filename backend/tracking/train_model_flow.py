@@ -291,6 +291,7 @@ def train_model_flow(x: list, y: list, train_test_parameters: dict, adaboost_par
         mlflow.register_model(preprocessor_uri, "Preprocessor")
         mlflow.register_model(adaboost_uri, "Model")
 
+
         mlflow.log_params({"TREE - Test Parameters": tree_parameters})
         mlflow.log_params({"TREE - Best Parameters": parameters1})
         mlflow.log_params({"TREE - Accuracy": accuracy1})
@@ -302,7 +303,14 @@ def train_model_flow(x: list, y: list, train_test_parameters: dict, adaboost_par
         mlflow.log_params({"MODEL - Precision": precision2})
         mlflow.log_params({"MODEL - Recall": recall2})
 
-
+# @flow(name='Promote The Best Model')
+# def promote_best_model():
+#     sqlite_uri = "sqlite:///mlflow.db"
+#     log = get_logger()
+#     mlflow.set_tracking_uri(sqlite_uri)
+#     client = MlflowClient(tracking_uri=sqlite_uri)
+#     models = client.get_latest_versions(name='Model')
+#     client.get_model
 
 
 @flow(name="Main flow", description="Main flow that runs all other flows for the full train cycle of a model")

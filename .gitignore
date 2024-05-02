@@ -10,3 +10,4 @@ mlruns
 *prefect*
 .devcontainer/
 __pycache__/
+!script.sh
