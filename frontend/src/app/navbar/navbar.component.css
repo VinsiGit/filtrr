@@ -132,7 +132,7 @@
   position: fixed;
   height: 6rem;
   background-color: var(--nav-color-background);
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow-float);
   display: flex;
   flex-direction: row;
   align-items: center;

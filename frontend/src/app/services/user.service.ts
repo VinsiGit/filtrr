@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { lastValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { User } from '../interfaces/user';
+import { User, Account } from '../interfaces/user';
 
 @Injectable({
   providedIn: 'root'
@@ -16,6 +16,10 @@ export class UserService {
   addUser(user: User) {
     const headers = new HttpHeaders().set('Content-Type', 'application/json');
     return this.http.post(`https://${this.hostname}/api/users`, user, { headers });
+  }
+  
+  async getAllUsers(): Promise<Account[]> {
+    return lastValueFrom(this.http.get<Account[]>(`https://${this.hostname}/api/users`));
   }
 }
 
