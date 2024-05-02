@@ -33,6 +33,18 @@ export class SettingsComponent {
     });
   }
 
+  deleteUser(username: string) {
+    this.userService.deleteUser(username).subscribe(
+      () => {
+        console.log(`User [${username}] deleted successfully`);
+        this.getUserList();
+      },
+      (error) => {
+        console.error(`Error deleting user [${username}]:`, error);
+      }
+    );
+  }
+
   addUser() {
     if (this.newUser_password !== this.newUser_password_confirm) {
       this.userAdd_errorMessage = "Passwords don't match";

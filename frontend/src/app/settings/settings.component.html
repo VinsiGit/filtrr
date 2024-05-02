@@ -33,12 +33,7 @@
           <li *ngFor="let account of accounts">
             <p>user: {{ account.username }}</p>
             <p>role: {{ account.role }}</p>
-            <button class="deletebutton">delete user</button>
-          </li>
-          <li *ngFor="let account of accounts">
-            <p>user: {{ account.username }}</p>
-            <p>role: {{ account.role }}</p>
-            <button class="deletebutton">delete user</button>
+            <button class="deletebutton" (click)="this.deleteUser(account.username)">delete user</button>
           </li>
         </ul>
       </div>

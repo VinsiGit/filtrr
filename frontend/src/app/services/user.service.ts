@@ -21,6 +21,12 @@ export class UserService {
   async getAllUsers(): Promise<Account[]> {
     return lastValueFrom(this.http.get<Account[]>(`https://${this.hostname}/api/users`));
   }
+
+  deleteUser(username: string) {
+    const headers = new HttpHeaders().set('Content-Type', 'application/json');
+    const options = { headers: headers, body: { "username": username } };
+    return this.http.delete(`https://${this.hostname}/api/users`, options);
+  }
 }
 
 
