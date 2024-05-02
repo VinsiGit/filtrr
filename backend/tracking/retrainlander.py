@@ -1,5 +1,5 @@
 from prefect import task, flow
-from preprocessor import TextPreprocessor
+from tracking.preprocessor import TextPreprocessor
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics import accuracy_score
@@ -70,7 +70,7 @@ def preprocess_data_flow(mails_file_path: str = 'data.json', keyword_file_path: 
     @task(name="Import Mails From Mongodb", description="Read mails data from MongoDB.")
     def read_mails_from_database() -> List[Dict]:
         # Get the MongoDB connection details from environment variables
-        mongo_host = e.get('MONGO_HOST', 'localhost')
+        mongo_host = e.get('MONGO_HOST', 'db')
         mongo_port = int(e.get('MONGO_PORT', '27017'))
         mongo_username = e.get('MONGO_USERNAME', 'root')
         mongo_password = e.get('MONGO_PASSWORD', 'mongo')
@@ -89,6 +89,10 @@ def preprocess_data_flow(mails_file_path: str = 'data.json', keyword_file_path: 
 
         # Close the MongoDB connection
         client.close()
+        
+        # remove the _id field from the mails
+        for mail in mails:
+            mail.pop('_id')
 
         return mails
     
