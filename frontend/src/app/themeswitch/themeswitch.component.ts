@@ -142,7 +142,7 @@ export class ThemeswitchComponent {
       document.documentElement.style.setProperty('--page-background-gradient', 'radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(241,241,241,1) 100%)');
       document.documentElement.style.setProperty('--page-color-text', '#46494c');
       document.documentElement.style.setProperty('--page-color-inactive', '#f0f4f8');
-      document.documentElement.style.setProperty('--page-color-button', '#e5ebf0');
+      document.documentElement.style.setProperty('--page-color-button', '#46494c');
       document.documentElement.style.setProperty('--page-color-button-pressed', '#ff9190');
       document.documentElement.style.setProperty('--module-color-border', 'white');
       document.documentElement.style.setProperty('--module-color-background', 'white');

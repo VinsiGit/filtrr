@@ -157,8 +157,8 @@ svg {
 .lock_nav {
   display: flexbox;
   max-width: 1.5rem;
-  position: relative;
-  right: -5rem;
+  position: absolute;
+  right: 0px;
 }
 
 .lock {
