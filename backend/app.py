@@ -165,7 +165,8 @@ def delete_user():
 def get_mails():
     # Extract query parameters
     rating = request.args.get('rating', type=float, default="all_ratings")
-    label = request.args.get('label', default="all_labels")
+    predicted_label = request.args.get('predicted_label', default="all_labels")
+    actual_label = request.args.get('actual_label', default="all_labels")
     source = request.args.get('source', default="all_sources")
     start_date_str = request.args.get('start_date')
     end_date_str = request.args.get('end_date')
@@ -174,8 +175,10 @@ def get_mails():
     query = {}
     if rating != "all_ratings":
         query['rating'] = rating
-    if label != "all_labels":
-        query['label'] = label
+    if predicted_label != "all_labels":
+        query['predicted_label'] = predicted_label
+    if actual_label != "all_labels":
+        query['actual_label'] = actual_label
     if source != "all_sources":
         query['source'] = source
     if start_date_str and end_date_str:
@@ -198,7 +201,7 @@ def get_mails():
 
 
 @app.route('/api/stats', methods=['GET'])
-@check_role('admin')
+@check_role('admin', 'user')
 def get_data():
     # Extract query parameters
     rating = request.args.get('rating', type=float, default="all_ratings")
@@ -230,7 +233,7 @@ def get_data():
     # Query for Unique Labels
         unique_labels_pipeline = [
             {"$match": {"date": {"$gte": start_date, "$lt": end_date}}},
-            {"$group": {"_id": None, "labels": {"$addToSet": "$label"}}}
+            {"$group": {"_id": None, "labels": {"$addToSet": "$predicted_label"}}}
         ]
 
         unique_labels_result = db.mails.aggregate(unique_labels_pipeline)
@@ -246,7 +249,7 @@ def get_data():
     {"$group": {
         "_id": {
             "date": {"$dateToString": {"format": "%Y-%m-%d", "date": "$date"}},
-            "label": "$label"
+            "predicted_label": "$predicted_label"
         },
         "label_count": {"$sum": 1},
         "datetime_elapsed": {"$avg": "$datetime_elapsed"}
@@ -257,7 +260,7 @@ def get_data():
         "_id": "$_id.date",
         "labels_count": {
             "$push": {
-                "label": "$_id.label",
+                "label": "$_id.predicted_label",
                 "count": "$label_count"
             }
         },
@@ -314,7 +317,7 @@ def get_data():
 
     return jsonify(report), 200
 
-@app.route('/api/certainty', methods=['GET'])
+@app.route('/api/stats/certainty', methods=['GET'])
 @check_role('admin')
 def get_cetainty():
     # Extract query parameters
@@ -341,9 +344,9 @@ def get_cetainty():
     
     pipeline = [
         {"$match": query},
-        {"$group": {"_id": "$label", "average_certainty": {"$avg": "$certainty"}}},
+        {"$group": {"_id": "$predicted_label", "average_certainty": {"$avg": "$certainty"}}},
         {"$sort": {"average_certainty": -1}},
-        {"$addFields": {"label": "$_id" }},
+        {"$addFields": {"predictied_label": "$_id" }},
         {"$project": {"_id": 0} }
     ]
 
@@ -361,9 +364,15 @@ def get_cetainty():
 
     
     return jsonify(report), 200
+
+
+@app.route('/api/stats/labels', methods=['GET'])
+@jwt_required()
+def get_labels():
+    labels = db.mails.distinct('predicted_label')
+    return jsonify(list(labels)), 200
+
     
-
-
 @app.route('/api', methods=['POST'])
 @check_role('admin', 'user')
 def add_mail():
@@ -404,10 +413,9 @@ def add_mail():
     # Make the response in JSON format
     response = {
     "id": hash,
-    "label": label,
+    "predicted_label": label,
     "date": datetime.now(),
     "keywords": keywords,
-    "rating": 0,
     "datetime_elapsed": processing_time,
     "certainty": certainty,
     "source": source,
@@ -422,16 +430,21 @@ def add_mail():
     return jsonify(response), 200
 
 
-@app.route('/api/rating', methods=['PUT'])
+@app.route('/api', methods=['PUT'])
 @check_role('admin', 'user')
 def update_rating():
     data = request.json
 
-    # Add the source to the data
     hash = {"id": str(hash_input(data['body']))}
-    new_rating = data['rating']
+    rating = bool(data['rating'])
 
-    result = db.mails.update_one(hash, {"$set": {"rating": new_rating}})
+    if rating:
+        predicted_label = db.mails.find_one(hash)['predicted_label']
+        actual_label = predicted_label
+    else:
+        actual_label = data['actual_label']
+
+    result = db.mails.update_one(hash, {"$set": {"rating": rating, "actual_label": actual_label}})
 
     if result.modified_count > 0:
         return "Rating updated successfully."
