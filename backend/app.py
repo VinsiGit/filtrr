@@ -441,11 +441,13 @@ def update_rating():
     if rating:
         predicted_label = db.mails.find_one(hash)['predicted_label']
         actual_label = predicted_label
+        result = db.mails.update_one(hash, {"$set": {"rating": rating, "actual_label": actual_label}})
     else:
-        actual_label = data['actual_label']
-
-    result = db.mails.update_one(hash, {"$set": {"rating": rating, "actual_label": actual_label}})
-
+        if data['actual_label']:
+            actual_label = data['actual_label']
+        else:
+            result = db.mails.update_one(hash, {"$set": {"rating": rating}})
+            
     if result.modified_count > 0:
         return "Rating updated successfully."
     else:
