@@ -11,3 +11,4 @@ mlruns
 .devcontainer/
 __pycache__/
 !script.sh
+!prefect.yaml
