@@ -7,12 +7,17 @@ import { RetrainComponent } from './retrain/retrain.component';
 import { LoginComponent } from './login/login.component';
 import { AuthGuard } from './guards/auth.guard';
 import { AdminGuard } from './guards/admin-guard.guard';
+import { HelppageComponent } from './helppage/helppage.component';
 
 
 const routes: Routes = [
   {
     path: "login",
     component: LoginComponent
+  },
+  {
+    path: "help",
+    component: HelppageComponent
   },
   {
     path: "dashboard",

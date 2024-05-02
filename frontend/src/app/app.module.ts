@@ -16,6 +16,7 @@ import { MailamountgraphComponent } from './mailamountgraph/mailamountgraph.comp
 import { NgApexchartsModule } from 'ng-apexcharts';
 import { LoginComponent } from './login/login.component';
 import { AuthInterceptor } from './guards/auth.interceptor';
+import { HelppageComponent } from './helppage/helppage.component';
 
 @NgModule({
   declarations: [
@@ -27,7 +28,8 @@ import { AuthInterceptor } from './guards/auth.interceptor';
     RetrainComponent,
     ThemeswitchComponent,
     MailamountgraphComponent,
-    LoginComponent
+    LoginComponent,
+    HelppageComponent
   ],
   imports: [
     BrowserModule,
