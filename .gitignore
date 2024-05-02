@@ -4,11 +4,9 @@ preprocessor
 *.json
 output.txt
 models/
-__pycache__/
-node_modules/
-addin/dist/
-.vscode/
-*.gs
-.venv/
+/backend/tracking/data.json
+mlruns
+*.db
+*prefect*
 .devcontainer/
 __pycache__/
