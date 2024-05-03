@@ -374,84 +374,79 @@ def get_labels():
     labels = db.mails.distinct('predicted_label')
     return jsonify(list(labels)), 200
 
-    
+
 @app.route('/api', methods=['POST'])
 @check_role('admin', 'user')
-def add_mail():
+def add_mail_batch():
     if request.content_type != 'application/json':
         return jsonify({"error": "Unsupported Media Type"}), 415
-    
+
     MODEL_VERSION = 1.2
-
+    responses = []
+    
     # Get the data from the request
-    data = request.json
+    data_batch = request.json
+    if not isinstance(data_batch, list):
+        return jsonify({"error": "Expected a list of entries"}), 400
 
-    # Get the source from the request headers
-    source = request.headers.get('Source')
+    # Loop through each data entry in the batch
+    for data in data_batch:
+        source = request.headers.get('Source')
+        hash = str(hash_input(data['body']))
+        existing_record = db.mails.find_one({
+            "id": hash,
+            "versions.model_version": MODEL_VERSION
+        }, {"_id": 0, "versions.$": 1})
+        
+        if existing_record:
+            version_info = existing_record['versions'][0]
+            response = {
+                "already_exists": True,
+                "predicted_label": version_info["predicted_label"],
+                "date": version_info["date"],
+                "keywords": version_info["keywords"],
+                "datetime_elapsed": version_info["datetime_elapsed"],
+                "certainty": version_info["certainty"],
+                "source": version_info.get("source"),
+                "model_version": version_info["model_version"]
+            }
+            responses.append(response)
+            continue
 
-    # Add the source to the data
-    hash = str(hash_input(data['body']))
-    existing_record = db.mails.find_one({
-    "id": hash,
-    "versions.model_version": MODEL_VERSION
-    },
-    {"_id": 0, "versions.$": 1})
-    
-    if existing_record:
-        # Extract version details
-        version_info = existing_record['versions'][0]
+        # Preprocess the data
+        preprocessor = TextPreprocessor()
+        preprocessor.load_keywords(keyword_file_path='./tracking/keywords.json')
+        start_time = time()
+
+        data['text_body'] = data['body']
+        keywords = preprocessor.preprocess(data)['keywords']
+
+        label = random.choice(['IRRELEVANT', 'BI_ENGINEER', 'DATA_ENGINEER'])
+        certainty = random.random()
+        end_time = time()
+        processing_time = end_time - start_time
+
+        # Make the response in JSON format
         response = {
-            "already_exists": True,
-            "predicted_label": version_info["predicted_label"],
-            "date": version_info["date"],  # Consider converting to standard format if not already
-            "keywords": version_info["keywords"],
-            "datetime_elapsed": version_info["datetime_elapsed"],
-            "certainty": version_info["certainty"],
-            "source": version_info.get("source"),  # Use get to handle potential None values safely
-            "model_version": version_info["model_version"]
+            "predicted_label": label,
+            "date": datetime.now(),
+            "keywords": keywords,
+            "datetime_elapsed": processing_time,
+            "certainty": certainty,
+            "source": source,
+            "model_version": MODEL_VERSION
         }
-        return jsonify(response), 200
-    
-    # Preprocess the data
-    preprocessor = TextPreprocessor()
-    preprocessor.load_keywords(keyword_file_path='./tracking/keywords.json')
+        
+        db.mails.update_one(
+            {"id": hash},
+            {"$push": {"versions": response}},
+            upsert=True
+        )
 
-    start_time = time()
+        response.pop('source', None)
+        responses.append(response)
 
-    data['text_body'] = data['body']
-    keywords = preprocessor.preprocess(data)['keywords']
-
-    label = random.choice(['IRRELEVANT', 'BI_ENGINEER', 'DATA_ENGINEER'])
-    certainty = random.random()
-
-    end_time = time()
-    processing_time = end_time - start_time
-
-    # Make the response in JSON format
-    response = {
-    "predicted_label": label,
-    "date": datetime.now(),
-    "keywords": keywords,
-    "datetime_elapsed": processing_time,
-    "certainty": certainty,
-    "source": source,
-    "model_version": MODEL_VERSION
-   }
-    
-    update_result = db.mails.update_one(
-        {"id": hash},
-        {"$push": {"versions": response}},
-        upsert=True
-    )
-    if update_result.upserted_id is not None:
-        print("No record with the given ID. A new record has been created.")
-    elif update_result.modified_count == 1:
-        print("New version added successfully.")
-
-    # Remove the 'source' field from the response
-    response.pop('source', None)
-
-    return jsonify(response), 200
+    return jsonify(responses), 200
 
 
 @app.route('/api', methods=['PUT'])
