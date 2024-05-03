@@ -13,6 +13,8 @@ from tracking.preprocessor import TextPreprocessor
 from tracking.retrainlander import preprocess_data_flow
 
 
+
+# Function to hash the input
 def hash_input(input):
     # Convert the input to bytes
     input_bytes = input.encode('utf-8')
@@ -317,7 +319,7 @@ def get_data():
 
     return jsonify(report), 200
 
-@app.route('/api/stats/certainty', methods=['GET'])
+@app.route('/api/stats/metrics', methods=['GET'])
 @check_role('admin')
 def get_cetainty():
     # Extract query parameters
@@ -378,6 +380,8 @@ def get_labels():
 def add_mail():
     if request.content_type != 'application/json':
         return jsonify({"error": "Unsupported Media Type"}), 415
+    
+    MODEL_VERSION = 1.2
 
     # Get the data from the request
     data = request.json
@@ -387,12 +391,26 @@ def add_mail():
 
     # Add the source to the data
     hash = str(hash_input(data['body']))
-    existing_record = db.mails.find_one({"id": hash})
+    existing_record = db.mails.find_one({
+    "id": hash,
+    "versions.model_version": MODEL_VERSION
+    },
+    {"_id": 0, "versions.$": 1})
     
     if existing_record:
-        existing_record.pop('_id', None)
-        existing_record['already_exists'] = True
-        return jsonify(existing_record), 200
+        # Extract version details
+        version_info = existing_record['versions'][0]
+        response = {
+            "already_exists": True,
+            "predicted_label": version_info["predicted_label"],
+            "date": version_info["date"],  # Consider converting to standard format if not already
+            "keywords": version_info["keywords"],
+            "datetime_elapsed": version_info["datetime_elapsed"],
+            "certainty": version_info["certainty"],
+            "source": version_info.get("source"),  # Use get to handle potential None values safely
+            "model_version": version_info["model_version"]
+        }
+        return jsonify(response), 200
     
     # Preprocess the data
     preprocessor = TextPreprocessor()
@@ -401,8 +419,7 @@ def add_mail():
     start_time = time()
 
     data['text_body'] = data['body']
-    preprocessed_data = preprocessor.preprocess(data)
-    keywords = preprocessed_data['keywords']
+    keywords = preprocessor.preprocess(data)['keywords']
 
     label = random.choice(['IRRELEVANT', 'BI_ENGINEER', 'DATA_ENGINEER'])
     certainty = random.random()
@@ -412,17 +429,24 @@ def add_mail():
 
     # Make the response in JSON format
     response = {
-    "id": hash,
     "predicted_label": label,
     "date": datetime.now(),
     "keywords": keywords,
     "datetime_elapsed": processing_time,
     "certainty": certainty,
     "source": source,
+    "model_version": MODEL_VERSION
    }
-
-    # Add the data to the database
-    db.mails.insert_one(response.copy())
+    
+    update_result = db.mails.update_one(
+        {"id": hash},
+        {"$push": {"versions": response}},
+        upsert=True
+    )
+    if update_result.upserted_id is not None:
+        print("No record with the given ID. A new record has been created.")
+    elif update_result.modified_count == 1:
+        print("New version added successfully.")
 
     # Remove the 'source' field from the response
     response.pop('source', None)
