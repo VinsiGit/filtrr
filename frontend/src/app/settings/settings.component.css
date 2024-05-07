@@ -26,6 +26,13 @@ form {
     gap: 1.5rem;
 }
 
+.userinfo {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: .2rem;
+}
+
 label {
     font-size: 1rem;
 }
@@ -192,7 +199,8 @@ h2 {
 .accountlisting {
     display: flex;
     flex-direction: row;
-    gap: 1rem;
+    gap: 1.2rem;
+    justify-content: space-evenly;
     border-bottom: 1px solid var(--page-color-inactive);
 }
 
@@ -206,6 +214,7 @@ h2 {
     padding-bottom: .5rem;
     grid-column: 1 / 2;
 }
+
 
 #userList {
     height: 90%;
