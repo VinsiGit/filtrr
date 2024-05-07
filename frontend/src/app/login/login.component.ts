@@ -23,7 +23,7 @@ export class LoginComponent implements OnInit{
       this.http.get(`https://${this.hostname}/api/tokencheck`).subscribe({
         next: (response: any) => {
           // Token is valid, perform login success action
-          this.auth.loginsuccess(response.role);
+          this.auth.loginsuccess(response.role, localStorage.getItem('username'));
         },
         error: (error) => {
           if (error.status === 401) {
@@ -41,7 +41,7 @@ export class LoginComponent implements OnInit{
     this.auth.login(this.username, this.password).subscribe({
       next: (data) => {
         localStorage.setItem('access_token', data.access_token);
-        this.auth.loginsuccess(data.role);
+        this.auth.loginsuccess(data.role, this.username);
       },
       error: (error) => {
         this.errorMessage = 'Invalid username or password';

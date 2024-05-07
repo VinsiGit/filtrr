@@ -18,9 +18,13 @@ export class SettingsComponent {
   newUser_role: string = 'user'; // default value
   userAdd_errorMessage: string = '';
 
+  current_user: string|null = null;
+
   accounts: Account[] = [];
 
-  constructor(private userService: UserService, private title: PagetitleService) { }
+  constructor(private userService: UserService, private title: PagetitleService) {
+    this.current_user = localStorage.getItem('username');
+   }
 
   ngOnInit() {
     this.title.pageTitle = "settings";

@@ -27,9 +27,12 @@ export class AuthService {
     this.router.navigate(['login']);
   }
 
-  loginsuccess(role: string) {
+  loginsuccess(role: string, username: string|null) {
     console.log('Login successful');
     localStorage.setItem('account_type', role);
+    if (username){
+      localStorage.setItem('username', username);
+    }
     this.isLoggedIn = true;
     this.router.navigate(['paste-in']);
   }

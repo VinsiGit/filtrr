@@ -1,6 +1,10 @@
 <main style="position: relative">
-  <div class="container">
-    <div id="useradd_form" class="module">
+  <div class="module">
+    <div id="current_account">
+      <p>current user: {{ this.current_user }}</p>
+    </div>
+    <div id="useradd_form">
+      <h2>add user:</h2>
       <form (ngSubmit)="addUser()">
         <div>
           <label>User role: </label>
@@ -27,16 +31,19 @@
         <p class="errormessage" *ngIf="userAdd_errorMessage">Error: {{ userAdd_errorMessage }}</p>
       </form>
     </div>
-    <div class="module">
-      <div class="userList" >
-        <ul>
-          <li *ngFor="let account of accounts">
+    <div id="userList">
+      <ul>
+        <li class="accountlisting" *ngFor="let account of accounts">
+          <div class="userinfo">
             <p>user: {{ account.username }}</p>
             <p>role: {{ account.role }}</p>
-            <button class="deletebutton" (click)="this.deleteUser(account.username)">delete user</button>
-          </li>
-        </ul>
-      </div>
+          </div>
+          <button *ngIf="(this.current_user != account.username) && (account.username != 'admin'); else disabled" class="deletebutton" (click)="this.deleteUser(account.username)">delete user</button>
+          <ng-template #disabled>
+            <button class="deletebutton" disabled style="background-color: var(--page-color-inactive); cursor:default;">delete user</button>
+          </ng-template>
+        </li>
+      </ul>
     </div>
   </div>
 </main>
