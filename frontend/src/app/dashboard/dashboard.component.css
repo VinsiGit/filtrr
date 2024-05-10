@@ -28,36 +28,46 @@
 }
 
 .chart3 {
-    grid-column: 4 / 7;
+    grid-column: 4 / 6;
     grid-row: 2 / 3;
 }
 
+.chart3 > .module {
+    background-color: var(--color-label_irrelevant) !important;
+    border: 1px solid rgba(0, 0, 0, 0.015);
+}
+
 .chart4 {
+    grid-column: 5 / 7;
+    grid-row: 2 / 4;
+}
+
+.chart5 {
     grid-column: 1 / 2;
     grid-row: 3 / 4;
 }
 
-.chart4 > .module {
-    background-color: var(--color-label1) !important;
+.chart5 > .module {
+    background-color: var(--color-label_irrelevant) !important;
     border: 1px solid rgba(0, 0, 0, 0.015);
 }
 
-.chart5 {
+.chart6 {
     grid-column: 2 / 3;
     grid-row: 3 / 4;
 }
 
-.chart5  > .module {
-    background-color: var(--color-label2) !important;
+.chart6  > .module {
+    background-color: var(--color-label1) !important;
     border: 1px solid rgba(0, 0, 0, 0.01);
 }
 
-.chart6 {
+.chart7 {
     grid-column: 3 / 5;
     grid-row: 3 / 4;
 }
 
-.chart6 > .module {
-    background-color: var(--color-label_irrelevant) !important;
+.chart7 > .module {
+    background-color: var(--color-label2) !important;
     border: 1px solid rgba(70, 70, 70, 0.03);
 }
