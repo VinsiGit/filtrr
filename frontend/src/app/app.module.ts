@@ -17,6 +17,7 @@ import { NgApexchartsModule } from 'ng-apexcharts';
 import { LoginComponent } from './login/login.component';
 import { AuthInterceptor } from './guards/auth.interceptor';
 import { HelppageComponent } from './helppage/helppage.component';
+import { CertaintygraphComponent } from './certaintygraph/certaintygraph.component';
 
 @NgModule({
   declarations: [
@@ -29,7 +30,8 @@ import { HelppageComponent } from './helppage/helppage.component';
     ThemeswitchComponent,
     MailamountgraphComponent,
     LoginComponent,
-    HelppageComponent
+    HelppageComponent,
+    CertaintygraphComponent
   ],
   imports: [
     BrowserModule,

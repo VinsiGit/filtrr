@@ -95,8 +95,11 @@ export class ThemeswitchComponent {
     if (!this.darkModeEnabled) {
       document.documentElement.style.setProperty('--shadow-float', '0px 1px 22px -12px #607D8B');
       document.documentElement.style.setProperty('--shadow-indent', '0px 1px 22px -12px #607D8B inset');
-      document.documentElement.style.setProperty('--review-green', '#62e262');
-      document.documentElement.style.setProperty('--review-red', '#f05964');
+      document.documentElement.style.setProperty('--color-review-green', '#62e262');
+      document.documentElement.style.setProperty('--color-review-red', '#f05964');
+      document.documentElement.style.setProperty('--color-label_irrelevant', '#dbdee4');
+      document.documentElement.style.setProperty('--color-label1', '#6460af');
+      document.documentElement.style.setProperty('--color-label2', '#b872de');
       document.documentElement.style.setProperty('--nav-color', '#f05964');
       document.documentElement.style.setProperty('--nav-color-hover', '#eb5364');
       document.documentElement.style.setProperty('--nav-color-text', 'white');
@@ -138,6 +141,9 @@ export class ThemeswitchComponent {
       document.documentElement.style.setProperty('--shadow-indent', '0 4px 12px 0 rgba(0, 0, 0, 0.2) inset');
       document.documentElement.style.setProperty('--review-green', '#62e262');
       document.documentElement.style.setProperty('--review-red', '#f05964');
+      document.documentElement.style.setProperty('--color-label_irrelevant', '#47426b');
+      document.documentElement.style.setProperty('--color-label1', '#f05365');
+      document.documentElement.style.setProperty('--color-label2', '#f68e5f');
       document.documentElement.style.setProperty('--nav-color', '#8363ee');
       document.documentElement.style.setProperty('--nav-color-hover', '#6B599C');
       document.documentElement.style.setProperty('--nav-color-text', '#edf2f9');
