@@ -233,7 +233,6 @@ def get_mails():
     for item in data:
         item.pop('_id', None)
 
-    
     return jsonify(data), 200
 
 
@@ -302,6 +301,8 @@ def get_data():
             "label_count": {"$sum": 1},
             "datetime_elapsed": {"$avg": "$versions.datetime_elapsed"},
             "evaluation": {"$sum": "$versions.rating"},
+            "certainty": {"$avg": "$versions.certainty"},
+            "rating_count": {"$sum": {"$cond": [{ "$ifNull": ["$versions.rating", False] }, 1, 0]}}
         }},
 
         # Group by date to aggregate all labels together
@@ -311,10 +312,12 @@ def get_data():
                 "$push": {
                     "label": "$_id.predicted_label",
                     "count": "$label_count",
-                    "evaluation": "$evaluation"
+                    "evaluation": "$evaluation",
+                    "rating_count": "$rating_count",
+                    "average_confidence": "$certainty",
+                    "average_processing_time": "$datetime_elapsed"
                 }
             },
-            "average_processing_time": {"$avg": "$datetime_elapsed"},
             "total": {"$sum": "$label_count"}
         }},
 
@@ -346,7 +349,7 @@ def get_data():
     for item in json_result:
         for label in set(unique_predicted_labels + unique_actual_labels):
             if not any(d['label'] == label for d in item['labels_count']):
-                item['labels_count'].append({"label": label, "count": 0, "evaluation": 0})
+                item['labels_count'].append({"label": label, "count": 0, "evaluation": 0, "rating_count": 0, "average_confidence": 0, "average_processing_time": 0})
         item['labels_count'] = sorted(item['labels_count'], key=lambda x: (x['label'] != "IRRELEVANT", x['label']))
 
 
@@ -363,7 +366,6 @@ def get_data():
         "source": source,
         "model_version": model_version
     }
-
 
     return jsonify(report), 200
 
