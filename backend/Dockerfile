@@ -5,7 +5,8 @@ FROM python:3.11.5
 WORKDIR /app
 
 # Copy the current directory contents into the container at /app
-COPY . /app
+COPY ./requirements.txt /app
+COPY ./model_requirements.txt /app
 
 # Install any needed packages specified in requirements.txt
 RUN pip install -r requirements.txt
@@ -15,6 +16,9 @@ RUN pip install -r model_requirements.txt
 
 # Download the stopwords from nltk
 RUN python -m nltk.downloader stopwords
+
+# Copy the current directory contents into the container at /app
+COPY . /app
 
 # Expose the port that Gunicorn will run on
 EXPOSE 5000

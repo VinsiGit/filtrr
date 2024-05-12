@@ -13,6 +13,7 @@ from tracking.preprocessor import TextPreprocessor
 from tracking.retrainlander import preprocess_data_flow
 
 
+# Function to hash the input
 def hash_input(input):
     # Convert the input to bytes
     input_bytes = input.encode('utf-8')
@@ -38,13 +39,42 @@ mongo_password = e.get('MONGO_PASSWORD', 'mongo')
 print(mongo_host, mongo_port, mongo_username, mongo_password)
 
 
-
 # Create a MongoDB client
 client = MongoClient(host=mongo_host, port=mongo_port, username=mongo_username, password=mongo_password)
 
 # Get the MongoDB database
 db = client['filtrr_db']
 
+# Check if the mails collection exists
+if 'mails' not in db.list_collection_names():
+    # Create the mails collection
+    db.create_collection('mails')
+    print("Mails collection created.")
+else:
+    print("Mails collection already exists.")
+
+# Check if the users collection exists
+if 'users' not in db.list_collection_names():
+    # Create the users collection
+    db.create_collection('users')
+    print("Users collection created.")
+else:
+    print("Users collection already exists.")
+
+# Check if the settings collection exists
+if 'settings' not in db.list_collection_names():
+    # Create the settings collection
+    db.create_collection('settings')
+    print("Settings collection created.")
+else:
+    print("Settings collection already exists.")
+
+# Create indexes for the mails collection
+db.mails.create_index('id', unique=True)
+db.mails.create_index("versions.model_version")
+db.mails.create_index("versions.predicted_label")
+
+# Create a Flask app
 app = Flask(__name__)
 app.config['JWT_SECRET_KEY'] = e.get('JWT_SECRET_KEY', 'very-secret-key')
 CORS(app)
@@ -74,7 +104,6 @@ else:
 @app.route('/api')
 def hello():
     return 'Filtrr api is running!'
-
 
 @app.route('/api/login', methods=['POST'])
 def login():
@@ -164,9 +193,10 @@ def delete_user():
 @check_role('admin')
 def get_mails():
     # Extract query parameters
-    rating = request.args.get('rating', type=float, default="all_ratings")
+    rating = request.args.get('rating', type=int, default="all_ratings")
     predicted_label = request.args.get('predicted_label', default="all_labels")
     actual_label = request.args.get('actual_label', default="all_labels")
+    model_version = request.args.get('model_version', type=float, default="all_versions")
     source = request.args.get('source', default="all_sources")
     start_date_str = request.args.get('start_date')
     end_date_str = request.args.get('end_date')
@@ -174,20 +204,27 @@ def get_mails():
     # Add filters to the query if they are specified
     query = {}
     if rating != "all_ratings":
-        query['rating'] = rating
+        query['versions.rating'] = rating
     if predicted_label != "all_labels":
-        query['predicted_label'] = predicted_label
+        query['versions.predicted_label'] = predicted_label
     if actual_label != "all_labels":
-        query['actual_label'] = actual_label
+        query['versions.actual_label'] = actual_label
     if source != "all_sources":
-        query['source'] = source
+        query['versions.source'] = source
+    if model_version != "all_versions":
+        query['versions.model_version'] = model_version
     if start_date_str and end_date_str:
         start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
         end_date = datetime.strptime(end_date_str, '%Y-%m-%d')
-        query['date'] = {"$gte": start_date, "$lte": end_date}
+        query['versions.date'] = {"$gte": start_date, "$lte": end_date}
 
+    pipeline = [
+        {"$unwind": "$versions"},
+        {"$match": query},
+        {"$project": {"_id": 0, "id": 1, "versions": 1}}
+    ]
     # Perform the query
-    results = db.mails.find(query)
+    results = db.mails.aggregate(pipeline)
 
     # Convert the results to a list of dicts
     data = list(results)
@@ -196,7 +233,6 @@ def get_mails():
     for item in data:
         item.pop('_id', None)
 
-    
     return jsonify(data), 200
 
 
@@ -204,9 +240,11 @@ def get_mails():
 @check_role('admin', 'user')
 def get_data():
     # Extract query parameters
-    rating = request.args.get('rating', type=float, default="all_ratings")
-    label = request.args.get('label', default="all_labels")
+    rating = request.args.get('rating', type=int, default="all_ratings")
+    predicted_label = request.args.get('predicted_label', default="all_labels")
+    actual_label = request.args.get('actual_label', default="all_labels")
     source = request.args.get('source', default="all_sources")
+    model_version = request.args.get('model_version', type=float, default="all_versions")
     start_date_str = request.args.get('start_date')
     end_date_str = request.args.get('end_date')
     
@@ -214,75 +252,88 @@ def get_data():
         start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
         end_date = datetime.strptime(end_date_str, '%Y-%m-%d')
     else:
+        # Retrieve the first document from the 'mails' collection
         first_mail = db.mails.find_one()
-        if first_mail:
-            start_date = first_mail['date'].replace(hour=0, minute=0, second=0) 
+        if first_mail and 'versions' in first_mail and len(first_mail['versions']) > 0:
+            first_version_date = first_mail['versions'][0]['date']
+            start_date = first_version_date.replace(hour=0, minute=0, second=0)
         else:
             start_date = datetime.now().replace(hour=0, minute=0, second=0)
+
         end_date = datetime.now().replace(hour=23, minute=59, second=59)
 
-
     # Add filters to the query if they are specified
-    query = {'date' :{"$gte": start_date, "$lte": end_date}}
+    query = {'versions.date' :{"$gte": start_date, "$lte": end_date}}
     if rating != "all_ratings":
-        query['rating'] = rating
+        query['versions.rating'] = rating
     if source != "all_sources":
-        query['source'] = source
-
-    if label == "all_labels":
-    # Query for Unique Labels
-        unique_labels_pipeline = [
-            {"$match": {"date": {"$gte": start_date, "$lt": end_date}}},
-            {"$group": {"_id": None, "labels": {"$addToSet": "$predicted_label"}}}
-        ]
-
-        unique_labels_result = db.mails.aggregate(unique_labels_pipeline)
-        unique_labels = next(unique_labels_result, {}).get('labels', [])
+        query['versions.source'] = source
+    if model_version != "all_versions":
+        query['versions.model_version'] = model_version
+    if predicted_label != "all_labels":
+        unique_predicted_labels = [predicted_label]
+        query['versions.predicted_label'] = predicted_label
     else:
-        unique_labels = [label]
+        unique_predicted_labels = db.mails.distinct("versions.predicted_label")
+    if actual_label != "all_labels":
+        unique_actual_labels = [actual_label]
+        query['versions.actual_label'] = actual_label
+    else:
+        unique_actual_labels = db.mails.distinct("versions.actual_label")
 
-    
     pipeline = [
-    {"$match": query},
+        # Unwind the versions array to treat each version as a document
+        {"$unwind": "$versions"},
 
-    # Stage 1: Group by date and label
-    {"$group": {
-        "_id": {
-            "date": {"$dateToString": {"format": "%Y-%m-%d", "date": "$date"}},
-            "predicted_label": "$predicted_label"
-        },
-        "label_count": {"$sum": 1},
-        "datetime_elapsed": {"$avg": "$datetime_elapsed"}
-    }},
+        {"$match": query},  # Apply the query to filter the documents
 
-    # Stage 2: Group by date to aggregate all labels together
-    {"$group": {
-        "_id": "$_id.date",
-        "labels_count": {
-            "$push": {
-                "label": "$_id.predicted_label",
-                "count": "$label_count"
-            }
-        },
-        "average_processing_time": {"$avg": "$datetime_elapsed"}, 
-        "total": {"$sum": "$label_count"},
-    }},
+        # Group by date and predicted_label
+        {"$group": {
+            "_id": {
+                "date": {
+                    "$dateToString": {
+                        "format": "%Y-%m-%d",
+                        "date": "$versions.date"
+                    }
+                },
+                "predicted_label": "$versions.predicted_label"
+            },
+            "label_count": {"$sum": 1},
+            "datetime_elapsed": {"$avg": "$versions.datetime_elapsed"},
+            "evaluation": {"$sum": "$versions.rating"},
+            "certainty": {"$avg": "$versions.certainty"},
+            "rating_count": {"$sum": {"$cond": [{ "$ifNull": ["$versions.rating", False] }, 1, 0]}}
+        }},
 
-    # Optional: Stage 3: Project the final structure if necessary
-    {"$project": {
-        "date": "$_id",
-        "total": 1,
-        "labels_count": 1,
-        "average_processing_time": 1,
-        "_id": 0
-    }}
+        # Group by date to aggregate all labels together
+        {"$group": {
+            "_id": "$_id.date",
+            "labels_count": {
+                "$push": {
+                    "label": "$_id.predicted_label",
+                    "count": "$label_count",
+                    "evaluation": "$evaluation",
+                    "rating_count": "$rating_count",
+                    "average_confidence": "$certainty",
+                    "average_processing_time": "$datetime_elapsed"
+                }
+            },
+            "total": {"$sum": "$label_count"}
+        }},
+
+        # Project the final structure
+        {"$project": {
+            "date": "$_id",
+            "total": 1,
+            "labels_count": 1,
+            "average_processing_time": 1,
+            "_id": 0
+        }}
     ]
 
-
     # Execute the aggregation query
-    count = db.mails.count_documents(query)
     results = db.mails.aggregate(pipeline)
-
+    
     # Convert the results to a list of dicts
     json_result = list(results)
 
@@ -293,13 +344,14 @@ def get_data():
         if not any(d['date'] == current_date_str for d in json_result):
             json_result.append({"date": current_date_str, "total": 0, "labels_count": []})
         current_date += timedelta(days=1)
-        
+    
     # Fill in missing labels with 0 values
     for item in json_result:
-        for label in unique_labels:
+        for label in set(unique_predicted_labels + unique_actual_labels):
             if not any(d['label'] == label for d in item['labels_count']):
-                item['labels_count'].append({"label": label, "count": 0})
+                item['labels_count'].append({"label": label, "count": 0, "evaluation": 0, "rating_count": 0, "average_confidence": 0, "average_processing_time": 0})
         item['labels_count'] = sorted(item['labels_count'], key=lambda x: (x['label'] != "IRRELEVANT", x['label']))
+
 
     # Sort the results by date
     json_result = sorted(json_result, key=lambda x: x['date'])
@@ -307,154 +359,224 @@ def get_data():
     report = {
         "start_date": start_date.strftime('%Y-%m-%d'),
         "end_date": end_date.strftime('%Y-%m-%d'),
-        "labels": unique_labels,
+        "predicted_labels": unique_predicted_labels,
+        "actual_labels": unique_actual_labels,
         "data": json_result,
         "rating": rating,
         "source": source,
-        "total": count
+        "model_version": model_version
     }
-
 
     return jsonify(report), 200
 
-@app.route('/api/stats/certainty', methods=['GET'])
+@app.route('/api/cnfmtrx', methods=['GET'])
 @check_role('admin')
 def get_cetainty():
     # Extract query parameters
     source = request.args.get('source', default="all_sources")
+    model_version = request.args.get('model_version', type=float, default="all_versions")
     start_date_str = request.args.get('start_date')
     end_date_str = request.args.get('end_date')
-
+    
     if start_date_str and end_date_str:
         start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
         end_date = datetime.strptime(end_date_str, '%Y-%m-%d')
     else:
+        # Retrieve the first document from the 'mails' collection
         first_mail = db.mails.find_one()
-        if first_mail:
-            start_date = first_mail['date'] 
+        if first_mail and 'versions' in first_mail and len(first_mail['versions']) > 0:
+            first_version_date = first_mail['versions'][0]['date']
+            start_date = first_version_date.replace(hour=0, minute=0, second=0)
         else:
-            start_date = datetime.now()
-        end_date = datetime.now()
+            start_date = datetime.now().replace(hour=0, minute=0, second=0)
 
+        end_date = datetime.now().replace(hour=23, minute=59, second=59)
 
     # Add filters to the query if they are specified
-    query = {'date' :{"$gte": start_date, "$lte": end_date}}
+    query = {'versions.date' :{"$gte": start_date, "$lte": end_date}}
     if source != "all_sources":
-        query['source'] = source
-    
+        query['versions.source'] = source
+    if model_version != "all_versions":
+        query['versions.model_version'] = model_version
+
     pipeline = [
-        {"$match": query},
-        {"$group": {"_id": "$predicted_label", "average_certainty": {"$avg": "$certainty"}}},
-        {"$sort": {"average_certainty": -1}},
-        {"$addFields": {"predictied_label": "$_id" }},
-        {"$project": {"_id": 0} }
+        {"$unwind": "$versions"},
+        {"$match": {
+            "$and": [
+                query,
+                {"versions.actual_label": {"$exists": True}}
+            ]
+        }},
+        {"$group": {
+            "_id": {
+                "predicted_label": "$versions.predicted_label",
+                "actual_label": "$versions.actual_label"
+            },
+            "count": {"$sum": 1}
+        }}
     ]
 
     results = db.mails.aggregate(pipeline)
 
-    # Convert the results to a list of dicts
-    json_result = list(results)
+     # Retrieve distinct labels
+    labels = sorted(db.mails.distinct("versions.predicted_label"))
 
+    # Initialize matrix and total predictions per label
+    matrix = {label: {other_label: 0 for other_label in labels} for label in labels}
+    total_predictions = {label: 0 for label in labels}
+
+    # Populate the matrix with counts
+    for result in results:
+        pred = result['_id']['predicted_label']
+        act = result['_id']['actual_label']
+        matrix[pred][act] += result['count']
+        total_predictions[pred] += result['count']
+
+    # Convert counts to percentages
+    confusion_matrix = []
+    for pred in labels:
+        row = []
+        for act in labels:
+            if total_predictions[pred] > 0:
+                percentage = (matrix[pred][act] / total_predictions[pred]) * 100
+                row.append(f"{percentage:.2f}%")
+            else:
+                row.append("0.00%")
+        confusion_matrix.append(row)
+    
     report = {
-    "start_date": start_date.strftime('%Y-%m-%d'),
-    "end_date": end_date.strftime('%Y-%m-%d'),
-    "data": json_result,
-    "source": source
+        "start_date": start_date.strftime('%Y-%m-%d'),
+        "end_date": end_date.strftime('%Y-%m-%d'),
+        "source": source,
+        "model_version": model_version,
+        "labels": labels,
+        "confusion_matrix": confusion_matrix
     }
 
-    
     return jsonify(report), 200
 
 
 @app.route('/api/stats/labels', methods=['GET'])
 @jwt_required()
 def get_labels():
-    labels = db.mails.distinct('predicted_label')
+    labels = db.mails.distinct('versions.predicted_label')
     return jsonify(list(labels)), 200
 
-    
+
 @app.route('/api', methods=['POST'])
 @check_role('admin', 'user')
-def add_mail():
+def add_mail_batch():
     if request.content_type != 'application/json':
         return jsonify({"error": "Unsupported Media Type"}), 415
 
+    MODEL_VERSION = 1.0
+    responses = []
+    
     # Get the data from the request
-    data = request.json
+    data_batch = request.json
+    if not isinstance(data_batch, list):
+        return jsonify({"error": "Expected a list of entries"}), 400
 
-    # Get the source from the request headers
-    source = request.headers.get('Source')
+    # Loop through each data entry in the batch
+    for data in data_batch:
+        try:
+            source = request.headers.get('Source')
+            hash = str(hash_input(data['body']))
+            existing_record = db.mails.find_one({
+                "id": hash,
+                "versions.model_version": MODEL_VERSION
+            }, {"_id": 0, "versions.$": 1})
+            
+            if existing_record:
+                version_info = existing_record['versions'][0]
+                response = {
+                    "already_exists": True,
+                    "predicted_label": version_info["predicted_label"],
+                    "date": version_info["date"],
+                    "keywords": version_info["keywords"],
+                    "datetime_elapsed": version_info["datetime_elapsed"],
+                    "certainty": version_info["certainty"],
+                    "source": version_info.get("source"),
+                    "model_version": version_info["model_version"]
+                }
+                responses.append(response)
+                continue
 
-    # Add the source to the data
-    hash = str(hash_input(data['body']))
-    existing_record = db.mails.find_one({"id": hash})
-    
-    if existing_record:
-        existing_record.pop('_id', None)
-        existing_record['already_exists'] = True
-        return jsonify(existing_record), 200
-    
-    # Preprocess the data
-    preprocessor = TextPreprocessor()
-    preprocessor.load_keywords(keyword_file_path='./tracking/keywords.json')
+            # Preprocess the data
+            preprocessor = TextPreprocessor()
+            preprocessor.load_keywords(keyword_file_path='./tracking/keywords.json')
+            start_time = time()
 
-    start_time = time()
+            data['text_body'] = data['body']
+            keywords = preprocessor.preprocess(data)['keywords']
 
-    data['text_body'] = data['body']
-    preprocessed_data = preprocessor.preprocess(data)
-    keywords = preprocessed_data['keywords']
+            label = random.choice(['IRRELEVANT', 'BI_ENGINEER', 'DATA_ENGINEER'])
+            certainty = random.random()
+            end_time = time()
+            processing_time = end_time - start_time
 
-    label = random.choice(['IRRELEVANT', 'BI_ENGINEER', 'DATA_ENGINEER'])
-    certainty = random.random()
+            # Make the response in JSON format
+            response = {
+                "predicted_label": label,
+                "date": datetime.now(),
+                "keywords": keywords,
+                "datetime_elapsed": processing_time,
+                "certainty": certainty,
+                "source": source,
+                "model_version": MODEL_VERSION
+            }
+            
+            db.mails.update_one(
+                {"id": hash},
+                {"$push": {"versions": response}},
+                upsert=True
+            )
 
-    end_time = time()
-    processing_time = end_time - start_time
+            response.pop('source', None)
+            responses.append(response)
+        except KeyError as e:
+            # Log the error, maybe continue with the next item
+            responses.append({"error": f"Missing key in data: {str(e)}"})
+            continue
+        except Exception as e:
+            # Handle any other unexpected errors
+            responses.append({"error": f"Unexpected error: {str(e)}"})
+            continue
 
-    # Make the response in JSON format
-    response = {
-    "id": hash,
-    "predicted_label": label,
-    "date": datetime.now(),
-    "keywords": keywords,
-    "datetime_elapsed": processing_time,
-    "certainty": certainty,
-    "source": source,
-   }
-
-    # Add the data to the database
-    db.mails.insert_one(response.copy())
-
-    # Remove the 'source' field from the response
-    response.pop('source', None)
-
-    return jsonify(response), 200
+    return jsonify(responses), 200
 
 
 @app.route('/api', methods=['PUT'])
 @check_role('admin', 'user')
-def update_rating():
+def update_ratings():
     data = request.json
+    responses = []
 
-    hash = {"id": str(hash_input(data['body']))}
-    rating = bool(data['rating'])
-    result = None
+    for entry in data:
+        hash = {"id": str(hash_input(entry['body']))}
+        rating = int(entry['rating'])
+        document = db.mails.find_one(hash)
+        if document:
+            last_index = len(document['versions']) - 1
 
-    if rating:
-        predicted_label = db.mails.find_one(hash)['predicted_label']
-        actual_label = predicted_label
-        result = db.mails.update_one(hash, {"$set": {"rating": rating, "actual_label": actual_label}})
-    else:
-        print(data['actual_label'])
-        if data['actual_label']:
-            actual_label = data['actual_label']
-            result = db.mails.update_one(hash, {"$set": {"rating": rating, "actual_label": actual_label}})
+            update_data = {'$set': {f'versions.{last_index}.rating': rating}}
+
+            if rating == 1:
+                actual_label = document['versions'][last_index]['predicted_label']
+                update_data['$set'][f'versions.{last_index}.actual_label'] = actual_label
+            elif 'actual_label' in entry:
+                actual_label = entry['actual_label']
+                update_data['$set'][f'versions.{last_index}.actual_label'] = actual_label
+
+            result = db.mails.update_one(hash, update_data)
+            if result.modified_count > 0:
+                responses.append({"status": "success", "message": "Rating updated successfully", "id": entry['body']})
+            else:
+                responses.append({"status": "failure", "message": "No documents matched the query. No update was made.", "id": entry['body']})
         else:
-            result = db.mails.update_one(hash, {"$set": {"rating": rating}})
-            
-    if result.modified_count > 0:
-        return "Rating updated successfully."
-    else:
-        return "No documents matched the query. No update was made."
+            responses.append({"status": "failure", "message": "Document not found.", "id": entry['body']})
+
+    return jsonify(responses)
 
     
 @app.route('/api/settings', methods=['GET'])
@@ -465,7 +587,7 @@ def get_settings():
     # settings.pop('_id', None)
     return jsonify({"settings": "TODO"}), 200
 
-@app.route('/api/retrain', methods=['POST'])
+@app.route('/api/retrain', methods=['GET'])
 @check_role('admin')
 def retrain():
     mails = preprocess_data_flow(get_mails_from_file=False)
