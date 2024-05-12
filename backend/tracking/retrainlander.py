@@ -84,15 +84,31 @@ def preprocess_data_flow(mails_file_path: str = 'data.json', keyword_file_path: 
         # Get the MongoDB collection
         collection = db['mails']
 
-        # Get all the mails from the collection
-        mails = list(collection.find({"rating": 1}))
+        pipeline = [
+            {"$unwind": "$versions"},
+            {"$match": {"versions.actual_label": {"$exists": True}}},
+            {"$sort": {"versions.model_version": -1}},
+            {"$group": {
+                "_id": "$id",  
+                "document": {"$first": "$$ROOT"}  
+            }},
+            {"$replaceRoot": {"newRoot": "$document"}},
+            {"$project": {"id": 1,
+                          "label": "$versions.actual_label",
+                          "keywords": "$versions.keywords"
+            }}
+        ]
 
+        result = collection.aggregate(pipeline)
+
+        # Get all the mails from the collection
+        # mails = list(collection.find({"versions.actual_label": {"$exists": True}}))
+        mails = list(result)
         # Close the MongoDB connection
         client.close()
-        
-        # remove the _id field from the mails
         for mail in mails:
-            mail.pop('_id')
+            mail.pop('_id', None)
+        
 
         return mails
     
