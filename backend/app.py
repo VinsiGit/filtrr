@@ -314,7 +314,8 @@ def get_data():
                 "predicted_label": "$versions.predicted_label"
             },
             "label_count": {"$sum": 1},
-            "datetime_elapsed": {"$avg": "$versions.datetime_elapsed"}
+            "datetime_elapsed": {"$avg": "$versions.datetime_elapsed"},
+            "evaluation": {"$sum": "$versions.rating"},
         }},
 
         # Group by date to aggregate all labels together
@@ -323,7 +324,8 @@ def get_data():
             "labels_count": {
                 "$push": {
                     "label": "$_id.predicted_label",
-                    "count": "$label_count"
+                    "count": "$label_count",
+                    "evaluation": "$evaluation"
                 }
             },
             "average_processing_time": {"$avg": "$datetime_elapsed"},
@@ -384,49 +386,79 @@ def get_data():
 @check_role('admin')
 def get_cetainty():
     # Extract query parameters
+    rating = request.args.get('rating', type=int, default="all_ratings")
+    predicted_label = request.args.get('predicted_label', default="all_labels")
+    actual_label = request.args.get('actual_label', default="all_labels")
     source = request.args.get('source', default="all_sources")
+    model_version = request.args.get('model_version', type=float, default="all_versions")
     start_date_str = request.args.get('start_date')
     end_date_str = request.args.get('end_date')
-
+    
     if start_date_str and end_date_str:
         start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
         end_date = datetime.strptime(end_date_str, '%Y-%m-%d')
     else:
+        # Retrieve the first document from the 'mails' collection
         first_mail = db.mails.find_one()
-        if first_mail:
-            start_date = first_mail['date'] 
+        if first_mail and 'versions' in first_mail and len(first_mail['versions']) > 0:
+            first_version_date = first_mail['versions'][0]['date']
+            start_date = first_version_date.replace(hour=0, minute=0, second=0)
         else:
-            start_date = datetime.now()
-        end_date = datetime.now()
+            start_date = datetime.now().replace(hour=0, minute=0, second=0)
 
+        end_date = datetime.now().replace(hour=23, minute=59, second=59)
+    
+    # Query for Unique Labels
+    unique_labels_pipeline = [
+        {"$unwind": "$versions"},  # Unwind the versions array to access its elements
+        {"$match": {
+            "versions.date": {"$gte": start_date, "$lt": end_date}  # Adjust the path to date in the versions object
+        }},
+        {"$group": {
+            "_id": None,
+            "labels": {"$addToSet": "$versions.predicted_label"}  # Collect unique predicted_label from versions
+        }}
+    ]
+
+    unique_labels_result = db.mails.aggregate(unique_labels_pipeline)
+    unique_predicted_labels = next(unique_labels_result, {}).get('labels', [])
+    unique_actual_labels = unique_predicted_labels.copy()
 
     # Add filters to the query if they are specified
-    query = {'date' :{"$gte": start_date, "$lte": end_date}}
+    query = {'versions.date' :{"$gte": start_date, "$lte": end_date}}
+    if rating != "all_ratings":
+        query['versions.rating'] = rating
     if source != "all_sources":
-        query['source'] = source
-    
+        query['versions.source'] = source
+    if model_version != "all_versions":
+        query['versions.model_version'] = model_version
+    if predicted_label != "all_labels":
+        unique_predicted_labels = [predicted_label]
+        query['versions.predicted_label'] = predicted_label
+    if actual_label != "all_labels":
+        unique_actual_labels = [actual_label]
+        query['versions.actual_label'] = actual_label
+
     pipeline = [
+        {"$unwind": "$versions"},
+
         {"$match": query},
-        {"$group": {"_id": "$predicted_label", "average_certainty": {"$avg": "$certainty"}}},
-        {"$sort": {"average_certainty": -1}},
-        {"$addFields": {"predictied_label": "$_id" }},
-        {"$project": {"_id": 0} }
+
+        {"$group": {
+            "_id": {
+                "date": {
+                    "$dateToString": {
+                        "format": "%Y-%m-%d",
+                        "date": "$versions.date"
+                    }
+                }
+            }
+        }}
     ]
 
     results = db.mails.aggregate(pipeline)
-
-    # Convert the results to a list of dicts
     json_result = list(results)
-
-    report = {
-    "start_date": start_date.strftime('%Y-%m-%d'),
-    "end_date": end_date.strftime('%Y-%m-%d'),
-    "data": json_result,
-    "source": source
-    }
-
-    
-    return jsonify(report), 200
+    return jsonify(json_result), 200
 
 
 @app.route('/api/stats/labels', methods=['GET'])
