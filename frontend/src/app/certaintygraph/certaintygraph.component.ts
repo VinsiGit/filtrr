@@ -43,7 +43,7 @@ export interface ChartOptions {
 export class CertaintygraphComponent {
   @Input() title: string | undefined;
   @Input() labelColorIndex: string = "0";
-  @Input() certainty: string | undefined;
+  @Input() certainty: string | undefined = "80";
   @Input() dataUrl: string | undefined;
   labelColor: string = "";
 
@@ -122,6 +122,7 @@ export class CertaintygraphComponent {
     };
   }
 
+  //TODO: change out for query based fetching
   async loadChartData(): Promise<void> {
     this.datapoints = [];
     this.days = [];
