@@ -3,3 +3,21 @@
     <p>average certainty:</p>
     <h1>{{ certainty }}%</h1>
 </main>
+<div id="chart">
+    <div style="background-color: {{ this.labelColor }}">
+      <apx-chart
+        [series]="chartOptions.series"
+        [chart]="chartOptions.chart"
+        [xaxis]="chartOptions.xaxis"
+        [yaxis]="chartOptions.yaxis"
+        [dataLabels]="chartOptions.dataLabels"
+        [colors]="chartOptions.colors"
+        [grid]="chartOptions.grid"
+        [markers]="chartOptions.markers"
+        [legend]="chartOptions.legend"
+        [stroke]="chartOptions.stroke"
+        [title]="chartOptions.title"
+        [tooltip]="chartOptions.tooltip"
+      ></apx-chart>
+    </div>
+  </div>
