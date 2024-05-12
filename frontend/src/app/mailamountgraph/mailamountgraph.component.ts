@@ -62,6 +62,7 @@ export class MailamountgraphComponent implements OnInit {
     this.chartOptions = {
       series: this.datapoints,
       chart: {
+        height: 650,
         foreColor: this.theme.chart_textcolor,
         redrawOnParentResize: true,
         id: "mailAmountGraph",
@@ -78,7 +79,7 @@ export class MailamountgraphComponent implements OnInit {
           opacity: 0.05,
         },
       },
-      colors: [this.theme.irrelevant_color, this.theme.label1color, this.theme.label2color],
+      colors: this.theme.labelcolors,
       dataLabels: {
         enabled: false,
       },

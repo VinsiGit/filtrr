@@ -6,7 +6,7 @@
 
 .dashboard {
     display: grid;
-    grid-template-columns: 7fr 7fr 4fr 2fr 4fr 6fr;
+    grid-template-columns: 7fr 7fr 4fr 2fr 4fr 7fr;
     grid-template-rows: 3fr 3fr 4fr;
     min-width: 96.5vw;
     width: 100%;

@@ -48,7 +48,7 @@ export class PasteinComponent {
           height: 350,
           type: "radialBar"
         },
-        colors: [this.theme.label1color],  
+        colors: [this.theme.labelcolors[1]],  
         plotOptions: {
           radialBar: {
             hollow: {
@@ -86,7 +86,7 @@ export class PasteinComponent {
           gradient: {
             shade: "dark",
             type: "vertical",
-            gradientToColors: [this.theme.label2color],
+            gradientToColors: [this.theme.labelcolors[2]],
             stops: [0, 200]
           }
         },

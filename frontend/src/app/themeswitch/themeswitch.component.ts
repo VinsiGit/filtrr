@@ -36,7 +36,7 @@ export class ThemeswitchComponent {
       chart: {
         foreColor: this.theme.chart_textcolor,
       },
-      colors: [this.theme.irrelevant_color, this.theme.label1color, this.theme.label2color],
+      colors: this.theme.labelcolors,
       grid: {
         borderColor: this.theme.chart_gridcolor,
       },
@@ -59,7 +59,7 @@ export class ThemeswitchComponent {
     
     //paste-in response chart
     ApexCharts.exec('certaintyWheel', 'updateOptions', {
-      colors: [this.theme.label1color],
+      colors: [this.theme.labelcolors[1]],
       plotOptions: {
         radialBar: {
           hollow: {
@@ -85,9 +85,20 @@ export class ThemeswitchComponent {
       fill: {
         gradient: {
           shade: "light",
-          gradientToColors: [this.theme.label2color]
+          gradientToColors: [this.theme.labelcolors[2]]
         }
       },
+    }, true, true, true);
+
+    //confusion matrix chart
+    ApexCharts.exec('confusionmatrix', 'updateOptions', {
+      chart: {
+        foreColor: this.theme.chart_textcolor,
+      },
+      colors: this.theme.labelcolors,
+      stroke: {
+        colors: this.theme.matrix_bordercolor
+      }
     }, true, true, true);
   }
 
@@ -122,9 +133,7 @@ export class ThemeswitchComponent {
       document.documentElement.style.setProperty('--module-color-highlight-complementary', '#7a6ce4');
       document.documentElement.style.setProperty('--module-color-highlight-monochrome', '#f05365');
       
-      this.theme.irrelevant_color = "#dbdee4";
-      this.theme.label1color = "#6460af";
-      this.theme.label2color = "#b872de";
+      this.theme.labelcolors = ["#dbdee4", "#6460af", "#b872de"];
       
       this.theme.shadowcolor = "#607D8B";
       this.theme.shadowOpacity = 0.1;
@@ -136,6 +145,8 @@ export class ThemeswitchComponent {
       this.theme.radial_textcolor = "#46494c";
       this.theme.radial_trackcolor = "#F5F4FF";
       this.theme.radial_backgroundcolor = "#ffffff";
+
+      this.theme.matrix_bordercolor = '#fcfdfe';
     } else {
       document.documentElement.style.setProperty('--shadow-float', '0 4px 12px 0 rgba(0, 0, 0, 0.2)');
       document.documentElement.style.setProperty('--shadow-indent', '0 4px 12px 0 rgba(0, 0, 0, 0.2) inset');
@@ -166,9 +177,7 @@ export class ThemeswitchComponent {
       document.documentElement.style.setProperty('--module-color-highlight-complementary', '#f05365');
       document.documentElement.style.setProperty('--module-color-highlight-monochrome', '#7961f1');
 
-      this.theme.irrelevant_color = "#47426b";
-      this.theme.label1color = "#f05365";
-      this.theme.label2color = "#f68e5f";
+      this.theme.labelcolors = ["#47426b", "#f05365", "#f68e5f"];
 
       this.theme.shadowcolor = "rgba(0, 0, 0, 0.2)";
       this.theme.shadowOpacity = 0.3;
@@ -180,6 +189,8 @@ export class ThemeswitchComponent {
       this.theme.radial_textcolor = "#ffffff";
       this.theme.radial_trackcolor = "#c1bed8";
       this.theme.radial_backgroundcolor = "#47426b";
+      
+      this.theme.matrix_bordercolor = '#47426b';
     }
     //update chart colors
     this.updateCharts()

@@ -18,6 +18,7 @@ import { LoginComponent } from './login/login.component';
 import { AuthInterceptor } from './guards/auth.interceptor';
 import { HelppageComponent } from './helppage/helppage.component';
 import { CertaintygraphComponent } from './certaintygraph/certaintygraph.component';
+import { ConfusionmatrixComponent } from './confusionmatrix/confusionmatrix.component';
 
 @NgModule({
   declarations: [
@@ -31,7 +32,8 @@ import { CertaintygraphComponent } from './certaintygraph/certaintygraph.compone
     MailamountgraphComponent,
     LoginComponent,
     HelppageComponent,
-    CertaintygraphComponent
+    CertaintygraphComponent,
+    ConfusionmatrixComponent
   ],
   imports: [
     BrowserModule,
