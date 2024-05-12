@@ -369,7 +369,7 @@ def get_data():
 
     return jsonify(report), 200
 
-@app.route('/api/metrics/cnfmtrx', methods=['GET'])
+@app.route('/api/cnfmtrx', methods=['GET'])
 @check_role('admin')
 def get_cetainty():
     # Extract query parameters
@@ -401,7 +401,12 @@ def get_cetainty():
 
     pipeline = [
         {"$unwind": "$versions"},
-        {"$match": query},
+        {"$match": {
+            "$and": [
+                query,
+                {"versions.actual_label": {"$exists": True}}
+            ]
+        }},
         {"$group": {
             "_id": {
                 "predicted_label": "$versions.predicted_label",
@@ -413,19 +418,42 @@ def get_cetainty():
 
     results = db.mails.aggregate(pipeline)
 
-    # Retrieve distinct labels to initialize the matrix
-    labels = db.mails.distinct("versions.predicted_label")
+     # Retrieve distinct labels
+    labels = sorted(db.mails.distinct("versions.predicted_label"))
 
-    # Initialize the matrix
+    # Initialize matrix and total predictions per label
     matrix = {label: {other_label: 0 for other_label in labels} for label in labels}
+    total_predictions = {label: 0 for label in labels}
 
-    # Populate the matrix with actual counts
+    # Populate the matrix with counts
     for result in results:
         pred = result['_id']['predicted_label']
         act = result['_id']['actual_label']
-        matrix[pred][act] = result['count']
+        matrix[pred][act] += result['count']
+        total_predictions[pred] += result['count']
 
-    return jsonify(matrix), 200
+    # Convert counts to percentages
+    confusion_matrix = []
+    for pred in labels:
+        row = []
+        for act in labels:
+            if total_predictions[pred] > 0:
+                percentage = (matrix[pred][act] / total_predictions[pred]) * 100
+                row.append(f"{percentage:.2f}%")
+            else:
+                row.append("0.00%")
+        confusion_matrix.append(row)
+    
+    report = {
+        "start_date": start_date.strftime('%Y-%m-%d'),
+        "end_date": end_date.strftime('%Y-%m-%d'),
+        "source": source,
+        "model_version": model_version,
+        "labels": labels,
+        "confusion_matrix": confusion_matrix
+    }
+
+    return jsonify(report), 200
 
 
 @app.route('/api/stats/labels', methods=['GET'])
