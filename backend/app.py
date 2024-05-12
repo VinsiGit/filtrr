@@ -475,7 +475,7 @@ def add_mail_batch():
     # Get the data from the request
     data_batch = request.json
     if not isinstance(data_batch, list):
-        return jsonify({"error": "Expected a list of entries"}), 400
+        data_batch = [data_batch]
 
     # Loop through each data entry in the batch
     for data in data_batch:
@@ -542,6 +542,9 @@ def add_mail_batch():
             # Handle any other unexpected errors
             responses.append({"error": f"Unexpected error: {str(e)}"})
             continue
+    
+    if len(responses) == 1:
+        return jsonify(responses[0]), 200
 
     return jsonify(responses), 200
 
@@ -549,10 +552,15 @@ def add_mail_batch():
 @app.route('/api', methods=['PUT'])
 @check_role('admin', 'user')
 def update_ratings():
-    data = request.json
+
     responses = []
 
-    for entry in data:
+    # Get the data from the request
+    data_batch = request.json
+    if not isinstance(data_batch, list):
+        data_batch = [data_batch]
+        
+    for entry in data_batch:
         hash = {"id": str(hash_input(entry['body']))}
         rating = int(entry['rating'])
         document = db.mails.find_one(hash)
@@ -576,7 +584,10 @@ def update_ratings():
         else:
             responses.append({"status": "failure", "message": "Document not found.", "id": entry['body']})
 
-    return jsonify(responses)
+    if len(responses) == 1:
+        return jsonify(responses[0]), 200
+
+    return jsonify(responses), 200
 
     
 @app.route('/api/settings', methods=['GET'])
