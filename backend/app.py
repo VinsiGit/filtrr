@@ -441,7 +441,7 @@ def add_mail_batch():
     if request.content_type != 'application/json':
         return jsonify({"error": "Unsupported Media Type"}), 415
 
-    MODEL_VERSION = 1.4
+    MODEL_VERSION = 1.0
     responses = []
     
     # Get the data from the request
@@ -559,7 +559,7 @@ def get_settings():
     # settings.pop('_id', None)
     return jsonify({"settings": "TODO"}), 200
 
-@app.route('/api/retrain', methods=['POST'])
+@app.route('/api/retrain', methods=['GET'])
 @check_role('admin')
 def retrain():
     mails = preprocess_data_flow(get_mails_from_file=False)
