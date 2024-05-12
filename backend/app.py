@@ -262,23 +262,6 @@ def get_data():
             start_date = datetime.now().replace(hour=0, minute=0, second=0)
 
         end_date = datetime.now().replace(hour=23, minute=59, second=59)
-    
-    # Query for Unique Labels
-    unique_labels_pipeline = [
-        {"$unwind": "$versions"},  # Unwind the versions array to access its elements
-        {"$match": {
-            "versions.date": {"$gte": start_date, "$lt": end_date}  # Adjust the path to date in the versions object
-        }},
-        {"$group": {
-            "_id": None,
-            "labels": {"$addToSet": "$versions.predicted_label"}  # Collect unique predicted_label from versions
-        }}
-    ]
-
-    unique_labels_result = db.mails.aggregate(unique_labels_pipeline)
-    unique_predicted_labels = next(unique_labels_result, {}).get('labels', [])
-    unique_actual_labels = unique_predicted_labels.copy()
-
 
     # Add filters to the query if they are specified
     query = {'versions.date' :{"$gte": start_date, "$lte": end_date}}
@@ -291,10 +274,13 @@ def get_data():
     if predicted_label != "all_labels":
         unique_predicted_labels = [predicted_label]
         query['versions.predicted_label'] = predicted_label
+    else:
+        unique_predicted_labels = db.mails.distinct("versions.predicted_label")
     if actual_label != "all_labels":
         unique_actual_labels = [actual_label]
         query['versions.actual_label'] = actual_label
-
+    else:
+        unique_actual_labels = db.mails.distinct("versions.actual_label")
 
     pipeline = [
         # Unwind the versions array to treat each version as a document
@@ -345,10 +331,9 @@ def get_data():
     # Execute the aggregation query
     results = db.mails.aggregate(pipeline)
     
-
     # Convert the results to a list of dicts
     json_result = list(results)
-    
+
     # Fill in missing dates with 0 values
     current_date = start_date
     while current_date <= end_date:
@@ -359,9 +344,9 @@ def get_data():
     
     # Fill in missing labels with 0 values
     for item in json_result:
-        for label in unique_predicted_labels + unique_actual_labels:
+        for label in set(unique_predicted_labels + unique_actual_labels):
             if not any(d['label'] == label for d in item['labels_count']):
-                item['labels_count'].append({"label": label, "count": 0})
+                item['labels_count'].append({"label": label, "count": 0, "evaluation": 0})
         item['labels_count'] = sorted(item['labels_count'], key=lambda x: (x['label'] != "IRRELEVANT", x['label']))
 
 
@@ -382,13 +367,10 @@ def get_data():
 
     return jsonify(report), 200
 
-@app.route('/api/stats/metrics', methods=['GET'])
+@app.route('/api/metrics/cnfmtrx', methods=['GET'])
 @check_role('admin')
 def get_cetainty():
     # Extract query parameters
-    rating = request.args.get('rating', type=int, default="all_ratings")
-    predicted_label = request.args.get('predicted_label', default="all_labels")
-    actual_label = request.args.get('actual_label', default="all_labels")
     source = request.args.get('source', default="all_sources")
     model_version = request.args.get('model_version', type=float, default="all_versions")
     start_date_str = request.args.get('start_date')
@@ -407,58 +389,41 @@ def get_cetainty():
             start_date = datetime.now().replace(hour=0, minute=0, second=0)
 
         end_date = datetime.now().replace(hour=23, minute=59, second=59)
-    
-    # Query for Unique Labels
-    unique_labels_pipeline = [
-        {"$unwind": "$versions"},  # Unwind the versions array to access its elements
-        {"$match": {
-            "versions.date": {"$gte": start_date, "$lt": end_date}  # Adjust the path to date in the versions object
-        }},
-        {"$group": {
-            "_id": None,
-            "labels": {"$addToSet": "$versions.predicted_label"}  # Collect unique predicted_label from versions
-        }}
-    ]
-
-    unique_labels_result = db.mails.aggregate(unique_labels_pipeline)
-    unique_predicted_labels = next(unique_labels_result, {}).get('labels', [])
-    unique_actual_labels = unique_predicted_labels.copy()
 
     # Add filters to the query if they are specified
     query = {'versions.date' :{"$gte": start_date, "$lte": end_date}}
-    if rating != "all_ratings":
-        query['versions.rating'] = rating
     if source != "all_sources":
         query['versions.source'] = source
     if model_version != "all_versions":
         query['versions.model_version'] = model_version
-    if predicted_label != "all_labels":
-        unique_predicted_labels = [predicted_label]
-        query['versions.predicted_label'] = predicted_label
-    if actual_label != "all_labels":
-        unique_actual_labels = [actual_label]
-        query['versions.actual_label'] = actual_label
 
     pipeline = [
         {"$unwind": "$versions"},
-
         {"$match": query},
-
         {"$group": {
             "_id": {
-                "date": {
-                    "$dateToString": {
-                        "format": "%Y-%m-%d",
-                        "date": "$versions.date"
-                    }
-                }
-            }
+                "predicted_label": "$versions.predicted_label",
+                "actual_label": "$versions.actual_label"
+            },
+            "count": {"$sum": 1}
         }}
     ]
 
     results = db.mails.aggregate(pipeline)
-    json_result = list(results)
-    return jsonify(json_result), 200
+
+    # Retrieve distinct labels to initialize the matrix
+    labels = db.mails.distinct("versions.predicted_label")
+
+    # Initialize the matrix
+    matrix = {label: {other_label: 0 for other_label in labels} for label in labels}
+
+    # Populate the matrix with actual counts
+    for result in results:
+        pred = result['_id']['predicted_label']
+        act = result['_id']['actual_label']
+        matrix[pred][act] = result['count']
+
+    return jsonify(matrix), 200
 
 
 @app.route('/api/stats/labels', methods=['GET'])
@@ -553,28 +518,35 @@ def add_mail_batch():
 
 @app.route('/api', methods=['PUT'])
 @check_role('admin', 'user')
-def update_rating():
+def update_ratings():
     data = request.json
+    responses = []
 
-    hash = {"id": str(hash_input(data['body']))}
-    rating = int(data['rating'])
-    document = db.mails.find_one(hash)
-    last_index = len(document['versions']) - 1
+    for entry in data:
+        hash = {"id": str(hash_input(entry['body']))}
+        rating = int(entry['rating'])
+        document = db.mails.find_one(hash)
+        if document:
+            last_index = len(document['versions']) - 1
 
-    if rating == 1:
-        actual_label = document['versions'][last_index]['predicted_label']
-        result = db.mails.update_one(hash, {'$set': {f'versions.{last_index}.actual_label': actual_label, f'versions.{last_index}.rating': rating}})
-    else:
-        if 'actual_label' in data:
-            actual_label = data['actual_label']
-            result = db.mails.update_one(hash, {'$set': {f'versions.{last_index}.actual_label': actual_label, f'versions.{last_index}.rating': rating}})
+            update_data = {'$set': {f'versions.{last_index}.rating': rating}}
+
+            if rating == 1:
+                actual_label = document['versions'][last_index]['predicted_label']
+                update_data['$set'][f'versions.{last_index}.actual_label'] = actual_label
+            elif 'actual_label' in entry:
+                actual_label = entry['actual_label']
+                update_data['$set'][f'versions.{last_index}.actual_label'] = actual_label
+
+            result = db.mails.update_one(hash, update_data)
+            if result.modified_count > 0:
+                responses.append({"status": "success", "message": "Rating updated successfully", "id": entry['body']})
+            else:
+                responses.append({"status": "failure", "message": "No documents matched the query. No update was made.", "id": entry['body']})
         else:
-            result = db.mails.update_one(hash, {'$set': {f'versions.{last_index}.rating': rating}})
-            
-    if result.modified_count > 0:
-        return "Rating updated successfully."
-    else:
-        return "No documents matched the query. No update was made."
+            responses.append({"status": "failure", "message": "Document not found.", "id": entry['body']})
+
+    return jsonify(responses)
 
     
 @app.route('/api/settings', methods=['GET'])
