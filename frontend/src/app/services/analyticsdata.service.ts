@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { LabelData } from '../interfaces/dataresponse';
+import { ConfusionMatrix, LabelData } from '../interfaces/dataresponse';
 import { environment } from '../../environments/environment';
 import { lastValueFrom } from 'rxjs';
 
@@ -45,5 +45,9 @@ export class AnalyticsdataService {
     }
 
     return await this.getQueryData(queryParams);
+  }
+
+  async getMatrixData(): Promise<ConfusionMatrix> {
+    return lastValueFrom(this.http.get<ConfusionMatrix>(`https://${this.hostname}/api/cnfmtrx`));
   }
 }

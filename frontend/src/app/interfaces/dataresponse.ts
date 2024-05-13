@@ -22,3 +22,13 @@ export interface LabelCount {
     label: string;
     rating_count: number;
 }
+
+
+export interface ConfusionMatrix {
+    confusion_matrix: string[][];
+    end_date: string;
+    labels: string[];
+    model_version: string;
+    source: string;
+    start_date: string;
+}

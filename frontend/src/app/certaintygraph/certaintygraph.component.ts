@@ -17,7 +17,7 @@ import {
 } from "ng-apexcharts";
 import { ActivatedRoute } from "@angular/router";
 import { AnalyticsdataService } from "../services/analyticsdata.service";
-import { LabelData, DayData, LabelCount } from "../interfaces/dataresponse";
+import { LabelData, DayData } from "../interfaces/dataresponse";
 
 export interface ChartOptions {
   series: ApexAxisChartSeries;
@@ -142,7 +142,6 @@ export class CertaintygraphComponent {
     };
   }
 
-  //TODO: change out for query based fetching
   async loadChartData(): Promise<void> {
     this.datapoints = [];
     this.months = [];
@@ -185,7 +184,5 @@ export class CertaintygraphComponent {
     });
 
     this.certainty = Math.round(((totalSum / totalCounter)*100) * 100) / 100;
-    console.log(this.title);
-    console.log(this.datapoints);
   }
 }
