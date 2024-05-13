@@ -8,7 +8,7 @@ import { lastValueFrom } from 'rxjs';
   providedIn: 'root'
 })
 export class AnalyticsdataService {
-
+  labels: string[] = ["irrelevant", "bi-engineer", "data-engineer"];
   hostname: string | undefined = environment.hostname;
 
   constructor(private http: HttpClient) { }

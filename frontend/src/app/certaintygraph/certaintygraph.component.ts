@@ -42,7 +42,7 @@ export interface ChartOptions {
 })
 export class CertaintygraphComponent {
   @Input() title: string | undefined;
-  @Input() labelColorIndex: string = "0";
+  @Input() labelIndex: string = "0";
   @Input() dataUrl: string | undefined;
   certainty: number = 0;
   label: string | undefined = undefined;
@@ -61,7 +61,7 @@ export class CertaintygraphComponent {
   }
 
   async ngOnInit(): Promise<void> {
-    this.labelColor = this.theme.labelcolors[+this.labelColorIndex];
+    this.labelColor = this.theme.labelcolors[+this.labelIndex];
 
     if (this.title) {
       this.label = this.title.replace('-', '_').toUpperCase();
@@ -91,7 +91,7 @@ export class CertaintygraphComponent {
       chart: {
         foreColor: "#fff",
         redrawOnParentResize: true,
-        id: "mailAmountGraph",
+        id: `certaintyGraph-${this.data.labels[+this.labelIndex]}`,
         type: 'line'
       },
       colors: [getComputedStyle(document.documentElement).getPropertyValue('--module-color-highlight-monochrome')],
@@ -119,22 +119,24 @@ export class CertaintygraphComponent {
           rotate: 45,
           format: 'MMM \'yy',
           style: {
-            colors: this.theme.chart_axistextcolor,
+            colors: this.theme.certainty_gridtext[+this.labelIndex],
           },
         },
       },
       yaxis: {
-        stepSize: 10,
         labels: {
+          formatter: function (val: any) {
+            return `${val}%`
+          },
           style: {
-            colors: this.theme.chart_axistextcolor,
+            colors: this.theme.certainty_gridtext[+this.labelIndex],
           },
         },
       },
       markers: {
-        size: 1,
+        size: 0,
         hover: {
-          size: 6,
+          size: 4,
         },
       },
     };

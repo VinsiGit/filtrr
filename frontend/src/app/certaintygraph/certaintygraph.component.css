@@ -6,3 +6,7 @@ main {
     color: white;
     text-align: center;
 }
+
+p {
+    padding: .5rem;
+}

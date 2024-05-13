@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { ThemeService } from '../services/theme.service';
 import * as ApexCharts from 'apexcharts';
+import { AnalyticsdataService } from '../services/analyticsdata.service';
 
 @Component({
   selector: 'app-themeswitch',
@@ -10,7 +11,7 @@ import * as ApexCharts from 'apexcharts';
 export class ThemeswitchComponent {
   darkModeEnabled: boolean = false;
 
-  constructor(public theme: ThemeService) {
+  constructor(public theme: ThemeService, public data: AnalyticsdataService) {
     if (localStorage.getItem('darkMode') === null) {
       // If 'darkMode' item is not present, set default value to false
       this.darkModeEnabled = false;
@@ -100,6 +101,13 @@ export class ThemeswitchComponent {
         colors: this.theme.matrix_bordercolor
       }
     }, true, true, true);
+
+    for (let label of this.data.labels){
+      ApexCharts.exec(`certaintyGraph-${label}`, 'updateOptions', {
+        colors: [getComputedStyle(document.documentElement).getPropertyValue('--module-color-highlight-monochrome')],
+      }, true, true, true);
+    }
+
   }
 
   applyTheme() {
