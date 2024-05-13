@@ -44,15 +44,15 @@ export class ConfusionmatrixComponent {
       series: [
         {
           name: "irrelevant",
-          data: [90, 7, 3],
+          data: [75, 14, 12],
         },
         {
           name: "data-engineer",
-          data: [12, 80, 8],
+          data: [22, 60, 18],
         },
         {
           name: "bi-engineer",
-          data: [7, 6, 87],
+          data: [17, 16, 67],
         },
       ],
       chart: {

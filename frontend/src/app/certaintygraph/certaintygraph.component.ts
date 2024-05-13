@@ -43,34 +43,51 @@ export interface ChartOptions {
 export class CertaintygraphComponent {
   @Input() title: string | undefined;
   @Input() labelColorIndex: string = "0";
-  @Input() certainty: string | undefined = "80";
   @Input() dataUrl: string | undefined;
+  certainty: number = 0;
+  label: string | undefined = undefined;
   labelColor: string = "";
 
   @ViewChild("chart") chart: ChartComponent | undefined;
   public chartOptions: Partial<ChartOptions> | any;
 
-  
-  datapoints: ApexAxisChartSeries = [];
-  days: string[] = [];
+
+  datapoints: number[] = [];
+  totalAvg: number = 0;
+  months: string[] = [];
 
 
   constructor(private theme: ThemeService, private route: ActivatedRoute, private data: AnalyticsdataService) {
   }
 
   async ngOnInit(): Promise<void> {
+    this.labelColor = this.theme.labelcolors[+this.labelColorIndex];
+
+    if (this.title) {
+      this.label = this.title.replace('-', '_').toUpperCase();
+    }
+
     await this.loadChartData().then(() => {
       this.renderChart();
     });
-    console.log(this.labelColorIndex);
-    console.log(this.labelColor);
-    this.labelColor = this.theme.labelcolors[+this.labelColorIndex];
+  }
+
+  private formatDate(date: Date): string {
+    const year = date.getFullYear().toString();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 
   //instanciating the chart
   renderChart() {
     this.chartOptions = {
-      series: this.datapoints,
+      series: [
+        {
+          name: this.title,
+          data: this.datapoints,
+        },
+      ],
       chart: {
         foreColor: "#fff",
         redrawOnParentResize: true,
@@ -94,19 +111,20 @@ export class CertaintygraphComponent {
       },
       xaxis: {
         type: 'datetime',
-        categories: this.days,
+        categories: this.months,
         axisBorder: {
           show: false,
         },
         labels: {
           rotate: 45,
+          format: 'MMM \'yy',
           style: {
             colors: this.theme.chart_axistextcolor,
           },
         },
       },
       yaxis: {
-        stepSize: 1,
+        stepSize: 10,
         labels: {
           style: {
             colors: this.theme.chart_axistextcolor,
@@ -125,38 +143,47 @@ export class CertaintygraphComponent {
   //TODO: change out for query based fetching
   async loadChartData(): Promise<void> {
     this.datapoints = [];
-    this.days = [];
-  
-    const responseData: LabelData = await this.data.getDataBetween(undefined, undefined);
-    console.log(responseData);
-  
-    // Initialize an object to hold the aggregated data
-    const counts: { [label: string]: number[] } = {};
-  
+    this.months = [];
+
+    const today: Date = new Date();
+    const oneYearAgo: Date = new Date();
+    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+
+    const responseData: LabelData = await this.data.getDataBetween([oneYearAgo, today], this.label);
+
+    let totalSum = 0;
+    let totalCounter = 1;
+    let monthSum = 0;
+    let dayCounter = 1;
+    let prevDate = `${oneYearAgo.getFullYear()}-${oneYearAgo.getMonth()+1}`;
+    this.months = [this.formatDate(oneYearAgo)]
+
     responseData.data.forEach((dayData: DayData) => {
-      // add date
-      this.days.push(dayData.date);
-  
-      // iterate through labels and adding counts
-      dayData.labels_count.forEach((labelCount: LabelCount) => {
-        // converting label name to lowercase and removing spaces
-        const label = labelCount.label.replace('_', '-').toLowerCase();
-        
-        // Check if label matches this.title
-        if (label === this.title) {
-          // if label name isn't present in counts yet
-          if (!counts[label]) {
-            counts[label] = [];
-          }
-          counts[label].push(labelCount.count);
+      const monthKey: string = dayData.date.slice(0, 7); // Extract YYYY-MM
+
+      dayData.labels_count.forEach(labelCount => {
+        //TODO: remove conditional when label filter is implemented in backend
+        if ((labelCount.label == this.label) && (labelCount.average_confidence != 0)){
+          totalSum += labelCount.average_confidence;
+          monthSum += labelCount.average_confidence;
+          dayCounter += 1;
+          totalCounter += 1;
         }
       });
+
+      if ((prevDate != monthKey) || (dayData.date == this.formatDate(today))){
+        this.datapoints.push(Math.round(((monthSum / dayCounter)*100) * 100) / 100);
+        dayCounter = 1;
+        monthSum = 0;
+        this.months.push(dayData.date);
+      }
+
+      prevDate = monthKey;
+
     });
-  
-    // Transform the aggregated data into the desired format
-    Object.entries(counts).forEach(([name, data]) => {
-      this.datapoints.push({ name, data });
-    });
+
+    this.certainty = Math.round(((totalSum / totalCounter)*100) * 100) / 100;
+    console.log(this.title);
+    console.log(this.datapoints);
   }
-  
 }

@@ -134,7 +134,7 @@ export class MailamountgraphComponent implements OnInit {
     this.datapoints = [];
     this.days = [];
 
-    const responseData: LabelData = await this.data.getDataBetween(undefined, undefined);
+    const responseData: LabelData = await this.data.getDataBetween(undefined, undefined); 
     console.log(responseData);
 
     // Initialize an object to hold the aggregated data

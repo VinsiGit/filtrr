@@ -24,15 +24,24 @@ export class AnalyticsdataService {
     return `${year}-${month}-${day}`;
   }
 
-  async getDataBetween(start_date: Date | undefined, end_date: Date | undefined): Promise<LabelData> {
+  async getDataBetween(interval: Date[] | undefined, label: string | undefined): Promise<LabelData> {
     let queryParams = '';
 
-    if (start_date) {
-      queryParams += `?start_date=${this.formatDate(start_date)}&`;
+    if (interval) {
+      queryParams += `?start_date=${this.formatDate(interval[0])}`;
     }
 
-    if (end_date) {
-      queryParams += `end_date=${this.formatDate(end_date)}`;
+    if (interval) {
+      queryParams += `&end_date=${this.formatDate(interval[1])}`;
+    }
+
+    if (label) {
+      if(interval){
+        queryParams += `&label=${label}`;
+      }
+      else{
+        queryParams += `?label=${label}`;
+      }
     }
 
     return await this.getQueryData(queryParams);

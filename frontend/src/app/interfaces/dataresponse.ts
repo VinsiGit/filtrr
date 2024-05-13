@@ -17,5 +17,8 @@ export interface DayData {
 
 export interface LabelCount {
     count: number;
+    average_confidence: number;
+    evaluation: number;
     label: string;
+    rating_count: number;
 }

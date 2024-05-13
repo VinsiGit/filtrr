@@ -17,5 +17,6 @@ export class ThemeService {
   radial_trackcolor: string = "#f5f4ff";
   radial_backgroundcolor: string = "#47426b";
 
+  matrix_labelcolors: string[] = ["#9fa2a7", "#433db1", "#a126e4"];
   matrix_bordercolor: string = "#fcfdfe";
 }
