@@ -454,8 +454,11 @@ def get_cetainty():
 
     results = db.mails.aggregate(pipeline)
 
-     # Retrieve distinct labels
-    labels = sorted(db.mails.distinct("versions.predicted_label"))
+    # Retrieve distinct labels and ensure 'IRRELEVANT' is first
+    labels = db.mails.distinct("versions.predicted_label")
+    if 'IRRELEVANT' in labels:
+        labels.remove('IRRELEVANT')
+    labels = ['IRRELEVANT'] + sorted(labels)  # Prepend 'IRRELEVANT' to the sorted list
 
     # Initialize matrix and total predictions per label
     matrix = {label: {other_label: 0 for other_label in labels} for label in labels}
