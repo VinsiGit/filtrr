@@ -85,7 +85,7 @@ export class MailamountgraphComponent implements OnInit {
       },
       stroke: {
         curve: "smooth",
-        width: 4,
+        width: 5,
       },
       title: {
         text: "mails",

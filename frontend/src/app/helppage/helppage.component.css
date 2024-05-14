@@ -1,3 +1,18 @@
 p {
     font-size: 10rem;
 }
+
+#content {
+    height: fit-content;
+    width: 80vw;
+    padding: 1rem;
+}
+
+main {
+    display: flex;
+    justify-content: center;
+}
+
+nav {
+    padding-left: 1.5rem;
+}

@@ -100,10 +100,10 @@ export class CertaintygraphComponent {
       },
       stroke: {
         curve: "smooth",
-        width: 4,
+        width: 3,
       },
       title: {
-        text: "mails",
+        text: "certainty",
         align: "left",
       },
       grid: {
