@@ -77,9 +77,6 @@ def preprocessor_flow(mails_file_path: str = 'data.json', keyword_file_path: str
             m = json.load(f)
         return m
 
-    # TODO: LANDER POWER PLEASE PUT ZE MONGODB CONNECTION HERE TO ASK ZE DATA FROM ZE DATABASE JAWOL
-    # def read_mails_from_database() -> List[Dict]:
-
     @task(name="Preprocess Mails", description="Preprocess mails using text preprocessor.")
     def preprocess_mails(data: List[Dict], keyword_file: str) -> tuple:
         p = TextPreprocessor()
@@ -91,11 +88,7 @@ def preprocessor_flow(mails_file_path: str = 'data.json', keyword_file_path: str
             mails_preprocessed.append(preprocessed_mail)
         return mails_preprocessed, p
 
-    mails = {}
-    if get_mails_from_file:
-        mails = read_mails_from_file(mails_file=mails_file_path)
-    else:
-        mails = None
+    mails = read_mails_from_file(mails_file=mails_file_path)
 
     preprocessed_mails, preprocessor = preprocess_mails(data=mails, keyword_file=keyword_file_path)
 
@@ -127,7 +120,11 @@ def prepare_training_data_flow(mails: List[Dict]) -> tuple:
             label_per_mail.append(mail['label'])
         return keywords_per_mail, label_per_mail
     keywords = get_all_keywords(data=mails)
-    keywords_p_mail, label_p_mail =prepare_train_data(data=mails)
+    keywords_p_mail, label_p_mail = prepare_train_data(data=mails)
+    return keywords, keywords_p_mail, label_p_mail
+
+    keywords = get_all_keywords(data=mails)
+    keywords_p_mail, label_p_mail = prepare_train_data(data=mails)
     return keywords, keywords_p_mail, label_p_mail
 
 
@@ -215,7 +212,7 @@ def train_model_flow(x: list, y: list, train_test_parameters: dict, adaboost_par
         study1 = optuna.create_study(study_name=f"Tree Optimization - {formatted_datetime} - Step 1",
                                     directions=['maximize','maximize'],
                                     sampler=sampler, pruner=pruner, storage=storage)
-        study1.optimize(objective1, n_trials=75)
+        study1.optimize(objective1, n_trials=10)
 
         trial1 = study1.best_trials.pop()
         params1 = trial1.params
@@ -249,7 +246,7 @@ def train_model_flow(x: list, y: list, train_test_parameters: dict, adaboost_par
         study2 = optuna.create_study(study_name=f"Model Optimization - {formatted_datetime} - Step 2",
                                     directions=['maximize','maximize','maximize'],
                                     sampler=sampler, pruner=pruner, storage=storage)
-        study2.optimize(objective2, n_trials=250)
+        study2.optimize(objective2, n_trials=5)
 
         trial2 = study2.best_trials.pop()
         params2 = trial2.params
@@ -279,6 +276,7 @@ def train_model_flow(x: list, y: list, train_test_parameters: dict, adaboost_par
         get_best_classifier(x_train, x_test, y_train, y_test, adaboost_parameters, tree_parameters))
 
         mlflow.log_params(train_test_parameters)
+
         mlflow.sklearn.log_model(vectorizer, "vectorizer")
         mlflow.sklearn.log_model(preprocessor, "preprocessor")
         mlflow.sklearn.log_model(trained_classifier, "model")
@@ -302,10 +300,16 @@ def train_model_flow(x: list, y: list, train_test_parameters: dict, adaboost_par
         mlflow.log_params({"MODEL - Precision": precision2})
         mlflow.log_params({"MODEL - Recall": recall2})
 
+        latest_model_version = mlflow.tracking.MlflowClient().get_latest_versions("Model",
+                                                                                  stages=['None'])
+        latest_version_number = latest_model_version[0].version if latest_model_version else None
+
+        client.set_registered_model_alias("Model", "Production", latest_version_number)
+        client.set_registered_model_alias("Vectorizer", "Production", latest_version_number)
+        client.set_registered_model_alias("Preprocessor", "Production", latest_version_number)
 
 
-
-@flow(name="Main flow", description="Main flow that runs all other flows for the full train cycle of a model")
+@flow(name="Main", description="Main flow that runs all other flows for the full train cycle of a model")
 def main_flow():
     """
     Main flow for training an AdaBoost classifier on email data.

@@ -10,3 +10,6 @@ mlruns
 *prefect*
 .devcontainer/
 __pycache__/
+!start.sh
+prefect.yaml
+test.py
