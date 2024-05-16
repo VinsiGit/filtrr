@@ -27,18 +27,29 @@
     <main id="app-body" class="ms-welcome__main" style="display: none;">
         <div id="loading-screen" style="display: none;">
             <!-- All the data that doesn't require server processing goes here -->
-
-
-
             <div id="loading-spinner"></div>
         </div>
-        <label class="switch">
-            <input type="checkbox" id="sendSwitch">
-            <span class="slider round"></span>
-        </label>
+        <div class="switch-container">
+            <label class="switch">
+                <input type="checkbox" id="sendSwitch" checked>
+                <span class="slider round"></span>
+            </label>
+        </div>
         <div id="ui">
-            <p><label id="item-class"></label></p>
+            <div class="container">
+                <button id="pos">👍</button>
+                <button id="neg">👎</button>
+            </div>
+            <div class="container-label">
+                <button id="IRRELEVANT">Irrelevant</button>
+                <button id="DATA_ENGINEER">Data engineer</button>
+                <button id="BI_ENGINEER">Bi engineer</button>
+            </div>
+            <p><label id="item-label"></label></p>
+            <p><label id="item-ActualLabel"></label></p>
             <p><label id="item-proba"></label></p>
+            <p><label id="item-rating"></label></p>
+
             <div id="chart"></div>
         </div>
 

@@ -1,6 +1,11 @@
-// Constants for colors and site URL
-const SITE_URL = "https://s144272.devops-ap.be/api";
-const INITIAL_APP_STATE = document.getElementById("app-body").innerHTML;
+// Constants
+const API_SITE = "https://s144272.devops-ap.be/api";
+const BEARER_DATA = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTcxNTg0NDk2MiwianRpIjoiNjQ3YTJiNWItMDA3YS00ZWE2LTg3OTktYzVkNmZmYmM0ZTYwIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6eyJ1c2VybmFtZSI6ImFkbWluIiwicm9sZSI6ImFkbWluIn0sIm5iZiI6MTcxNTg0NDk2MiwiY3NyZiI6Ijc1YmU4M2U3LTVkMmItNGFmNi1hOTJhLTc4MmZiN2Y2Y2VkZSIsImV4cCI6MTcxNjQ0OTc2Mn0.ikjgrbNFJ8xE2rjEB9-FzX5n1z0IXsVuheE8WcAW0Rg";
+
+// POST is voor sturen van Initialize data en PUT is voor updates van data  
+
+const initialAppState = document.getElementById('app-body').innerHTML
+
 const COLORS = {
   label1: "#6460af",
   label2: "#b872de",
@@ -8,21 +13,93 @@ const COLORS = {
   radialText: "#46494c",
   radialTrack: "#F5F4FF",
   radialBackground: "#ffffff",
+  opacity: 0.1,
 };
-const SHADOW_OPACITY = 0.1;
 
-const initializeData = () => ({
+// Initialize data
+
+
+
+let data = {
   item_id: "",
   sender: "",
   sender_email: "",
   datetime_received: 0,
   subject: "",
   body: "",
-  label: "",
+  predicted_label: "",
+  actual_label: null,
   certainty: 0,
+  rating: 0,
+};
+function resetData() {
+  data.item_id = "";
+  data.sender = "";
+  data.sender_email = "";
+  data.datetime_received = 0;
+  data.subject = "";
+  data.body = "";
+  data.predicted_label = "";
+  data.actual_label = null;
+  data.certainty = 0;
+  data.rating = 0;
+}
+
+
+// Group 1
+const buttonsGroup1 = document.querySelectorAll('#pos, #neg');
+
+buttonsGroup1.forEach(button => {
+  button.addEventListener('click', (event) => {
+    // Remove the 'active' class from all buttons in the group
+    buttonsGroup1.forEach(btn => {
+      btn.classList.remove('active');
+    });
+
+    // Add the 'active' class to the clicked button
+    event.target.classList.add('active');
+  });
 });
 
-// Function to run when Office.js is fully loaded
+// Group 2
+const buttonsGroup2 = document.querySelectorAll('#IRRELEVANT, #DATA_ENGINEER, #BI_ENGINEER');
+
+buttonsGroup2.forEach(button => {
+  button.addEventListener('click', (event) => {
+    // Remove the 'active' class from all buttons in the group
+    buttonsGroup2.forEach(btn => {
+      btn.classList.remove('active');
+    });
+
+    // Add the 'active' class to the clicked button
+    event.target.classList.add('active');
+  });
+});
+// Reload when clicking on the sswitch
+document.getElementById("sendSwitch").addEventListener("click", () => {
+  updateDataOnItemChange(data);
+});
+
+document.getElementById("pos").addEventListener("click", () => {
+  // Hide the second container
+  document.querySelector(".container-label").style.display = "none";
+  // Call the rate function
+  rate(1, data, null);
+});
+
+// Add event listeners for rating buttons
+document.getElementById("neg").addEventListener("click", () => {
+  // Show the second container
+  document.querySelector(".container-label").style.display = "block";
+  // Call the rate function
+  rate(-1, data, null);
+});
+
+document.getElementById("IRRELEVANT").addEventListener("click", () => { rate(-1, data, "IRRELEVANT"); })
+document.getElementById("DATA_ENGINEER").addEventListener("click", () => { rate(-1, data, "DATA_ENGINEER"); })
+document.getElementById("BI_ENGINEER").addEventListener("click", () => { rate(-1, data, "BI_ENGINEER"); })
+
+// Office.js initialization
 Office.onReady((info) => {
   if (info.host === Office.HostType.Outlook) {
     document.getElementById("app-body").style.display = "flex";
@@ -30,87 +107,117 @@ Office.onReady((info) => {
   }
 });
 
-// Main function to run
-export async function run() {
-  const data = initializeData();
-  const sendSwitch = document.getElementById("sendSwitch");
-
-  sendSwitch.addEventListener("change", function () {
-    if (this.checked) {
-      document.getElementById("ui").style.display = "inline";
-
-      sendEmailBodyToServer(data)
-        .then((new_data) => {
-          updateData(data, new_data);
-          display(data);
-        })
-        .catch(console.error);
-    } else {
-      // Code to disable UI goes here
-      // For example, if you have a div with id "ui", you can disable it like this:
-      document.getElementById("ui").style.display = "none";
-    }
-  });
-
-  Office.context.mailbox.addHandlerAsync(Office.EventType.ItemChanged, function () {
-    updateDataOnItemChange(data);
-  });
+// Update data function
+function updateData(data, newData) {
+  console.log("newData:", newData);
+  console.log("Updating data with new_data");
+  data.predicted_label = newData.predicted_label;
+  data.certainty = newData.certainty;
+  updateCategories(data);
 }
 
-const updateData = (data, new_data) => {
-  data.label = new_data.label;
-  data.certainty = new_data.certainty;
-};
-
-const updateDataOnItemChange = async (data) => {
-  const mail = Office.context.mailbox;
-  const item = mail.item;
+function updateItemData(item) {
   data.item_id = item.itemId;
   data.sender = item.sender.displayName;
   data.sender_email = item.sender.emailAddress;
   data.datetime_received = item.dateTimeCreated.getTime();
-  data.subject = mail.item.subject;
+  data.subject = item.subject;
+}
 
-  const result = await item.body.getAsync("text");
-  if (result.status === Office.AsyncResultStatus.Succeeded) {
-    data.body = result.value;
-    const sendSwitch = document.getElementById("sendSwitch");
-    if (sendSwitch.checked) {
-      try {
-        const new_data = await sendEmailBodyToServer(data);
-        updateData(data, new_data);
-        display(data);
-      } catch (error) {
-        console.error('Error:', error);
+function resetActiveButtons() {
+  const buttons = document.querySelectorAll('#pos, #neg, #IRRELEVANT, #DATA_ENGINEER, #BI_ENGINEER');
+  buttons.forEach(button => {
+    button.classList.remove('active');
+  });
+  document.querySelector(".container-label").style.display = "none";
+
+}
+
+// Run function
+async function run() {
+  document.getElementById("loading-screen").style.display = "block";
+  resetData();
+  resetActiveButtons(); // Reset active state of buttons
+  updateDataOnItemChange(data);
+
+  Office.context.mailbox.addHandlerAsync(Office.EventType.ItemChanged, () => {
+    document.getElementById("loading-screen").style.display = "block";
+    resetData();
+    resetActiveButtons(); // Reset active state of buttons
+    updateDataOnItemChange(data);
+  });
+}
+
+function updateCategories(data) {
+  Office.context.mailbox.masterCategories.getAsync((asyncResult) => {
+    if (asyncResult.status === Office.AsyncResultStatus.Succeeded) {
+      const masterCategories = asyncResult.value;
+      if (!masterCategories.includes(data.predicted_label)) {
+        const categoryDetails = {
+          displayName: data.predicted_label,
+          color: Office.MailboxEnums.CategoryColor.Preset0,
+        };
+        Office.context.mailbox.masterCategories.addAsync([categoryDetails], (asyncResult) => {
+          if (asyncResult.status === Office.AsyncResultStatus.Succeeded) {
+            console.log("Successfully added category to master list");
+          } else {
+            console.log("masterCategories.addAsync call failed with error:", asyncResult.error.message);
+          }
+        });
+      }
+    } else {
+      console.log("masterCategories.getAsync call failed with error:", asyncResult.error.message);
+    }
+  });
+  Office.context.mailbox.item.categories.addAsync([data.predicted_label], (asyncResult) => {
+    if (asyncResult.status === Office.AsyncResultStatus.Succeeded) {
+      console.log("Successfully added categories");
+    } else {
+      console.log("categories.addAsync call failed with error:", asyncResult.error.message);
+    }
+  });
+}
+
+// Update data on item change function
+function updateDataOnItemChange(data) {
+  const mail = Office.context.mailbox;
+  const item = mail.item;
+  updateItemData(item);
+  item.body.getAsync("text", (result) => {
+    if (result.status === Office.AsyncResultStatus.Succeeded) {
+      data.body = result.value;
+      if (document.getElementById("sendSwitch").checked) {
+        document.getElementById("ui").style.display = "block";
+        sendEmailBodyToServer(data)
+          .then((newData) => {
+            updateData(data, newData);
+            updateChart(data) //updateChart(data); //debug(data);
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+          });
+      } else {
+        document.getElementById("ui").style.display = "none";
       }
     }
-  }
-};
-
-
+  });
+}
 let chartInstance = null;
-
-export async function display(data) {
-  const item_class = document.getElementById("item-class")
-  const item_proba = document.getElementById("item-proba")
-
-  item_class.innerHTML = "<b>Class:</b> <br/>" + data.label;
-  item_proba.innerHTML = "<b>Probability:</b> <br/>" + data.certainty;
-
-  let chartOptions = {
-    series: [Math.round((data.certainty*100) * 100) / 100], //round to 2 decimal places
+function updateChart(data) {
+  const chartOptions = {
+    series: [Math.round(data.certainty * 100 * 100) / 100],
     chart: {
       id: "certaintyWheel",
       height: 350,
-      type: "radialBar"
+      type: "radialBar",
     },
-    colors: [COLORS.label1],  
+    colors: [COLORS.label1],
     plotOptions: {
       radialBar: {
         hollow: {
           margin: 0,
           size: "65%",
-          background: COLORS.radialBackground
+          background: COLORS.radialBackground,
         },
         track: {
           background: COLORS.radialTrack,
@@ -119,23 +226,23 @@ export async function display(data) {
             top: 1,
             left: 1,
             blur: 2,
-            opacity: SHADOW_OPACITY,
-            color:  COLORS.shadow
-          }
+            opacity: COLORS.opacity,
+            color: COLORS.shadow,
+          },
         },
         dataLabels: {
           name: {
             offsetY: -10,
-            color:  COLORS.radialText,
-            fontSize: "13px"
+            color: COLORS.radialText,
+            fontSize: "13px",
           },
           value: {
             color: COLORS.radialText,
             fontSize: "30px",
-            show: true
-          }
-        }
-      }
+            show: true,
+          },
+        },
+      },
     },
     fill: {
       type: "gradient",
@@ -143,17 +250,16 @@ export async function display(data) {
         shade: "dark",
         type: "vertical",
         gradientToColors: [COLORS.label2],
-        stops: [0, 200]
-      }
+        stops: [0, 200],
+      },
     },
     stroke: {
-      lineCap: "round"
+      lineCap: "round",
     },
-    labels: [data.label]
+    labels: [data.predicted_label],
   };
-
   if (chartInstance) {
-    chartInstance.updateSeries([Math.round((data.certainty*100) * 100) / 100]);
+    chartInstance.updateSeries([Math.round(data.certainty * 100 * 100) / 100]);
     chartInstance.updateOptions(chartOptions);
   } else {
     chartInstance = new ApexCharts(document.querySelector("#chart"), chartOptions);
@@ -161,75 +267,113 @@ export async function display(data) {
   }
 }
 
+// Display function
+async function debug(data) {
+  const itemLabel = document.getElementById("item-label");
+  const itemActualLabel = document.getElementById("item-ActualLabel");
+  const itemProba = document.getElementById("item-proba");
+  const itemRating = document.getElementById("item-rating");
 
-export async function checkServerStatus() {
+  console.log(data.rating);
+  itemLabel.innerHTML = `<b>Label:</b> ${data.predicted_label}`;
+  itemActualLabel.innerHTML = `<b>Actual label:</b> ${data.actual_label}`;
+
+  itemProba.innerHTML = `<b>Probability:</b> ${data.certainty}`;
+  itemRating.innerHTML = `<b>Rating:</b> ${data.rating}`;
+  updateChart(data);
+}
+
+// Check server status function
+async function checkServerStatus() {
   try {
-    const response = await fetch(SITE_URL, { method: 'GET' });
+    const response = await fetch(API_SITE, { method: "GET" });
     if (response.ok) {
-
       // Remove the check server button
       const checkServerButton = document.getElementById("check-server");
       if (checkServerButton) {
         checkServerButton.remove();
       }
-      document.getElementById("app-body").innerHTML = INITIAL_APP_STATE;
-
-      console.log('The server is offline.');
+      document.getElementById("app-body").innerHTML = initialAppState;
+      console.log("The server is online.");
     }
   } catch (error) {
-    console.log('The server is offline.');
+    console.log("The server is offline.");
   }
+}
+
+// Rate function
+async function rate(value, data, actual_label) {
+  const mail = Office.context.mailbox;
+  const item = mail.item;
+  updateItemData(item);
+  if (value === 1 || value === -1) {
+    data.rating = value;
+    data.actual_label = actual_label;
+
+  } else {
+    console.error("Invalid rating. Please provide a rating of 1 or -1.");
+  }
+  console.log("data.rating");
+  console.log(data.rating);
+  item.body.getAsync("text", function (result) {
+    if (result.status === Office.AsyncResultStatus.Succeeded) {
+      console.log("result");
+      console.log(result.value);
+      const requestBody = {
+        "body": data.body,
+        "rating": data.rating
+      };
+      if (actual_label !== null) {
+        requestBody.actual_label = actual_label;
+      }
+      fetch(API_SITE, {
+        method: "PUT",
+        headers: {
+          "Source": "Outlook",
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${BEARER_DATA}`,
+        },
+        body: JSON.stringify(requestBody),
+      });
+      updateDataOnItemChange(data);
+    }
+  });
 }
 
 
 export async function sendEmailBodyToServer(data) {
-    document.getElementById("loading-screen").style.display = "block";
-    console.log(data.body);
-    try {
-        const BearerData = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTcxMzQyODQxNiwianRpIjoiMjBmMWMxNmItNjBhOS00NTVjLWE3NjUtNGU3NGE1YzA0NmQ5IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6eyJ1c2VybmFtZSI6ImFkbWluIiwicm9sZSI6ImFkbWluIn0sIm5iZiI6MTcxMzQyODQxNiwiY3NyZiI6IjY4NjcyNDA2LTRkOTUtNGRlYS1iZWYwLTQ2MWFhOGRiOGY4MSIsImV4cCI6MTcxNDAzMzIxNn0.zeotClcJrS_eFUbXp_Z00fmKUCm165dy3VQ_PIqMnbY";
-              
+  console.log(data.body);
 
-        const response = await fetch(SITE_URL, {
-            method: 'POST',
-            headers: {
-                'Source':"Outlook",
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${BearerData}` // .access_token
-            },
-            body: JSON.stringify({ "body": data.body }),
-        });
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const responseData = await response.json();
-        console.log(responseData);
-
-        // Remove the check server button if it exists
-        const checkServerButton = document.getElementById("check-server");
-        if (checkServerButton) {
-            checkServerButton.remove();
-        }
-
-        return responseData;
-    } catch (error) {
-      document.getElementById("app-body").innerHTML = SITE_URL+"/login"; // "The server is currently offline. Please try again later.";
-
-      // Create the check server button
-      const checkServerButton = document.createElement("button");
-      checkServerButton.id = "check-server";
-      checkServerButton.innerText = "Check Server Status";
-      document.getElementById("app-body").appendChild(checkServerButton);
-
-      // Add an event listener to the button
-      checkServerButton.addEventListener("click", () => checkServerStatus());
-
-      console.error('Error:', error);
-    } finally {
-      document.getElementById("loading-screen").style.display = "none";
+  try {
+    const response = await fetch(API_SITE, {
+      method: "POST",
+      headers: {
+        "Source": "Outlook",
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${BEARER_DATA}`,
+      },
+      body: JSON.stringify({ body: data.body }),
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
+    const responseData = await response.json();
+
+    console.log(responseData);
+    return responseData;
+  } catch (error) {
+    handleServerError();
+    console.error("Error:", error);
+  } finally {
+    document.getElementById("loading-screen").style.display = "none";
+  }
 }
 
-
-
+function handleServerError() {
+  document.getElementById("app-body").innerHTML = API_SITE + "/login";
+  const checkServerButton = document.createElement("button");
+  checkServerButton.id = "check-server";
+  checkServerButton.innerText = "Check Server Status";
+  document.getElementById("app-body").appendChild(checkServerButton);
+  checkServerButton.addEventListener("click", () => checkServerStatus());
+}
