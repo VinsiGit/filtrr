@@ -6,6 +6,7 @@ const BEARER_DATA = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsIm
 
 const initialAppState = document.getElementById('app-body').innerHTML
 
+// Initialize data
 const COLORS = {
   label1: "#6460af",
   label2: "#b872de",
@@ -15,10 +16,6 @@ const COLORS = {
   radialBackground: "#ffffff",
   opacity: 0.1,
 };
-
-// Initialize data
-
-
 
 let data = {
   item_id: "",
@@ -32,6 +29,7 @@ let data = {
   certainty: 0,
   rating: 0,
 };
+
 function resetData() {
   data.item_id = "";
   data.sender = "";
@@ -45,18 +43,41 @@ function resetData() {
   data.rating = 0;
 }
 
+// Office.js initialization
+Office.onReady((info) => {
+  if (info.host === Office.HostType.Outlook) {
+    document.getElementById("app-body").style.display = "flex";
+    run();
+  }
+});
+
+/**
+ * Function: run
+ * Description: This function initializes the application. It displays the loading screen, resets the data, and updates the data for the new mail item. It also sets up an event handler to update the data whenever the mail item changes.
+ * @async
+ */
+async function run() {
+  document.getElementById("loading-screen").style.display = "block";
+  resetData();
+  updateDataOnItemChangeNewMail(data);
+
+  Office.context.mailbox.addHandlerAsync(Office.EventType.ItemChanged, async () => {
+    document.getElementById("loading-screen").style.display = "block";
+    resetData();
+    updateDataOnItemChangeNewMail(data);
+    ; // Activate button based on data
+  });
+}
+
 
 // Group 1
 const buttonsGroup1 = document.querySelectorAll('#pos, #neg');
 
 buttonsGroup1.forEach(button => {
   button.addEventListener('click', (event) => {
-    // Remove the 'active' class from all buttons in the group
     buttonsGroup1.forEach(btn => {
       btn.classList.remove('active');
     });
-
-    // Add the 'active' class to the clicked button
     event.target.classList.add('active');
   });
 });
@@ -66,49 +87,94 @@ const buttonsGroup2 = document.querySelectorAll('#IRRELEVANT, #DATA_ENGINEER, #B
 
 buttonsGroup2.forEach(button => {
   button.addEventListener('click', (event) => {
-    // Remove the 'active' class from all buttons in the group
     buttonsGroup2.forEach(btn => {
       btn.classList.remove('active');
     });
-
-    // Add the 'active' class to the clicked button
     event.target.classList.add('active');
   });
 });
-// Reload when clicking on the sswitch
+
 document.getElementById("sendSwitch").addEventListener("click", () => {
   updateDataOnItemChange(data);
 });
 
 document.getElementById("pos").addEventListener("click", () => {
-  // Hide the second container
   document.querySelector(".container-label").style.display = "none";
-  // Call the rate function
   rate(1, data, null);
 });
 
-// Add event listeners for rating buttons
 document.getElementById("neg").addEventListener("click", () => {
-  // Show the second container
   document.querySelector(".container-label").style.display = "block";
-  // Call the rate function
-  rate(-1, data, null);
+  if (data.actual_label === null) {
+    data.actual_label = data.predicted_label;
+  }
+  rate(-1, data, data.actual_label);
+  activateButtonBasedOnData(data)
 });
 
 document.getElementById("IRRELEVANT").addEventListener("click", () => { rate(-1, data, "IRRELEVANT"); })
 document.getElementById("DATA_ENGINEER").addEventListener("click", () => { rate(-1, data, "DATA_ENGINEER"); })
 document.getElementById("BI_ENGINEER").addEventListener("click", () => { rate(-1, data, "BI_ENGINEER"); })
 
-// Office.js initialization
-Office.onReady((info) => {
-  if (info.host === Office.HostType.Outlook) {
-    document.getElementById("app-body").style.display = "flex";
-    run();
-  }
-});
+/**
+ * Function: activateButtonBasedOnData
+ * Description: This function activates a button based on the actual label of the data. It first resets all active buttons, then activates the button that corresponds to the actual label. If the rating is -1, it also shows the second container and activates the 'neg' button.
+ * @param {Object} dataUsing - The data object containing the actual label and rating.
+ */
+function activateButtonBasedOnData(dataUsing) {
+  resetActiveButtons();
 
-// Update data function
-function updateData(data, newData) {
+  let buttonId;
+  console.log(dataUsing);
+  switch (dataUsing.actual_label) {
+    case 'IRRELEVANT':
+      buttonId = 'IRRELEVANT';
+      break;
+    case 'DATA_ENGINEER':
+      buttonId = 'DATA_ENGINEER';
+      break;
+    case 'BI_ENGINEER':
+      buttonId = 'BI_ENGINEER';
+      break;
+    default:
+      break;
+  }
+
+  // Activate the button
+  const button = document.getElementById(buttonId);
+  if (button !== null) {
+    button.classList.add('active');
+  } else {
+    console.error("Button is null");
+  }
+  // Show the second container if the button is not 'pos'
+  if (dataUsing.rating == -1) {
+    console.log("aaa");
+    document.querySelector(".container-label").style.display = "block";
+    document.getElementById("neg").classList.add('active');
+  }
+  if (dataUsing.rating == 1) {
+    console.log("bbbb");
+
+    document.getElementById("pos").classList.add('active');
+  }
+  console.log("data.ratisqdng");
+  console.log(dataUsing.actual_label);
+  console.log(dataUsing.rating);
+}
+
+// Add event listeners for rating buttons
+
+
+
+/**
+ * Function: updateData
+ * Description: This function updates the data with new data. It logs the new data, then updates the predicted label and certainty of the data. It also updates the categories of the data.
+ * @async
+ * @param {Object} data - The original data object.
+ * @param {Object} newData - The new data object.
+ */
+async function updateData(data, newData) {
   console.log("newData:", newData);
   console.log("Updating data with new_data");
   data.predicted_label = newData.predicted_label;
@@ -116,6 +182,11 @@ function updateData(data, newData) {
   updateCategories(data);
 }
 
+/**
+ * Function: updateItemData
+ * Description: This function updates the item data with the details of the item. It sets the item ID, sender, sender email, received datetime, and subject of the data.
+ * @param {Object} item - The item object containing the item details.
+ */
 function updateItemData(item) {
   data.item_id = item.itemId;
   data.sender = item.sender.displayName;
@@ -124,6 +195,10 @@ function updateItemData(item) {
   data.subject = item.subject;
 }
 
+/**
+ * Function: resetActiveButtons
+ * Description: This function resets all active buttons. It removes the 'active' class from all buttons and hides the second container.
+ */
 function resetActiveButtons() {
   const buttons = document.querySelectorAll('#pos, #neg, #IRRELEVANT, #DATA_ENGINEER, #BI_ENGINEER');
   buttons.forEach(button => {
@@ -133,21 +208,11 @@ function resetActiveButtons() {
 
 }
 
-// Run function
-async function run() {
-  document.getElementById("loading-screen").style.display = "block";
-  resetData();
-  resetActiveButtons(); // Reset active state of buttons
-  updateDataOnItemChange(data);
-
-  Office.context.mailbox.addHandlerAsync(Office.EventType.ItemChanged, () => {
-    document.getElementById("loading-screen").style.display = "block";
-    resetData();
-    resetActiveButtons(); // Reset active state of buttons
-    updateDataOnItemChange(data);
-  });
-}
-
+/**
+ * Function: updateCategories
+ * Description: This function updates the categories of an email item in Office context. It adds a new category if it doesn't exist.
+ * @param {Object} data - The data object containing the predicted label.
+ */
 function updateCategories(data) {
   Office.context.mailbox.masterCategories.getAsync((asyncResult) => {
     if (asyncResult.status === Office.AsyncResultStatus.Succeeded) {
@@ -178,8 +243,45 @@ function updateCategories(data) {
   });
 }
 
-// Update data on item change function
-function updateDataOnItemChange(data) {
+
+/**
+ * Function: updateDataOnItemChangeNewMail
+ * Description: This function updates the data when a new mail item is changed. It sends the email body to the server and updates the UI based on the response.
+ * @param {Object} data - The data object containing the email details.
+ */
+async function updateDataOnItemChangeNewMail(data) {
+  const mail = Office.context.mailbox;
+  const item = mail.item;
+  updateItemData(item);
+  item.body.getAsync("text", (result) => {
+    if (result.status === Office.AsyncResultStatus.Succeeded) {
+      data.body = result.value;
+      if (document.getElementById("sendSwitch").checked) {
+        document.getElementById("ui").style.display = "block";
+        sendEmailBodyToServer(data)
+          .then((newData) => {
+            activateButtonBasedOnData(newData)
+            updateData(data, newData);
+            updateChart(data) //updateChart(data); //debug(data);
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+          });
+      }
+      else {
+        document.getElementById("ui").style.display = "none";
+        document.getElementById("loading-screen").style.display = "none";
+      }
+    }
+  })
+}
+
+/**
+ * Function: updateDataOnItemChange
+ * Description: This function updates the data when a mail is updated (rating). It sends the email body to the server and updates the UI based on the response.
+ * @param {Object} data - The data object containing the email details.
+ */
+async function updateDataOnItemChange(data) {
   const mail = Office.context.mailbox;
   const item = mail.item;
   updateItemData(item);
@@ -196,13 +298,21 @@ function updateDataOnItemChange(data) {
           .catch((error) => {
             console.error("Error:", error);
           });
-      } else {
+      }
+      else {
         document.getElementById("ui").style.display = "none";
+        document.getElementById("loading-screen").style.display = "none";
       }
     }
-  });
+  })
 }
+
 let chartInstance = null;
+/**
+ * Function: updateChart
+ * Description: This function updates the chart with the provided data.
+ * @param {Object} data - The data object containing the certainty and predicted label.
+ */
 function updateChart(data) {
   const chartOptions = {
     series: [Math.round(data.certainty * 100 * 100) / 100],
@@ -267,7 +377,11 @@ function updateChart(data) {
   }
 }
 
-// Display function
+/**
+ * Function: debug
+ * Description: This function displays the data in the UI and updates the chart.
+ * @param {Object} data - The data object containing the email details.
+ */
 async function debug(data) {
   const itemLabel = document.getElementById("item-label");
   const itemActualLabel = document.getElementById("item-ActualLabel");
@@ -283,25 +397,46 @@ async function debug(data) {
   updateChart(data);
 }
 
-// Check server status function
-async function checkServerStatus() {
+/**
+ * Function: sendEmailBodyToServer
+ * Description: This function sends the email body to the server and returns the response.
+ * @param {Object} data - The data object containing the email body.
+ * @returns {Object} The response data from the server.
+ */
+async function sendEmailBodyToServer(data) {
+
   try {
-    const response = await fetch(API_SITE, { method: "GET" });
-    if (response.ok) {
-      // Remove the check server button
-      const checkServerButton = document.getElementById("check-server");
-      if (checkServerButton) {
-        checkServerButton.remove();
-      }
-      document.getElementById("app-body").innerHTML = initialAppState;
-      console.log("The server is online.");
+    const response = await fetch(API_SITE, {
+      method: "POST",
+      headers: {
+        "Source": "Outlook",
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${BEARER_DATA}`,
+      },
+      body: JSON.stringify({ body: data.body }),
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
+    const responseData = await response.json();
+
+    return responseData;
   } catch (error) {
-    console.log("The server is offline.");
+    handleServerError();
+    console.error("Error:", error);
+  } finally {
+    document.getElementById("loading-screen").style.display = "none";
   }
 }
 
-// Rate function
+/**
+ * Function: rate
+ * Description: This function rates an email item and sends the rating to the server. It updates the data based on the rating.
+ * @param {Number} value - The rating value. It should be 1 or -1.
+ * @param {Object} data - The data object containing the email details.
+ * @param {String} actual_label - The actual label of the email item.
+ */
+async
 async function rate(value, data, actual_label) {
   const mail = Office.context.mailbox;
   const item = mail.item;
@@ -309,7 +444,7 @@ async function rate(value, data, actual_label) {
   if (value === 1 || value === -1) {
     data.rating = value;
     data.actual_label = actual_label;
-
+    console.log(data);
   } else {
     console.error("Invalid rating. Please provide a rating of 1 or -1.");
   }
@@ -341,34 +476,11 @@ async function rate(value, data, actual_label) {
 }
 
 
-export async function sendEmailBodyToServer(data) {
-  console.log(data.body);
 
-  try {
-    const response = await fetch(API_SITE, {
-      method: "POST",
-      headers: {
-        "Source": "Outlook",
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${BEARER_DATA}`,
-      },
-      body: JSON.stringify({ body: data.body }),
-    });
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const responseData = await response.json();
-
-    console.log(responseData);
-    return responseData;
-  } catch (error) {
-    handleServerError();
-    console.error("Error:", error);
-  } finally {
-    document.getElementById("loading-screen").style.display = "none";
-  }
-}
-
+/**
+ * Function: handleServerError
+ * Description: This function handles server errors by displaying a login URL and a button to check the server status. When the button is clicked, it calls the checkServerStatus function.
+ */
 function handleServerError() {
   document.getElementById("app-body").innerHTML = API_SITE + "/login";
   const checkServerButton = document.createElement("button");
@@ -376,4 +488,27 @@ function handleServerError() {
   checkServerButton.innerText = "Check Server Status";
   document.getElementById("app-body").appendChild(checkServerButton);
   checkServerButton.addEventListener("click", () => checkServerStatus());
+}
+
+/**
+ * Function: checkServerStatus
+ * Description: This function checks the server status by sending a GET request to the server. If the server is online, it removes the check server button and resets the app state. If the server is offline, it logs a message to the console.
+ * @async
+ * @returns {Promise<void>} Nothing
+ */
+async function checkServerStatus() {
+  try {
+    const response = await fetch(API_SITE, { method: "GET" });
+    if (response.ok) {
+      // Remove the check server button
+      const checkServerButton = document.getElementById("check-server");
+      if (checkServerButton) {
+        checkServerButton.remove();
+      }
+      document.getElementById("app-body").innerHTML = initialAppState;
+      console.log("The server is online.");
+    }
+  } catch (error) {
+    console.log("The server is offline.");
+  }
 }
