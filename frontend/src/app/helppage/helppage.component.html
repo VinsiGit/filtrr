@@ -6,6 +6,9 @@
             <button (click)="changePage('model')">model</button>
             <button (click)="changePage('api')">api</button>
         </nav>
+        <div id="content" class="module" *ngIf="page === 'site'">
+            <p>just git gud lol</p>
+        </div>
         <div id="content" class="module" *ngIf="this.page=='outlook'">
             <h1>Outlook Documentatie</h1>
             <p>
@@ -236,14 +239,8 @@
                 </ul>
             </div>
         </div>
-        <div id="content" class="module" *ngIf="page === 'outlook'">
-            <p>outlook documentation</p>
-        </div>
         <div id="content" class="module" *ngIf="page === 'model'">
             <p>model documentation</p>
-        </div>
-        <div id="content" class="module" *ngIf="page === 'api'">
-            <p>api documentation</p>
         </div>
     </div>
 </main>
