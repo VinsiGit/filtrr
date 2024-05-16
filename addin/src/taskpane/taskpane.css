@@ -216,13 +216,26 @@ input:checked + .slider:before {
   border-radius: 50%;
 }
 .container-label {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 20px;
   display: none;
 }
+.container-label button {
+  font-size: 15px;
+  border: none;
+  border-radius: 5px;
+  color: white;
+  background-color: #45a049; /* Change to the color you want */
 
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
 #pos.active,
 #neg.active {
   background-color: #2196f3; /* Change to the color you want */
 }
-.active {
+
+button.active {
   background-color: #2196f3; /* Change to the color you want */
 }

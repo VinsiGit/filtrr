@@ -17,6 +17,9 @@ const COLORS = {
 };
 
 // Initialize data
+
+
+
 let data = {
   item_id: "",
   sender: "",
@@ -29,7 +32,18 @@ let data = {
   certainty: 0,
   rating: 0,
 };
-
+function resetData() {
+  data.item_id = "";
+  data.sender = "";
+  data.sender_email = "";
+  data.datetime_received = 0;
+  data.subject = "";
+  data.body = "";
+  data.predicted_label = "";
+  data.actual_label = null;
+  data.certainty = 0;
+  data.rating = 0;
+}
 
 
 // Group 1
@@ -81,7 +95,6 @@ document.getElementById("neg").addEventListener("click", () => {
   rate(-1, data, null);
 });
 
-
 document.getElementById("IRRELEVANT").addEventListener("click", () => { rate(-1, data, "IRRELEVANT"); })
 document.getElementById("DATA_ENGINEER").addEventListener("click", () => { rate(-1, data, "DATA_ENGINEER"); })
 document.getElementById("BI_ENGINEER").addEventListener("click", () => { rate(-1, data, "BI_ENGINEER"); })
@@ -111,11 +124,26 @@ function updateItemData(item) {
   data.subject = item.subject;
 }
 
+function resetActiveButtons() {
+  const buttons = document.querySelectorAll('#pos, #neg, #IRRELEVANT, #DATA_ENGINEER, #BI_ENGINEER');
+  buttons.forEach(button => {
+    button.classList.remove('active');
+  });
+  document.querySelector(".container-label").style.display = "none";
+
+}
+
 // Run function
 async function run() {
-  updateDataOnItemChange(data)
+  document.getElementById("loading-screen").style.display = "block";
+  resetData();
+  resetActiveButtons(); // Reset active state of buttons
+  updateDataOnItemChange(data);
 
   Office.context.mailbox.addHandlerAsync(Office.EventType.ItemChanged, () => {
+    document.getElementById("loading-screen").style.display = "block";
+    resetData();
+    resetActiveButtons(); // Reset active state of buttons
     updateDataOnItemChange(data);
   });
 }
@@ -163,7 +191,7 @@ function updateDataOnItemChange(data) {
         sendEmailBodyToServer(data)
           .then((newData) => {
             updateData(data, newData);
-            updateChart(data); //display(data);
+            updateChart(data) //updateChart(data); //debug(data);
           })
           .catch((error) => {
             console.error("Error:", error);
@@ -240,7 +268,7 @@ function updateChart(data) {
 }
 
 // Display function
-async function display(data) {
+async function debug(data) {
   const itemLabel = document.getElementById("item-label");
   const itemActualLabel = document.getElementById("item-ActualLabel");
   const itemProba = document.getElementById("item-proba");
@@ -314,7 +342,6 @@ async function rate(value, data, actual_label) {
 
 
 export async function sendEmailBodyToServer(data) {
-  document.getElementById("loading-screen").style.display = "block";
   console.log(data.body);
 
   try {
