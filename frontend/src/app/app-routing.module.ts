@@ -5,13 +5,19 @@ import { DashboardComponent } from './dashboard/dashboard.component';
 import { SettingsComponent } from './settings/settings.component';
 import { RetrainComponent } from './retrain/retrain.component';
 import { LoginComponent } from './login/login.component';
-import { AuthGuard } from './auth.guard';
+import { AuthGuard } from './guards/auth.guard';
+import { AdminGuard } from './guards/admin-guard.guard';
+import { HelppageComponent } from './helppage/helppage.component';
 
 
 const routes: Routes = [
   {
     path: "login",
     component: LoginComponent
+  },
+  {
+    path: "help",
+    component: HelppageComponent
   },
   {
     path: "dashboard",
@@ -26,16 +32,16 @@ const routes: Routes = [
   {
     path: "settings",
     component: SettingsComponent,
-    canActivate: [AuthGuard]
+    canActivate: [AuthGuard, AdminGuard]
   },
   {
     path: "retrain",
     component: RetrainComponent,
-    canActivate: [AuthGuard]
+    canActivate: [AuthGuard, AdminGuard]
   },
   {
     path: "",
-    redirectTo: "dashboard",
+    redirectTo: "paste-in",
     pathMatch: "full"
   }
 ];

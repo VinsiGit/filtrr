@@ -1,7 +1,13 @@
+.module {
+    height: 100%;
+    width: 100%;
+    color: var(--page-color-text);
+}
+
 .dashboard {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
-    grid-template-rows: 1fr 1fr;
+    grid-template-columns: 7fr 7fr 4fr 2fr 4fr 7fr;
+    grid-template-rows: 3fr 3fr 4fr;
     min-width: 96.5vw;
     width: 100%;
     gap: 2vw;
@@ -13,12 +19,12 @@
 }
 
 .chart1 {
-    grid-column: 4 / 5;
+    grid-column: 4 / 6;
     grid-row: 1 / 2;
 }
 
 .chart2 {
-    grid-column: 5 / 6;
+    grid-column: 6 / 7;
 }
 
 .chart3 {
@@ -26,8 +32,42 @@
     grid-row: 2 / 3;
 }
 
-.module {
-    height: 100%;
-    width: 100%;
-    color: var(--page-color-text);
+.chart3 > .module {
+    background-color: var(--color-label_irrelevant) !important;
+    border: 1px solid rgba(0, 0, 0, 0.015);
+}
+
+.chart4 {
+    grid-column: 5 / 7;
+    grid-row: 2 / 4;
+}
+
+.chart5 {
+    grid-column: 1 / 2;
+    grid-row: 3 / 4;
+}
+
+.chart5 > .module {
+    background-color: var(--color-label_irrelevant) !important;
+    border: 1px solid rgba(0, 0, 0, 0.015);
+}
+
+.chart6 {
+    grid-column: 2 / 3;
+    grid-row: 3 / 4;
+}
+
+.chart6  > .module {
+    background-color: var(--color-label1) !important;
+    border: 1px solid rgba(0, 0, 0, 0.01);
+}
+
+.chart7 {
+    grid-column: 3 / 5;
+    grid-row: 3 / 4;
+}
+
+.chart7 > .module {
+    background-color: var(--color-label2) !important;
+    border: 1px solid rgba(70, 70, 70, 0.03);
 }

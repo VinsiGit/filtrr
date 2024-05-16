@@ -132,7 +132,7 @@
   position: fixed;
   height: 6rem;
   background-color: var(--nav-color-background);
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow-float);
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -157,8 +157,8 @@ svg {
 .lock_nav {
   display: flexbox;
   max-width: 1.5rem;
-  position: relative;
-  right: -5rem;
+  position: absolute;
+  right: 0px;
 }
 
 .lock {
@@ -194,7 +194,7 @@ svg {
 }
 
 .logoutbutton:hover {
-  background-color: var(--page-color-button-pressed);
+  background-color: var(--page-color-button-pressed-warning);
 }
 
 .logoutbutton:focus {
@@ -207,4 +207,16 @@ svg {
   .logoutbutton {
     padding: .75rem 1.5rem;
   }
+}
+
+.logocontainer svg {
+  opacity: 0.2; /* Sets the transparency to 50% */
+  transform: scale(4); /* Makes the SVG 50% larger */
+}
+
+.testgood, .testbad {
+  padding: 1rem;
+  height: 1rem;
+  width: 1.5rem;  
+  border-radius: 1.5rem;
 }

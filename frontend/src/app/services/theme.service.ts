@@ -4,9 +4,7 @@ import { Injectable } from '@angular/core';
   providedIn: 'root'
 })
 export class ThemeService {
-  irrelevant_color: string = '#7961f1'
-  label1color: string = "#6460af";
-  label2color: string = "#b872de";
+  labelcolors: string[] = ['#7961f1', "#6460af", "#b872de"];
 
   shadowcolor: string = "607D8B";
   shadowOpacity: number = 0.3;
@@ -18,4 +16,9 @@ export class ThemeService {
   radial_textcolor: string = "#607d8b";
   radial_trackcolor: string = "#f5f4ff";
   radial_backgroundcolor: string = "#47426b";
+
+  matrix_labelcolors: string[] = ["#9fa2a7", "#433db1", "#a126e4"];
+  matrix_bordercolor: string = "#fcfdfe";
+
+  certainty_gridtext: string[] = ["#8e8ea7", "#f0f4f8", "#fff"];
 }

@@ -1,8 +1,8 @@
 // src/app/login/login.component.ts
 import { Component, OnInit } from '@angular/core';
-import { AuthService } from '../auth.service';
+import { AuthService } from '../services/auth.service';
 import { HttpClient } from '@angular/common/http';
-import { PagetitleService } from '../pagetitle.service';
+import { PagetitleService } from '../services/pagetitle.service';
 import { environment } from '../../environments/environment';
 
 @Component({
@@ -20,10 +20,10 @@ export class LoginComponent implements OnInit{
     const accessToken = localStorage.getItem('access_token');
     if (accessToken) {
       // Call API to check if token is valid
-      this.http.get(`https://${this.hostname}/api/mails`).subscribe({
-        next: () => {
+      this.http.get(`https://${this.hostname}/api/tokencheck`).subscribe({
+        next: (response: any) => {
           // Token is valid, perform login success action
-          this.auth.loginsuccess();
+          this.auth.loginsuccess(response.role, localStorage.getItem('username'));
         },
         error: (error) => {
           if (error.status === 401) {
@@ -41,7 +41,7 @@ export class LoginComponent implements OnInit{
     this.auth.login(this.username, this.password).subscribe({
       next: (data) => {
         localStorage.setItem('access_token', data.access_token);
-        this.auth.loginsuccess();
+        this.auth.loginsuccess(data.role, this.username);
       },
       error: (error) => {
         this.errorMessage = 'Invalid username or password';

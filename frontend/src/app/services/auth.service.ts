@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Router } from '@angular/router';
-import { environment } from '../environments/environment';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -22,14 +22,19 @@ export class AuthService {
 
   logout(){
     localStorage.removeItem('access_token');
+    localStorage.removeItem('account_type');
     this.isLoggedIn = false;
     this.router.navigate(['login']);
   }
 
-  loginsuccess() {
+  loginsuccess(role: string, username: string|null) {
     console.log('Login successful');
+    localStorage.setItem('account_type', role);
+    if (username){
+      localStorage.setItem('username', username);
+    }
     this.isLoggedIn = true;
-    this.router.navigate(['dashboard']);
+    this.router.navigate(['paste-in']);
   }
 
 

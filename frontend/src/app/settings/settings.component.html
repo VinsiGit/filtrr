@@ -1,1 +1,51 @@
-<p>settings works!</p>
+<main style="position: relative">
+  <div class="module">
+    <div id="current_account">
+      <p>current user: {{ this.current_user }}</p>
+    </div>
+    <div id="useradd_form">
+      <h2>add user:</h2>
+      <form (ngSubmit)="addUser()">
+        <div>
+          <label>User role: </label>
+          <select name="user roles" id="userroles" [(ngModel)]="newUser_role">
+            <option value="user">User</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+        <div class="credentials">
+          <div class="input-block">
+            <input type="text" name="username" required [(ngModel)]="newUser_username" />
+            <span class="placeholder">Username</span>
+          </div>
+          <div class="input-block">
+            <input type="password" name="password" required [(ngModel)]="newUser_password" />
+            <span class="placeholder">Password</span>
+          </div>
+          <div class="input-block">
+            <input type="password" name="password_confirm" required [(ngModel)]="newUser_password_confirm" />
+            <span class="placeholder">Confirm Password</span>
+          </div>
+        </div>
+        <button class="submit" type="submit">Add User</button>
+        <p class="errormessage" *ngIf="userAdd_errorMessage">Error: {{ userAdd_errorMessage }}</p>
+      </form>
+    </div>
+    <div id="userList">
+      <ul>
+        <li class="accountlisting" *ngFor="let account of accounts">
+          <div class="userinfo">
+            <p>user: {{ account.username }}</p>
+            <p>role: {{ account.role }}</p>
+          </div>
+          <button *ngIf="(this.current_user != account.username) && (account.username != 'admin'); else disabled" class="deletebutton" (click)="this.deleteUser(account.username)">delete user</button>
+          <ng-template #disabled>
+            <button class="deletebutton" disabled style="background-color: var(--page-color-inactive); cursor:default;">delete user</button>
+          </ng-template>
+        </li>
+      </ul>
+    </div>
+  </div>
+</main>
+
+<!-- (click)="this.logout()" *ngIf="this.isLoggedIn === true"*/ -->

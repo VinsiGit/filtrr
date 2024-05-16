@@ -15,7 +15,10 @@ import { ThemeswitchComponent } from './themeswitch/themeswitch.component';
 import { MailamountgraphComponent } from './mailamountgraph/mailamountgraph.component';
 import { NgApexchartsModule } from 'ng-apexcharts';
 import { LoginComponent } from './login/login.component';
-import { AuthInterceptor } from './auth.interceptor';
+import { AuthInterceptor } from './guards/auth.interceptor';
+import { HelppageComponent } from './helppage/helppage.component';
+import { CertaintygraphComponent } from './certaintygraph/certaintygraph.component';
+import { ConfusionmatrixComponent } from './confusionmatrix/confusionmatrix.component';
 
 @NgModule({
   declarations: [
@@ -27,7 +30,10 @@ import { AuthInterceptor } from './auth.interceptor';
     RetrainComponent,
     ThemeswitchComponent,
     MailamountgraphComponent,
-    LoginComponent
+    LoginComponent,
+    HelppageComponent,
+    CertaintygraphComponent,
+    ConfusionmatrixComponent
   ],
   imports: [
     BrowserModule,

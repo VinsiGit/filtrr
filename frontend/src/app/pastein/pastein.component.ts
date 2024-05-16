@@ -1,8 +1,8 @@
 import { Component, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { PostService } from '../post.service';
-import { PagetitleService } from '../pagetitle.service';
-import { Email } from '../interfaces/email';
+import { PostService } from '../services/post.service';
+import { PagetitleService } from '../services/pagetitle.service';
+import { PasteInResponse } from '../interfaces/dataresponse';
 
 import {
   ApexNonAxisChartSeries,
@@ -10,7 +10,7 @@ import {
   ApexChart,
   ChartComponent
 } from "ng-apexcharts";
-import { ThemeService } from '../theme.service';
+import { ThemeService } from '../services/theme.service';
 
 export type ChartOptions = {
   series: ApexNonAxisChartSeries;
@@ -29,7 +29,7 @@ export class PasteinComponent {
   public chartOptions: Partial<ChartOptions> | any;
   input: string = "";
   text: string = "";
-  textBoxResponse: Email | undefined;
+  textBoxResponse: PasteInResponse | undefined;
 
   constructor(private route: ActivatedRoute, private post: PostService, private title: PagetitleService, private theme: ThemeService) {
   }
@@ -48,7 +48,7 @@ export class PasteinComponent {
           height: 350,
           type: "radialBar"
         },
-        colors: [this.theme.label1color],  
+        colors: [this.theme.labelcolors[1]],  
         plotOptions: {
           radialBar: {
             hollow: {
@@ -86,14 +86,14 @@ export class PasteinComponent {
           gradient: {
             shade: "dark",
             type: "vertical",
-            gradientToColors: [this.theme.label2color],
+            gradientToColors: [this.theme.labelcolors[2]],
             stops: [0, 200]
           }
         },
         stroke: {
           lineCap: "round"
         },
-        labels: [this.textBoxResponse.label]
+        labels: [this.textBoxResponse.predicted_label]
       };
     }
   }

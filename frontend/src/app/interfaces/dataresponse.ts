@@ -1,3 +1,16 @@
+export interface PasteInResponse {
+    certainty: number;
+    date: string;
+    datetime_elapsed: number;
+    keywords: string[];
+    model_version: number;
+    predicted_label: string;
+}
+
+export interface PasteInText {
+    body: string;
+}
+
 export interface LabelData {
     data: DayData[];
     end_date: string;
@@ -17,5 +30,18 @@ export interface DayData {
 
 export interface LabelCount {
     count: number;
+    average_confidence: number;
+    evaluation: number;
     label: string;
+    rating_count: number;
+}
+
+
+export interface ConfusionMatrix {
+    confusion_matrix: string[][];
+    end_date: string;
+    labels: string[];
+    model_version: string;
+    source: string;
+    start_date: string;
 }

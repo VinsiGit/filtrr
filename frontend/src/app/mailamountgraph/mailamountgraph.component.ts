@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild } from "@angular/core";
-import { ThemeService } from "../theme.service";
+import { ThemeService } from "../services/theme.service";
 
 import {
   ChartComponent,
@@ -16,7 +16,7 @@ import {
   ApexYAxis,
 } from "ng-apexcharts";
 import { ActivatedRoute } from "@angular/router";
-import { AnalyticsdataService } from "../analyticsdata.service";
+import { AnalyticsdataService } from "../services/analyticsdata.service";
 import { LabelData, DayData, LabelCount } from "../interfaces/dataresponse";
 
 export interface ChartOptions {
@@ -45,11 +45,6 @@ export class MailamountgraphComponent implements OnInit {
   public chartOptions: Partial<ChartOptions> | any;
 
   datapoints: ApexAxisChartSeries = [];
-  /*
-  datapoints_bi_eng: number[] = [];
-  datapoints_data_eng: number[] = [];
-  datapoints_irrelevant: number[] = [];
-  */
   days: string[] = [];
 
 
@@ -67,6 +62,7 @@ export class MailamountgraphComponent implements OnInit {
     this.chartOptions = {
       series: this.datapoints,
       chart: {
+        height: 650,
         foreColor: this.theme.chart_textcolor,
         redrawOnParentResize: true,
         id: "mailAmountGraph",
@@ -83,13 +79,13 @@ export class MailamountgraphComponent implements OnInit {
           opacity: 0.05,
         },
       },
-      colors: [this.theme.irrelevant_color, this.theme.label1color, this.theme.label2color],
+      colors: this.theme.labelcolors,
       dataLabels: {
         enabled: false,
       },
       stroke: {
         curve: "smooth",
-        width: 4,
+        width: 5,
       },
       title: {
         text: "mails",
@@ -138,7 +134,8 @@ export class MailamountgraphComponent implements OnInit {
     this.datapoints = [];
     this.days = [];
 
-    const responseData: LabelData = await this.data.getDataBetween(undefined, undefined);
+    const responseData: LabelData = await this.data.getDataBetween(undefined, undefined); 
+    console.log(responseData);
 
     // Initialize an object to hold the aggregated data
     const counts: { [label: string]: number[] } = {};
@@ -164,51 +161,5 @@ export class MailamountgraphComponent implements OnInit {
       this.datapoints.push({ name, data });
     });
   }
-
-
-
-  /*
-  async loadChartData(): Promise<void> {
-    this.datapoints = [];
-    this.days = [];
-
-    const responseData: LabelData = await this.data.getDataBetween(undefined, undefined);
-
-    console.log(responseData);
-
-    responseData.data.forEach((dayData: DayData) => {
-        const transformedData = dayData.labels_count.map((labelCount: LabelCount) => ({
-            name: labelCount.label.replace('_', ' ').toLowerCase(),
-            data: [labelCount.count]
-        }));
-        this.datapoints.push(...transformedData);
-        this.days.push(dayData.date);
-    });
-
-  }
-  */
-
-  /*
-  async loadChartData(): Promise<void> {
-
-    const responseData: LabelData = await this.data.getDataBetween(undefined, undefined);
-    let responseData_bi_eng: number[] = [];
-    let responseData_data_eng: number[] = [];
-    let responseData_irrelevant: number[] = [];
-    this.days = [];
-
-    responseData.data.forEach((dayData: DayData) => {
-      responseData_bi_eng.push(dayData.BI_ENGINEER);
-      responseData_data_eng.push(dayData.DATA_ENGINEER);
-      responseData_irrelevant.push(dayData.IRRELEVANT);
-      this.days.push(dayData.date);
-    });
-
-    this.datapoints_bi_eng = responseData_bi_eng;
-    this.datapoints_data_eng = responseData_data_eng;
-    this.datapoints_irrelevant = responseData_irrelevant;
-  }
-  */
-
 }
 
