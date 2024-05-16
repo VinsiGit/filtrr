@@ -119,11 +119,17 @@ p {
   }
 }
 
+/* Container holding the switch and the button */
+.switch-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 /* The switch - the box around the slider */
 .switch {
   position: relative;
   text-align: left;
-
   width: 60px;
   height: 34px;
 }
@@ -133,6 +139,33 @@ p {
   opacity: 0;
   width: 0;
   height: 0;
+}
+
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+#pos,
+#neg {
+  background-color: #4caf50; /* Green background */
+  border: none; /* Remove borders */
+  color: white; /* White text */
+  padding: 16px 32px; /* Some padding */
+  text-align: center; /* Centered text */
+  text-decoration: none; /* Remove underline */
+  display: inline-block; /* Display as inline-block */
+  font-size: 2rem; /* Change font size */
+  margin: 12px 6px; /* Some margin */
+  cursor: pointer; /* Pointer/hand icon */
+  border-radius: 12px; /* Rounded corners */
+}
+
+#pos:hover,
+#neg:hover {
+  background-color: #45a049; /* Darker green on hover */
 }
 
 /* The slider */
@@ -181,4 +214,15 @@ input:checked + .slider:before {
 
 .slider.round:before {
   border-radius: 50%;
+}
+.container-label {
+  display: none;
+}
+
+#pos.active,
+#neg.active {
+  background-color: #2196f3; /* Change to the color you want */
+}
+.active {
+  background-color: #2196f3; /* Change to the color you want */
 }
