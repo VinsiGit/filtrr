@@ -13,16 +13,12 @@ nav {
     padding-left: 1.5rem;
 }
 
-body {
-    font-family: Arial, sans-serif;
-    line-height: 1.6;
-}
 h1, h2, h3 {
     color: #333;
 }
 .endpoint {
     background-color: #f4f4f4;
-    border-left: 6px solid #a8008c;
+    border-left: 6px solid #dd6f2f;
     margin: 20px 0;
     padding: 20px;
 }
