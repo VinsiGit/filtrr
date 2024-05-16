@@ -126,9 +126,9 @@ export class RatingCountGraphComponent {
         },
       },
       markers: {
-        size: 3,
+        size: 3.5,
         hover: {
-          size: 5,
+          size: 6,
         },
       }
     };

@@ -7,7 +7,7 @@ import { PagetitleService } from '../services/pagetitle.service';
   styleUrls: ['./helppage.component.css']
 })
 export class HelppageComponent {
-  page: string = "api";
+  page: string = "site";
 
   constructor(private title: PagetitleService) {
   }
@@ -16,4 +16,7 @@ export class HelppageComponent {
     this.title.pageTitle = "help";
   }
 
+  changePage(newPage: string): void {
+    this.page = newPage;
+  }
 }
