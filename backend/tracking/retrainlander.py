@@ -102,7 +102,6 @@ def preprocess_data_flow(mails_file_path: str = 'data.json', keyword_file_path: 
         result = collection.aggregate(pipeline)
 
         # Get all the mails from the collection
-        # mails = list(collection.find({"versions.actual_label": {"$exists": True}}))
         mails = list(result)
         # Close the MongoDB connection
         client.close()
