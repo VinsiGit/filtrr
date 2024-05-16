@@ -126,9 +126,9 @@ export class EvaluationGraphComponent {
         },
       },
       markers: {
-        size: 4,
+        size: 3.5,
         hover: {
-          size: 8,
+          size: 6,
         },
       },
     };
