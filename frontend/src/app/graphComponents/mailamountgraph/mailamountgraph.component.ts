@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild } from "@angular/core";
-import { ThemeService } from "../services/theme.service";
+import { ThemeService } from "../../services/theme.service";
 
 import {
   ChartComponent,
@@ -16,8 +16,8 @@ import {
   ApexYAxis,
 } from "ng-apexcharts";
 import { ActivatedRoute } from "@angular/router";
-import { AnalyticsdataService } from "../services/analyticsdata.service";
-import { LabelData, DayData, LabelCount } from "../interfaces/dataresponse";
+import { AnalyticsdataService } from "../../services/analyticsdata.service";
+import { LabelData, DayData, LabelCount } from "../../interfaces/dataresponse";
 
 export interface ChartOptions {
   series: ApexAxisChartSeries;

@@ -1,5 +1,5 @@
 import { Component, Input, OnInit, ViewChild } from "@angular/core";
-import { ThemeService } from "../services/theme.service";
+import { ThemeService } from "../../services/theme.service";
 
 import {
   ChartComponent,
@@ -16,8 +16,8 @@ import {
   ApexYAxis,
 } from "ng-apexcharts";
 import { ActivatedRoute } from "@angular/router";
-import { AnalyticsdataService } from "../services/analyticsdata.service";
-import { LabelData, DayData } from "../interfaces/dataresponse";
+import { AnalyticsdataService } from "../../services/analyticsdata.service";
+import { LabelData, DayData } from "../../interfaces/dataresponse";
 
 export interface ChartOptions {
   series: ApexAxisChartSeries;
@@ -147,6 +147,7 @@ export class CertaintygraphComponent {
     this.months = [];
 
     const today: Date = new Date();
+    today.setDate(today.getDate() + 1);
     const oneYearAgo: Date = new Date();
     oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
 
