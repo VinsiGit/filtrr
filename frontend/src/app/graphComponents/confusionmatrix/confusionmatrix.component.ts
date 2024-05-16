@@ -48,7 +48,6 @@ export class ConfusionmatrixComponent {
   async ngOnInit(): Promise<void> {
     await this.loadMatrixData().then(() => {
       this.renderChart();
-      console.log(this.datapoints);
     });
   }
 

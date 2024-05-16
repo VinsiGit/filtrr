@@ -7,6 +7,7 @@ import { PagetitleService } from '../services/pagetitle.service';
   styleUrls: ['./helppage.component.css']
 })
 export class HelppageComponent {
+  page: string = "api";
 
   constructor(private title: PagetitleService) {
   }

@@ -161,6 +161,12 @@ html {
 	box-shadow: var(--shadow-float);
 }
 
+.module-indent {
+	background-color: var(--module-color-background);
+	border-radius: 1.5rem;
+	box-shadow: var(--shadow-indent);
+}
+
 .apexcharts-zoom-icon.apexcharts-selected>svg {
 	fill: var(--module-color-highlight-monochrome) !important;
 }

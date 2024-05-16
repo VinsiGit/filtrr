@@ -19,6 +19,8 @@ import { AuthInterceptor } from './guards/auth.interceptor';
 import { HelppageComponent } from './helppage/helppage.component';
 import { CertaintygraphComponent } from './graphComponents/certaintygraph/certaintygraph.component';
 import { ConfusionmatrixComponent } from './graphComponents/confusionmatrix/confusionmatrix.component';
+import { RatingCountGraphComponent } from './graphComponents/rating-count-graph/rating-count-graph.component';
+import { EvaluationGraphComponent } from './graphComponents/evaluation-graph/evaluation-graph.component';
 
 @NgModule({
   declarations: [
@@ -33,7 +35,9 @@ import { ConfusionmatrixComponent } from './graphComponents/confusionmatrix/conf
     LoginComponent,
     HelppageComponent,
     CertaintygraphComponent,
-    ConfusionmatrixComponent
+    ConfusionmatrixComponent,
+    RatingCountGraphComponent,
+    EvaluationGraphComponent
   ],
   imports: [
     BrowserModule,

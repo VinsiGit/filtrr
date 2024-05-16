@@ -103,7 +103,6 @@ export class PasteinComponent {
       const response = await this.post.postMail({"body": this.input});
       this.textBoxResponse = response;
       this.text = this.input;
-      console.log('Response content:', this.textBoxResponse);
       this.renderchart();
     } catch (error) {
       console.error('Error occurred:', error);

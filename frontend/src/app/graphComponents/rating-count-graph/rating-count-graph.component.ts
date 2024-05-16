@@ -35,12 +35,11 @@ export interface ChartOptions {
 };
 
 @Component({
-  selector: 'app-mailamountgraph',
-  templateUrl: './mailamountgraph.component.html',
-  styleUrls: ['./mailamountgraph.component.css']
+  selector: 'app-rating-count-graph',
+  templateUrl: './rating-count-graph.component.html',
+  styleUrls: ['./rating-count-graph.component.css']
 })
-
-export class MailamountgraphComponent implements OnInit {
+export class RatingCountGraphComponent {
   @ViewChild("chart") chart: ChartComponent | undefined;
   public chartOptions: Partial<ChartOptions> | any;
 
@@ -62,10 +61,15 @@ export class MailamountgraphComponent implements OnInit {
     this.chartOptions = {
       series: this.datapoints,
       chart: {
-        height: 650,
+        toolbar: {
+          offsetX: -5,
+          offsetY: 10
+        },
+        height: 320,
         foreColor: this.theme.chart_textcolor,
         redrawOnParentResize: true,
-        id: "mailAmountGraph",
+        id: "ratingCountGraph",
+        group: 'ratingData',
         type: 'area',
         zoom: {
           enabled: true,
@@ -88,8 +92,9 @@ export class MailamountgraphComponent implements OnInit {
         width: 5,
       },
       title: {
-        text: "mails",
-        align: "left",
+        text: "rating count",
+        align: "center",
+        margin: 20
       },
       grid: {
         borderColor: this.theme.chart_gridcolor,
@@ -121,11 +126,11 @@ export class MailamountgraphComponent implements OnInit {
         },
       },
       markers: {
-        size: 4,
+        size: 3,
         hover: {
-          size: 8,
+          size: 5,
         },
-      },
+      }
     };
   }
 
@@ -137,7 +142,7 @@ export class MailamountgraphComponent implements OnInit {
     const responseData: LabelData = await this.data.getDataBetween(undefined, undefined); 
 
     // Initialize an object to hold the aggregated data
-    const counts: { [label: string]: number[] } = {};
+    const ratingCounts: { [label: string]: number[] } = {};
 
     responseData.data.forEach((dayData: DayData) => {
       // add date
@@ -148,17 +153,16 @@ export class MailamountgraphComponent implements OnInit {
         // converting label name to lowercase and removing spaces
         const label = labelCount.label.replace('_', ' ').toLowerCase();
         // if label name isn't present in counts yet
-        if (!counts[label]) {
-          counts[label] = [];
+        if (!ratingCounts[label]) {
+          ratingCounts[label] = [];
         }
-        counts[label].push(labelCount.count);
+        ratingCounts[label].push(labelCount.rating_count);
       });
     });
 
     // Transform the aggregated data into the desired format
-    Object.entries(counts).forEach(([name, data]) => {
+    Object.entries(ratingCounts).forEach(([name, data]) => {
       this.datapoints.push({ name, data });
     });
   }
 }
-
