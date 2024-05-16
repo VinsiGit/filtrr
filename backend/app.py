@@ -536,7 +536,9 @@ def add_mail_batch():
                     "datetime_elapsed": version_info["datetime_elapsed"],
                     "certainty": version_info["certainty"],
                     "source": version_info.get("source"),
-                    "model_version": version_info["model_version"]
+                    "model_version": version_info["model_version"],
+                    "actual_label": version_info.get("actual_label", "N/A"),
+                    "rating": version_info.get("rating", "N/A")
                 }
                 responses.append(response)
                 continue
