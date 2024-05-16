@@ -78,7 +78,7 @@ class TextPreprocessor:
                         interesting_tokens.append(token)
             return list(set(interesting_tokens))
 
-        text = email.get('text_body', '')
+        text = email.get('body', '')
         tokens = get_tokens(text)
         keywords = extract_keyword_tokens(tokens)
         keywords.sort()

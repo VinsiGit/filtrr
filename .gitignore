@@ -10,5 +10,6 @@ mlruns
 *prefect*
 .devcontainer/
 __pycache__/
-!script.sh
-!prefect.yaml
+!start.sh
+prefect.yaml
+test.py
