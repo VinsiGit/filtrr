@@ -89,10 +89,21 @@ export class CertaintygraphComponent {
         },
       ],
       chart: {
+        toolbar: {
+          show: false
+        },
         foreColor: "#fff",
         redrawOnParentResize: true,
         id: `certaintyGraph-${this.data.labels[+this.labelIndex]}`,
-        type: 'line'
+        type: 'line',
+        dropShadow: {
+          enabled: true,
+          top: -3,
+          left: -3,
+          blur: 2,
+          color: "black",
+          opacity: 0.09,
+        },
       },
       colors: [getComputedStyle(document.documentElement).getPropertyValue('--module-color-highlight-monochrome')],
       dataLabels: {
@@ -107,7 +118,8 @@ export class CertaintygraphComponent {
         align: "left",
       },
       grid: {
-        show: false
+        show: true,
+        borderColor: this.theme.certainty_gridtext[+this.labelIndex]
       },
       xaxis: {
         type: 'datetime',
