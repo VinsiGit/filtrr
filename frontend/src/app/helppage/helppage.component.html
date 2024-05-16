@@ -3,20 +3,244 @@
         <nav>
             <button (click)="changePage('site')">site</button>
             <button (click)="changePage('outlook')">outlook</button>
-            <button (click)="changePage('model')">model</button>
             <button (click)="changePage('api')">api</button>
+            <button (click)="changePage('model')">model</button>
         </nav>
         <div id="content" class="module" *ngIf="page === 'site'">
             <p>just git gud lol</p>
         </div>
-        <div id="content" class="module" *ngIf="page === 'outlook'">
-            <p>outlook documentation</p>
+        <div id="content" class="module" *ngIf="this.page=='outlook'">
+            <h1>Outlook Documentatie</h1>
+            <p>
+                Dit is de Outlook add-on voor FILTRR. <br>
+                De manifest-file kan hier gedownload worden: <a href="">download-link toevoegen</a> .<br>
+                Om deze te installeren moet men naar deze link gaan: <a href="https://aka.ms/olksideload"
+                    target="_blank">outlook
+                    link</a>.<br>
+                Gaan naar 'My add-ins' en de manifest-file kan men in custom addins toevoegen.<br>
+                Eens geïnstalleerd, kan je op Outlook de mails laten nakijken door FILTRR.<br>
+                Om dit te doen, klik je eerst in Outlook op een mail (die je wil laten analyseren).<br>
+                Rechts zie je een vakje waar je op add-ons kan klikken.<br>
+                Na het klikken start er een nieuw vak op met de uitleg over de geanalyseerde email.<br>
+            </p>
+        </div>
+        <div id="content" class="module" *ngIf="this.page=='api'">
+            <h1>API Documentatie</h1>
+            <p>Welkom bij de API-documentatie. Hieronder vindt u een overzicht van alle beschikbare endpoints en de
+                bijbehorende queryparameters, bodyparameters en toegestane gebruikersrollen.</p>
+
+            <div class="endpoint">
+                <h2>GET /api</h2>
+                <p>Haalt de status van de API op.</p>
+                <h3>Toegestane rollen:</h3>
+                <ul>
+                    <li>Geen authenticatie vereist</li>
+                </ul>
+            </div>
+
+            <div class="endpoint">
+                <h2>POST /api/login</h2>
+                <p>Verifieert de gebruiker en retourneert een JWT-token.</p>
+                <h3>Body Parameters:</h3>
+                <ul>
+                    <li><code>username</code>: <em>string</em> (vereist) - De gebruikersnaam van de gebruiker.</li>
+                    <li><code>password</code>: <em>string</em> (vereist) - Het wachtwoord van de gebruiker.</li>
+                </ul>
+                <h3>Toegestane rollen:</h3>
+                <ul>
+                    <li>Geen authenticatie vereist</li>
+                </ul>
+            </div>
+
+            <div class="endpoint">
+                <h2>GET /api/users</h2>
+                <p>Haalt een lijst van alle gebruikers op.</p>
+                <h3>Toegestane rollen:</h3>
+                <ul>
+                    <li>admin</li>
+                </ul>
+            </div>
+
+            <div class="endpoint">
+                <h2>POST /api/users</h2>
+                <p>Voegt een nieuwe gebruiker toe.</p>
+                <h3>Body Parameters:</h3>
+                <ul>
+                    <li><code>username</code>: <em>string</em> (vereist) - De gebruikersnaam van de nieuwe gebruiker.
+                    </li>
+                    <li><code>password</code>: <em>string</em> (vereist) - Het wachtwoord van de nieuwe gebruiker.</li>
+                </ul>
+                <h3>Toegestane rollen:</h3>
+                <ul>
+                    <li>admin</li>
+                </ul>
+            </div>
+
+            <div class="endpoint">
+                <h2>PUT /api/users</h2>
+                <p>Wijzigt een bestaande gebruiker.</p>
+                <h3>Body Parameters:</h3>
+                <ul>
+                    <li><code>username</code>: <em>string</em> (vereist) - De gebruikersnaam van de te wijzigen
+                        gebruiker.</li>
+                    <li><code>password</code>: <em>string</em> (optioneel) - Het nieuwe wachtwoord van de gebruiker.
+                    </li>
+                </ul>
+                <h3>Toegestane rollen:</h3>
+                <ul>
+                    <li>admin</li>
+                </ul>
+            </div>
+
+            <div class="endpoint">
+                <h2>DELETE /api/users</h2>
+                <p>Verwijdert een bestaande gebruiker.</p>
+                <h3>Body Parameters:</h3>
+                <ul>
+                    <li><code>username</code>: <em>string</em> (vereist) - De gebruikersnaam van de te verwijderen
+                        gebruiker.</li>
+                </ul>
+                <h3>Toegestane rollen:</h3>
+                <ul>
+                    <li>admin</li>
+                </ul>
+            </div>
+
+            <div class="endpoint">
+                <h2>GET /api/mails</h2>
+                <p>Haalt een lijst van alle mails op.</p>
+                <h3>Query Parameters:</h3>
+                <ul>
+                    <li><code>sender</code>: <em>string</em> (optioneel) - Filter op afzender van de e-mail.</li>
+                    <li><code>recipient</code>: <em>string</em> (optioneel) - Filter op ontvanger van de e-mail.</li>
+                    <li><code>subject</code>: <em>string</em> (optioneel) - Filter op onderwerp van de e-mail.</li>
+                    <li><code>start_date</code>: <em>string</em> (optioneel) - Filter op startdatum.</li>
+                    <li><code>end_date</code>: <em>string</em> (optioneel) - Filter op einddatum.</li>
+                </ul>
+                <h3>Toegestane rollen:</h3>
+                <ul>
+                    <li>admin</li>
+                </ul>
+            </div>
+
+            <div class="endpoint">
+                <h2>GET /api/db</h2>
+                <p>Haalt informatie over de database op.</p>
+                <h3>Query Parameters:</h3>
+                <ul>
+                    <li><code>collection</code>: <em>string</em> (optioneel) - Specificeer de collectie binnen de
+                        database.</li>
+                    <li><code>stats</code>: <em>string</em> (optioneel) - Specificeer welke statistieken moeten worden
+                        opgevraagd (bijv. "size", "count").</li>
+                </ul>
+                <h3>Toegestane rollen:</h3>
+                <ul>
+                    <li>admin</li>
+                </ul>
+            </div>
+
+            <div class="endpoint">
+                <h2>GET /api/stats</h2>
+                <p>Haalt statistieken van de API op.</p>
+                <h3>Query Parameters:</h3>
+                <ul>
+                    <li><code>rating</code>: <em>int</em> (optioneel) - Filter op beoordeling, standaard is
+                        "all_ratings".</li>
+                    <li><code>predicted_label</code>: <em>string</em> (optioneel) - Filter op voorspeld label, standaard
+                        is "all_labels".</li>
+                    <li><code>actual_label</code>: <em>string</em> (optioneel) - Filter op daadwerkelijk label,
+                        standaard is "all_labels".</li>
+                    <li><code>source</code>: <em>string</em> (optioneel) - Filter op bron, standaard is "all_sources".
+                    </li>
+                    <li><code>model_version</code>: <em>float</em> (optioneel) - Filter op modelversie, standaard is
+                        "all_versions".</li>
+                    <li><code>start_date</code>: <em>string</em> (optioneel) - Filter op startdatum.</li>
+                    <li><code>end_date</code>: <em>string</em> (optioneel) - Filter op einddatum.</li>
+                </ul>
+                <h3>Toegestane rollen:</h3>
+                <ul>
+                    <li>admin</li>
+                    <li>user</li>
+                </ul>
+            </div>
+
+            <div class="endpoint">
+                <h2>GET /api/cnfmtrx</h2>
+                <p>Haalt de verwarringsmatrix op.</p>
+                <h3>Toegestane rollen:</h3>
+                <ul>
+                    <li>admin</li>
+                    <li>user</li>
+                </ul>
+            </div>
+
+            <div class="endpoint">
+                <h2>GET /api/stats/labels</h2>
+                <p>Haalt de labels van statistieken op.</p>
+                <h3>Toegestane rollen:</h3>
+                <ul>
+                    <li>admin</li>
+                    <li>user</li>
+                </ul>
+            </div>
+
+            <div class="endpoint">
+                <h2>POST /api</h2>
+                <p>Algemene POST endpoint voor de API.</p>
+                <h3>Body Parameters:</h3>
+                <ul>
+                    <li>Afhankelijk van de specifieke functionaliteit.</li>
+                </ul>
+                <h3>Toegestane rollen:</h3>
+                <ul>
+                    <li>admin</li>
+                    <li>user</li>
+                </ul>
+            </div>
+
+            <div class="endpoint">
+                <h2>PUT /api</h2>
+                <p>Algemene PUT endpoint voor de API.</p>
+                <h3>Body Parameters:</h3>
+                <ul>
+                    <li>Afhankelijk van de specifieke functionaliteit.</li>
+                </ul>
+                <h3>Toegestane rollen:</h3>
+                <ul>
+                    <li>admin</li>
+                </ul>
+            </div>
+
+            <div class="endpoint">
+                <h2>GET /api/settings</h2>
+                <p>Haalt de instellingen van de API op.</p>
+                <h3>Toegestane rollen:</h3>
+                <ul>
+                    <li>admin</li>
+                </ul>
+            </div>
+
+            <div class="endpoint">
+                <h2>GET /api/retrain</h2>
+                <p>Start het retrain proces.</p>
+                <h3>Toegestane rollen:</h3>
+                <ul>
+                    <li>admin</li>
+                </ul>
+            </div>
+
+            <div class="endpoint">
+                <h2>GET /api/tokencheck</h2>
+                <p>Controleert de geldigheid van het token.</p>
+                <h3>Toegestane rollen:</h3>
+                <ul>
+                    <li>admin</li>
+                    <li>user</li>
+                </ul>
+            </div>
         </div>
         <div id="content" class="module" *ngIf="page === 'model'">
             <p>model documentation</p>
-        </div>
-        <div id="content" class="module" *ngIf="page === 'api'">
-            <p>api documentation</p>
         </div>
     </div>
 </main>

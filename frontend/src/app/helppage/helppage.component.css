@@ -29,3 +29,18 @@ button:hover {
     cursor: pointer;
     background-color: var(--page-color-button-pressed);
 }
+
+h1, h2, h3 {
+    color: var(--page-color-text);
+}
+.endpoint {
+    background-color: var(--module-color-background-secondary);
+    border-left: 6px solid var(--module-color-highlight-complementary);
+    margin: 20px 0;
+    padding: 20px;
+}
+code {
+    background-color: #e9ecef;
+    padding: 2px 4px;
+    border-radius: 4px;
+}
