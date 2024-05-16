@@ -1,3 +1,16 @@
+export interface PasteInResponse {
+    certainty: number;
+    date: string;
+    datetime_elapsed: number;
+    keywords: string[];
+    model_version: number;
+    predicted_label: string;
+}
+
+export interface PasteInText {
+    body: string;
+}
+
 export interface LabelData {
     data: DayData[];
     end_date: string;

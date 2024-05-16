@@ -12,7 +12,7 @@
         <div id="response" class="module">
             <div class="anwser" *ngIf="textBoxResponse; else logo">
                 <h1>textbox result:</h1>
-                <p>label: {{ this.textBoxResponse.label }}</p>
+                <p>label: {{ this.textBoxResponse.predicted_label }}</p>
                 <apx-chart 
                 [series]="chartOptions.series" 
                 [chart]="chartOptions.chart" 

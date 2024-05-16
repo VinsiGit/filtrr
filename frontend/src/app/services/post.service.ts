@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { lastValueFrom } from 'rxjs';
-import { Email, PasteInText } from '../interfaces/email';
+import { PasteInResponse, PasteInText } from '../interfaces/dataresponse';
 import { environment } from '../../environments/environment';
 
 @Injectable({

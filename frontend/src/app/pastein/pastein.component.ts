@@ -2,7 +2,7 @@ import { Component, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { PostService } from '../services/post.service';
 import { PagetitleService } from '../services/pagetitle.service';
-import { Email } from '../interfaces/email';
+import { PasteInResponse } from '../interfaces/dataresponse';
 
 import {
   ApexNonAxisChartSeries,
@@ -29,7 +29,7 @@ export class PasteinComponent {
   public chartOptions: Partial<ChartOptions> | any;
   input: string = "";
   text: string = "";
-  textBoxResponse: Email | undefined;
+  textBoxResponse: PasteInResponse | undefined;
 
   constructor(private route: ActivatedRoute, private post: PostService, private title: PagetitleService, private theme: ThemeService) {
   }
@@ -93,7 +93,7 @@ export class PasteinComponent {
         stroke: {
           lineCap: "round"
         },
-        labels: [this.textBoxResponse.label]
+        labels: [this.textBoxResponse.predicted_label]
       };
     }
   }
