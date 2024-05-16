@@ -18,7 +18,6 @@ export class ThemeswitchComponent {
     } else {
       // somewhat janky way to convert "true" or "false" back to bool, but it works and is short
       this.darkModeEnabled = localStorage.getItem('darkMode') === "true";
-      console.log(this.darkModeEnabled);
     }
     this.applyTheme();
   }
@@ -34,6 +33,60 @@ export class ThemeswitchComponent {
     //updating chart colors and rerendering the chart
     //email amount chart
     ApexCharts.exec('mailAmountGraph', 'updateOptions', {
+      chart: {
+        foreColor: this.theme.chart_textcolor,
+      },
+      colors: this.theme.labelcolors,
+      grid: {
+        borderColor: this.theme.chart_gridcolor,
+      },
+      xaxis: {
+        labels: {
+          style: {
+            colors: this.theme.chart_axistextcolor,
+          },
+        },
+      },
+      yaxis: {
+        stepSize: 1,
+        labels: {
+          style: {
+            colors: this.theme.chart_axistextcolor,
+          },
+        },
+      },
+    }, true, true, true);
+
+
+    //rating count chart
+    ApexCharts.exec('ratingCountGraph', 'updateOptions', {
+      chart: {
+        foreColor: this.theme.chart_textcolor,
+      },
+      colors: this.theme.labelcolors,
+      grid: {
+        borderColor: this.theme.chart_gridcolor,
+      },
+      xaxis: {
+        labels: {
+          style: {
+            colors: this.theme.chart_axistextcolor,
+          },
+        },
+      },
+      yaxis: {
+        stepSize: 1,
+        labels: {
+          style: {
+            colors: this.theme.chart_axistextcolor,
+          },
+        },
+      },
+    }, true, true, true);
+    
+    
+    //evaluation chart
+    ApexCharts.exec('evaluationGraph', 'updateOptions', {
       chart: {
         foreColor: this.theme.chart_textcolor,
       },

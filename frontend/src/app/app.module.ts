@@ -12,13 +12,15 @@ import { DashboardComponent } from './dashboard/dashboard.component';
 import { SettingsComponent } from './settings/settings.component';
 import { RetrainComponent } from './retrain/retrain.component';
 import { ThemeswitchComponent } from './themeswitch/themeswitch.component';
-import { MailamountgraphComponent } from './mailamountgraph/mailamountgraph.component';
+import { MailamountgraphComponent } from './graphComponents/mailamountgraph/mailamountgraph.component';
 import { NgApexchartsModule } from 'ng-apexcharts';
 import { LoginComponent } from './login/login.component';
 import { AuthInterceptor } from './guards/auth.interceptor';
 import { HelppageComponent } from './helppage/helppage.component';
-import { CertaintygraphComponent } from './certaintygraph/certaintygraph.component';
-import { ConfusionmatrixComponent } from './confusionmatrix/confusionmatrix.component';
+import { CertaintygraphComponent } from './graphComponents/certaintygraph/certaintygraph.component';
+import { ConfusionmatrixComponent } from './graphComponents/confusionmatrix/confusionmatrix.component';
+import { RatingCountGraphComponent } from './graphComponents/rating-count-graph/rating-count-graph.component';
+import { EvaluationGraphComponent } from './graphComponents/evaluation-graph/evaluation-graph.component';
 
 @NgModule({
   declarations: [
@@ -33,7 +35,9 @@ import { ConfusionmatrixComponent } from './confusionmatrix/confusionmatrix.comp
     LoginComponent,
     HelppageComponent,
     CertaintygraphComponent,
-    ConfusionmatrixComponent
+    ConfusionmatrixComponent,
+    RatingCountGraphComponent,
+    EvaluationGraphComponent
   ],
   imports: [
     BrowserModule,

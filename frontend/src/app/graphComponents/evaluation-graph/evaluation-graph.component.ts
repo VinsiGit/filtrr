@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild } from "@angular/core";
-import { ThemeService } from "../services/theme.service";
+import { ThemeService } from "../../services/theme.service";
 
 import {
   ChartComponent,
@@ -16,8 +16,8 @@ import {
   ApexYAxis,
 } from "ng-apexcharts";
 import { ActivatedRoute } from "@angular/router";
-import { AnalyticsdataService } from "../services/analyticsdata.service";
-import { LabelData, DayData, LabelCount } from "../interfaces/dataresponse";
+import { AnalyticsdataService } from "../../services/analyticsdata.service";
+import { LabelData, DayData, LabelCount } from "../../interfaces/dataresponse";
 
 export interface ChartOptions {
   series: ApexAxisChartSeries;
@@ -35,12 +35,11 @@ export interface ChartOptions {
 };
 
 @Component({
-  selector: 'app-mailamountgraph',
-  templateUrl: './mailamountgraph.component.html',
-  styleUrls: ['./mailamountgraph.component.css']
+  selector: 'app-evaluation-graph',
+  templateUrl: './evaluation-graph.component.html',
+  styleUrls: ['./evaluation-graph.component.css']
 })
-
-export class MailamountgraphComponent implements OnInit {
+export class EvaluationGraphComponent {
   @ViewChild("chart") chart: ChartComponent | undefined;
   public chartOptions: Partial<ChartOptions> | any;
 
@@ -62,10 +61,15 @@ export class MailamountgraphComponent implements OnInit {
     this.chartOptions = {
       series: this.datapoints,
       chart: {
-        height: 650,
+        toolbar: {
+          offsetX: -5,
+          offsetY: 10
+        },
+        height: 320,
         foreColor: this.theme.chart_textcolor,
         redrawOnParentResize: true,
-        id: "mailAmountGraph",
+        id: "evaluationGraph",
+        group: 'ratingData',
         type: 'area',
         zoom: {
           enabled: true,
@@ -88,8 +92,9 @@ export class MailamountgraphComponent implements OnInit {
         width: 5,
       },
       title: {
-        text: "mails",
-        align: "left",
+        text: "evaluation",
+        align: "center",
+        margin: 20,
       },
       grid: {
         borderColor: this.theme.chart_gridcolor,
@@ -135,10 +140,9 @@ export class MailamountgraphComponent implements OnInit {
     this.days = [];
 
     const responseData: LabelData = await this.data.getDataBetween(undefined, undefined); 
-    console.log(responseData);
 
     // Initialize an object to hold the aggregated data
-    const counts: { [label: string]: number[] } = {};
+    const evaluationCounts: { [label: string]: number[] } = {};
 
     responseData.data.forEach((dayData: DayData) => {
       // add date
@@ -149,17 +153,16 @@ export class MailamountgraphComponent implements OnInit {
         // converting label name to lowercase and removing spaces
         const label = labelCount.label.replace('_', ' ').toLowerCase();
         // if label name isn't present in counts yet
-        if (!counts[label]) {
-          counts[label] = [];
+        if (!evaluationCounts[label]) {
+          evaluationCounts[label] = [];
         }
-        counts[label].push(labelCount.count);
+        evaluationCounts[label].push(labelCount.evaluation);
       });
     });
 
     // Transform the aggregated data into the desired format
-    Object.entries(counts).forEach(([name, data]) => {
+    Object.entries(evaluationCounts).forEach(([name, data]) => {
       this.datapoints.push({ name, data });
     });
   }
 }
-

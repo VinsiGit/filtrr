@@ -13,9 +13,9 @@ import {
   ApexGrid,
   ApexStroke
 } from "ng-apexcharts";
-import { AnalyticsdataService } from "../services/analyticsdata.service";
-import { ThemeService } from "../services/theme.service";
-import { ConfusionMatrix } from "../interfaces/dataresponse";
+import { AnalyticsdataService } from "../../services/analyticsdata.service";
+import { ThemeService } from "../../services/theme.service";
+import { ConfusionMatrix } from "../../interfaces/dataresponse";
 
 export type ChartOptions = {
   series: ApexAxisChartSeries;
@@ -48,7 +48,6 @@ export class ConfusionmatrixComponent {
   async ngOnInit(): Promise<void> {
     await this.loadMatrixData().then(() => {
       this.renderChart();
-      console.log(this.datapoints);
     });
   }
 
