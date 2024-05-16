@@ -591,7 +591,6 @@ def add_mail_batch():
 @app.route('/api', methods=['PUT'])
 @check_role('admin', 'user')
 def update_ratings():
-
     responses = []
 
     # Get the data from the request
@@ -600,22 +599,36 @@ def update_ratings():
         data_batch = [data_batch]
         
     for entry in data_batch:
-        hash = {"id": str(hash_input(entry['body']))}
+        entry_id = str(hash_input(entry['body']))
         rating = int(entry['rating'])
-        document = db.mails.find_one(hash)
+        document = db.mails.find_one({"id": entry_id})
+
         if document:
             last_index = len(document['versions']) - 1
+            update_data = {}
 
-            update_data = {'$set': {f'versions.{last_index}.rating': rating}}
+            if rating in [-1, 1]:
+                update_data['$set'] = {f'versions.{last_index}.rating': rating}
 
-            if rating == 1:
-                actual_label = document['versions'][last_index]['predicted_label']
-                update_data['$set'][f'versions.{last_index}.actual_label'] = actual_label
-            elif 'actual_label' in entry:
-                actual_label = entry['actual_label']
-                update_data['$set'][f'versions.{last_index}.actual_label'] = actual_label
+                if rating == 1:
+                    actual_label = document['versions'][last_index]['predicted_label']
+                    update_data['$set'][f'versions.{last_index}.actual_label'] = actual_label
+                else:
+                    if 'actual_label' in entry:
+                        if entry['actual_label'] in ['IRRELEVANT', 'BI_ENGINEER', 'DATA_ENGINEER']:
+                            actual_label = entry['actual_label']
+                            update_data['$set'][f'versions.{last_index}.actual_label'] = actual_label
+                        else:
+                            responses.append({"status": "failure", "message": "Illegal label", "id": entry['body']})
+                            continue
+                    else:
+                        responses.append({"status": "failure", "message": "Actual label is missing", "id": entry['body']})
+                        continue
+            else:
+                responses.append({"status": "failure", "message": "Illegal rating", "id": entry['body']})
+                continue
 
-            result = db.mails.update_one(hash, update_data)
+            result = db.mails.update_one({"id": entry_id}, update_data)
             if result.modified_count > 0:
                 responses.append({"status": "success", "message": "Rating updated successfully", "id": entry['body']})
             else:
@@ -627,6 +640,7 @@ def update_ratings():
         return jsonify(responses[0]), 200
 
     return jsonify(responses), 200
+
 
     
 @app.route('/api/settings', methods=['GET'])
