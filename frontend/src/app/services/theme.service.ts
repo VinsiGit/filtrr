@@ -21,4 +21,5 @@ export class ThemeService {
   matrix_bordercolor: string = "#fcfdfe";
 
   certainty_gridtext: string[] = ["#8e8ea7", "#f0f4f8", "#fff"];
+  certainty_gridcolor: string[] = ["#8e8ea77a", "#f0f4f877", "#ffffff75"];
 }

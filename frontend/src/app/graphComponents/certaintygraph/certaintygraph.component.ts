@@ -119,7 +119,7 @@ export class CertaintygraphComponent {
       },
       grid: {
         show: true,
-        borderColor: this.theme.certainty_gridtext[+this.labelIndex]
+        borderColor: this.theme.certainty_gridcolor[+this.labelIndex]
       },
       xaxis: {
         type: 'datetime',

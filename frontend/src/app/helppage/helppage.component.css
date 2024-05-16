@@ -11,4 +11,21 @@ main {
 
 nav {
     padding-left: 1.5rem;
+    display: flex;
+    flex-direction: row;
+    gap: 1px;
+}
+
+button {
+    padding: 4px 10px;
+    border-top-left-radius: .5rem;
+    border-top-right-radius: .5rem;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: white;
+    background-color: var(--page-color-button);
+}
+
+button:hover {
+    cursor: pointer;
+    background-color: var(--page-color-button-pressed);
 }
