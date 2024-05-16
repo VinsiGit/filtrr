@@ -9,8 +9,8 @@
   <Version>1.0.0.0</Version>
   <ProviderName>Filtrr</ProviderName>
   <DefaultLocale>en-US</DefaultLocale>
-  <DisplayName DefaultValue="Add-in"/>
-  <Description DefaultValue="A template to get started."/>
+  <DisplayName DefaultValue="Filtrr"/>
+  <Description DefaultValue="The Filtrr Add-in"/>
   <IconUrl DefaultValue="https://localhost:3000/assets/icon-64.png"/>
   <HighResolutionIconUrl DefaultValue="https://localhost:3000/assets/icon-128.png"/>
   <Hosts>
