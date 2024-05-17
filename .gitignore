@@ -1,10 +1,7 @@
 venv/
-preprocessor
 *.sh
-*.json
 output.txt
 models/
-/backend/tracking/data.json
 mlruns
 *.db
 *prefect*
@@ -13,3 +10,4 @@ __pycache__/
 !start.sh
 prefect.yaml
 test.py
+.env
