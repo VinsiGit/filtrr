@@ -1,2 +1,0 @@
-nltk.download('punkt') in the setup script
-if no random state default is None

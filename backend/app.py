@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 from time import time
 from functools import wraps
 import random
+from db import create_collection, create_index, insert_data, insert_data_from_file
 from tracking.preprocessor import TextPreprocessor
 from tracking.retrainlander import preprocess_data_flow
 
@@ -31,7 +32,7 @@ def hash_input(input):
 
 
 # Get the MongoDB connection details from environment variables
-mongo_host = e.get('MONGO_HOST', 'db') # 'db' is the default name of the MongoDB service within the Docker network TODO: change to localhost for local development 
+mongo_host = e.get('MONGO_HOST', 'db') 
 mongo_port = int(e.get('MONGO_PORT', '27017'))
 mongo_username = e.get('MONGO_USERNAME', 'root')
 mongo_password = e.get('MONGO_PASSWORD', 'mongo')
@@ -45,34 +46,29 @@ client = MongoClient(host=mongo_host, port=mongo_port, username=mongo_username, 
 # Get the MongoDB database
 db = client['filtrr_db']
 
-# Check if the mails collection exists
-if 'mails' not in db.list_collection_names():
-    # Create the mails collection
-    db.create_collection('mails')
-    print("Mails collection created.")
-else:
-    print("Mails collection already exists.")
+create_collection(db, 'mails')
+create_collection(db, 'users')
+create_collection(db, 'train_data')
+create_collection(db, 'keywords')
+create_collection(db, 'hyperparameters')
 
-# Check if the users collection exists
-if 'users' not in db.list_collection_names():
-    # Create the users collection
-    db.create_collection('users')
-    print("Users collection created.")
-else:
-    print("Users collection already exists.")
+# Create a list of users
+users = [
+    {'username': e.get('ADMIN_USERNAME', 'admin'), 'password_hash': generate_password_hash(e.get('ADMIN_PASSWORD', 'password')), 'role': 'admin'}
+]
 
-# Check if the settings collection exists
-if 'settings' not in db.list_collection_names():
-    # Create the settings collection
-    db.create_collection('settings')
-    print("Settings collection created.")
-else:
-    print("Settings collection already exists.")
+insert_data(db.users, users)
+insert_data_from_file(db.train_data, 'tracking/data.json')
+insert_data_from_file(db.keywords, 'tracking/keywords.json')
+insert_data_from_file(db.hyperparameters, 'tracking/parameters.json')
 
-# Create indexes for the mails collection
-db.mails.create_index('id', unique=True)
-db.mails.create_index("versions.model_version")
-db.mails.create_index("versions.predicted_label")
+create_index(db.mails, 'id')
+create_index(db.mails, 'versions.model_version')
+create_index(db.mails, 'versions.predicted_label')
+create_index(db.mails, 'versions.actual_label')
+create_index(db.mails, 'versions.rating')
+create_index(db.mails, 'versions.source')
+create_index(db.mails, 'versions.date')
 
 # Create a Flask app
 app = Flask(__name__)
@@ -80,26 +76,6 @@ app.config['JWT_SECRET_KEY'] = e.get('JWT_SECRET_KEY', 'very-secret-key')
 CORS(app)
 jwt = JWTManager(app)
 
-# Create a list of users
-users = [
-    {'username': 'admin', 'password_hash': generate_password_hash(e.get('ADMIN_PASSWORD', 'password')), 'role': 'admin'}
-]
-
-# Check if any users exist
-if db.users.count_documents({}) == 0:
-    # No users exist, insert new users
-    db.users.insert_many(users)
-    print("Users inserted.")
-else:
-    print("Users already exist in the database.")
-
-# Check if the settings exist
-if db.settings.count_documents({}) == 0:
-    # No settings exist, insert new settings
-    # TODO db.settings.insert_one({'setting': 'value'})
-    print("No settings exist in the database.")
-else:
-    print("Settings already exist in the database.")
 
 @app.route('/api')
 def hello():
@@ -644,14 +620,6 @@ def update_ratings():
     return jsonify(responses), 200
 
 
-    
-@app.route('/api/settings', methods=['GET'])
-@check_role('admin')
-def get_settings():
-    # TODO: implement settings
-    # settings = db.settings.find_one()
-    # settings.pop('_id', None)
-    return jsonify({"settings": "TODO"}), 200
 
 @app.route('/api/retrain', methods=['GET'])
 @check_role('admin')
@@ -659,6 +627,20 @@ def retrain():
     mails = preprocess_data_flow(get_mails_from_file=False)
     return mails, 200
 
+@app.route('/api/hyperparameters', methods=['GET'])
+@check_role('admin')
+def get_hyperparameters():
+    hyperparameters = db.hyperparameters.find_one()
+    hyperparameters.pop('_id', None)
+    return jsonify(hyperparameters), 200
+
+@app.route('/api/trainingdata', methods=['GET'])
+@check_role('admin')
+def get_training_data():
+    training_data = list(db.train_data.find())
+    for item in training_data:
+        item.pop('_id', None)
+    return jsonify(training_data), 200
 
 @app.route('/api/tokencheck', methods=['GET'])
 @jwt_required()

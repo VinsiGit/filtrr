@@ -1,10 +1,7 @@
 venv/
-preprocessor
 *.sh
-*.json
 output.txt
 models/
-/backend/tracking/data.json
 mlruns
 *.db
 *prefect*
@@ -12,3 +9,7 @@ mlruns
 __pycache__/
 dist
 node_modules
+!start.sh
+prefect.yaml
+test.py
+.env
