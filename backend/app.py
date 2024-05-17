@@ -291,7 +291,7 @@ def get_data():
         unique_actual_labels = [actual_label]
         query['versions.actual_label'] = actual_label
     else:
-        unique_actual_labels = db.mails.distinct("versions.actual_label")
+        unique_actual_labels = [label for label in db.mails.distinct("versions.actual_label") if label is not None]
 
     pipeline = [
         # Unwind the versions array to treat each version as a document
