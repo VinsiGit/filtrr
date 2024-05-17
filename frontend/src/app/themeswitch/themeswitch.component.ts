@@ -187,7 +187,7 @@ export class ThemeswitchComponent {
       document.documentElement.style.setProperty('--page-color-button-pressed-warning', '#ff9190');
       document.documentElement.style.setProperty('--module-color-border', 'white');
       document.documentElement.style.setProperty('--module-color-background', 'white');
-      document.documentElement.style.setProperty('--module-color-background-secondary', '#fcfdfe');
+      document.documentElement.style.setProperty('--module-color-background-secondary', '#F8FAFC');
       document.documentElement.style.setProperty('--module-color-text', '#80848b');
       document.documentElement.style.setProperty('--module-color-text-secondary', '#bec1c4');
       document.documentElement.style.setProperty('--module-color-title', '#46494c');

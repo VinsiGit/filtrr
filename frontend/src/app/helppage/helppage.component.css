@@ -31,11 +31,11 @@ button:hover {
 }
 
 h1, h2, h3 {
-    color: #333;
+    color: var(--page-color-text);
 }
 .endpoint {
-    background-color: #f4f4f4;
-    border-left: 6px solid #dd6f2f;
+    background-color: var(--module-color-background-secondary);
+    border-left: 6px solid var(--module-color-highlight-complementary);
     margin: 20px 0;
     padding: 20px;
 }
