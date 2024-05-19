@@ -1,6 +1,6 @@
 // Constants
 const API_SITE = "https://s144272.devops-ap.be/api";
-const BEARER_DATA = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTcxNTg0NDk2MiwianRpIjoiNjQ3YTJiNWItMDA3YS00ZWE2LTg3OTktYzVkNmZmYmM0ZTYwIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6eyJ1c2VybmFtZSI6ImFkbWluIiwicm9sZSI6ImFkbWluIn0sIm5iZiI6MTcxNTg0NDk2MiwiY3NyZiI6Ijc1YmU4M2U3LTVkMmItNGFmNi1hOTJhLTc4MmZiN2Y2Y2VkZSIsImV4cCI6MTcxNjQ0OTc2Mn0.ikjgrbNFJ8xE2rjEB9-FzX5n1z0IXsVuheE8WcAW0Rg";
+const BEARER_DATA = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTcxNTkzODIwNiwianRpIjoiZGI0MDg4ZTItMWY1Mi00OGMyLWI1NGUtMDY3MDk2NGY5NjAxIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6eyJ1c2VybmFtZSI6ImFkbWluIiwicm9sZSI6ImFkbWluIn0sIm5iZiI6MTcxNTkzODIwNiwiY3NyZiI6ImRiNTJjZWEyLTVjMTYtNGRkZS1iNWY2LTNmMmI4YmMyZTZlNSIsImV4cCI6MTcxNjU0MzAwNn0.Iwtl5sopFhcuPxuA5D5ZEpM7Ux9lV9nfXOELT8MNydo";
 
 // POST is voor sturen van Initialize data en PUT is voor updates van data  
 
@@ -436,7 +436,6 @@ async function sendEmailBodyToServer(data) {
  * @param {Object} data - The data object containing the email details.
  * @param {String} actual_label - The actual label of the email item.
  */
-async
 async function rate(value, data, actual_label) {
   const mail = Office.context.mailbox;
   const item = mail.item;
