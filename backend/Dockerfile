@@ -20,7 +20,7 @@ RUN python -m nltk.downloader stopwords
 # Copy the current directory contents into the container at /app
 COPY . /app
 
-RUN tracking/train_model_flow.py
+RUN train_model_flow.py
 
 # Make the start.sh script executable
 RUN chmod +x start_api.sh
