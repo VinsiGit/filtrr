@@ -13,7 +13,7 @@
             <h1>Outlook Documentatie</h1>
             <p>
                 Dit is de Outlook add-on voor FILTRR. <br>
-                De manifest-file kan hier gedownload worden: <a href="">download-link toevoegen</a> .<br>
+                De manifest-file kan hier gedownload worden: <a href="">download-link toevoegen</a>.<br>
                 Om deze te installeren moet men naar deze link gaan: <a href="https://aka.ms/olksideload"
                     target="_blank">outlook
                     link</a>.<br>
@@ -25,23 +25,34 @@
             </p>
             <h1>Documentatie Outlook-programma</h1>
 
+            <p></p>
+            <h2>Info over outlook-Addon</h2>
+            <p>De addon is gemaakt in <a href="https://github.com/OfficeDev/generator-office"
+                    target="_blank">generator-office
+                    link</a> met javascript als taal.</p>
+            <p><b>webpack.config.js:</b> Dit is waar de website voor de manifest file wordt gegeven als deze wordt
+                gemaakt.
+            </p>
+            <p><b>src/taskpane.js:</b> Vanboven kan de website en bearer key aangepast worden als deze veranderen of
+                vervallen.</p>
+
             <h2>Componenten</h2>
             <ul>
                 <li>
-                    <b>Office.js Initialisatie:</b> Het programma initialiseert met Office.js, dat toegang biedt tot de
+                    <b>Office.js Initialisatie:</b> Initialiseert met Office.js, dat toegang biedt tot de
                     Outlook-API.
                 </li>
                 <li>
-                    <b>Gegevensmodel:</b> Het programma gebruikt een gegevensmodel om informatie over elk e-mailitem op
+                    <b>Gegevensmodel:</b> Gebruikt een gegevensmodel om informatie over elk e-mailitem op
                     te slaan, inclusief het item-ID, afzender, afzender-e-mail, ontvangen datum/tijd, onderwerp, body,
                     voorspelde label, actuele label, zekerheid, en rating.
                 </li>
                 <li>
-                    <b>UI-componenten:</b> Het programma heeft verschillende UI-componenten, inclusief knoppen voor het
+                    <b>UI-componenten:</b> Heeft verschillende UI-componenten, inclusief knoppen voor het
                     beoordelen van e-mails, een grafiek om de zekerheid weer te geven en een laadscherm.
                 </li>
                 <li>
-                    <b>Server-API:</b> Het programma communiceert met een server-side API om e-mailbodies te verwerken
+                    <b>Server-API:</b> Communiceert met een server-side API om e-mailbodies te verwerken
                     en voorspellingen en ratings op te halen.
                 </li>
             </ul>
@@ -50,20 +61,20 @@
             Hier is de stroom van het programma:
             <ul>
                 <li>
-                    <b>Initialisatie:</b> Het programma initialiseert met Office.js en stelt gebeurtenishandlers in voor
+                    <b>Initialisatie:</b> Initialiseert met Office.js en stelt gebeurtenishandlers in voor
                     itemwijzigingen.
                 </li>
                 <li>
-                    <b>E-mailbody naar Server sturen:</b>Het programma stuurt de e-mailbody naar de server-API om
+                    <b>E-mailbody naar Server sturen:</b>Stuurt de e-mailbody naar de server-API om
                     voorspellingen en ratings op te
                     halen.
                 </li>
                 <li>
-                    <b>Gegevens bijwerken:</b> Het programma bijwerkt het gegevensmodel met de respons van de
+                    <b>Gegevens bijwerken:</b> Bijwerkt het gegevensmodel met de respons van de
                     server-API.
                 </li>
                 <li>
-                    <b>UI bijwerken:</b> Het programma bijwerkt de UI-componenten, inclusief de grafiek en knoppen, op
+                    <b>UI bijwerken:</b> Bijwerkt de UI-componenten, inclusief de grafiek en knoppen, op
                     basis
                     van het bijgewerkte
                     gegevensmodel.
@@ -75,7 +86,7 @@
                     beoordeling naar de server-API.
                 </li>
                 <li>
-                    <b>Foutafhandeling:</b> Het programma behandelt serverfouten door een inlog-URL en een knop om de
+                    <b>Foutafhandeling:</b> Behandelt serverfouten door een inlog-URL en een knop om de
                     serverstatus te controleren
                     weer te geven.
                 </li>
@@ -87,7 +98,7 @@
 
             <ul>
                 <li>
-                    <b></b>updateDataOnItemChange:</b> Bijwerkt het gegevensmodel met nieuwe iteminformatie en stuurt de
+                    <b>updateDataOnItemChange:</b> Bijwerkt het gegevensmodel met nieuwe iteminformatie en stuurt de
                     e-mailbody naar de server-API.
                 </li>
                 <li>
@@ -113,6 +124,10 @@
                     sturen.
                 </li>
             </ul>
+            <h1>Documentatie google</h1>
+
+            <p>De 2 files in de google folder zijn appsscripts.js en code.gs.</p>
+            <p>De code moet in een project gezet worden op script.google.com</p>
 
         </div>
         <div id="content" class="module" *ngIf="this.page=='api'">
