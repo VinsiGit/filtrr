@@ -26,9 +26,9 @@ RUN train_model_flow.py
 RUN chmod +x start_api.sh
 
 # Expose the ports used by the services
-EXPOSE 5000  # Web server port
-EXPOSE 8070  # MLflow port
-EXPOSE 8080  # Optuna port
+EXPOSE 5000
+EXPOSE 8070
+EXPOSE 8080
 
 # Run the shell script
 CMD ["start_api.sh"]
