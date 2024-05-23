@@ -36,11 +36,32 @@ h1, h2, h3 {
 .endpoint {
     background-color: var(--module-color-background-secondary);
     border-left: 6px solid var(--module-color-highlight-complementary);
-    margin: 20px 0;
-    padding: 20px;
+    margin: 20px 0px;
+    padding: 15px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
 }
 code {
     background-color: #e9ecef;
     padding: 2px 4px;
     border-radius: 4px;
+}
+.endpoint li {
+    padding: 5px 0px;
+}
+h1 {
+    font-size: larger;
+}
+h2 {
+    font-size: large;
+}
+li{
+    /* list-style-type:circle; */
+    margin-left: 20px;
+    padding-left: 20px;
+}
+li,
+p {
+  padding-top: 5px;
 }
