@@ -1,5 +1,6 @@
 import mlflow
 from train_model_flow import main_flow
+
 class Operator:
     def __init__(self):
         sqlite_uri = "sqlite:///mlflow.db"
@@ -22,12 +23,16 @@ class Operator:
         return c
 
     def classify(self,email):
+        client = mlflow.MlflowClient()
         email_keywords = self.preprocessor.preprocess(email)
         text_email_keywords = [' '.join(email_keywords)]
         sparse_text_vector = self.vectorizer.transform(text_email_keywords)
+        probabilities = self.classifier.predict_proba(sparse_text_vector)[0]
         label = self.classifier.predict(sparse_text_vector)
-        email['label'] = label
+        email['predicted_label'] = label
+        email['model_version'] = client.get_model_version_by_alias(name='Model', alias='Production')
         email['keywords'] = email_keywords
+        email['certainty'] = probabilities
         email['body'] = ""
         return email
 
