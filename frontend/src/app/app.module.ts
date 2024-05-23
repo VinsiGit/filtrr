@@ -21,6 +21,7 @@ import { CertaintygraphComponent } from './graphComponents/certaintygraph/certai
 import { ConfusionmatrixComponent } from './graphComponents/confusionmatrix/confusionmatrix.component';
 import { RatingCountGraphComponent } from './graphComponents/rating-count-graph/rating-count-graph.component';
 import { EvaluationGraphComponent } from './graphComponents/evaluation-graph/evaluation-graph.component';
+import { ModelPerformanceComponent } from './graphComponents/model-performance/model-performance.component';
 
 @NgModule({
   declarations: [
@@ -37,7 +38,8 @@ import { EvaluationGraphComponent } from './graphComponents/evaluation-graph/eva
     CertaintygraphComponent,
     ConfusionmatrixComponent,
     RatingCountGraphComponent,
-    EvaluationGraphComponent
+    EvaluationGraphComponent,
+    ModelPerformanceComponent
   ],
   imports: [
     BrowserModule,

@@ -1,3 +1,7 @@
+.module {
+    overflow: inherit;
+}
+
 main {
     display: flex;
     flex-direction: column;

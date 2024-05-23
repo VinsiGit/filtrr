@@ -5,6 +5,7 @@ import { Injectable } from '@angular/core';
 })
 export class ThemeService {
   labelcolors: string[] = ['#7961f1', "#6460af", "#b872de"];
+  color_monochrome = this.labelcolors[1];
 
   shadowcolor: string = "607D8B";
   shadowOpacity: number = 0.3;

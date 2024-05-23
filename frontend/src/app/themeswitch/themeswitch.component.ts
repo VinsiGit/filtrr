@@ -191,10 +191,11 @@ export class ThemeswitchComponent {
       document.documentElement.style.setProperty('--module-color-text', '#80848b');
       document.documentElement.style.setProperty('--module-color-text-secondary', '#bec1c4');
       document.documentElement.style.setProperty('--module-color-title', '#46494c');
-      document.documentElement.style.setProperty('--module-color-highlight-complementary', '#7a6ce4');
+      document.documentElement.style.setProperty('--module-color-highlight-complementary', "#b872de");
       document.documentElement.style.setProperty('--module-color-highlight-monochrome', '#f05365');
       
       this.theme.labelcolors = ["#dbdee4", "#6460af", "#b872de"];
+      this.theme.color_monochrome = "#f05365";
       
       this.theme.shadowcolor = "#607D8B";
       this.theme.shadowOpacity = 0.1;
@@ -239,6 +240,7 @@ export class ThemeswitchComponent {
       document.documentElement.style.setProperty('--module-color-highlight-monochrome', '#7961f1');
 
       this.theme.labelcolors = ["#47426b", "#f05365", "#f68e5f"];
+      this.theme.color_monochrome = "#6460af";
 
       this.theme.shadowcolor = "rgba(0, 0, 0, 0.2)";
       this.theme.shadowOpacity = 0.3;
