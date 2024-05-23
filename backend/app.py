@@ -9,8 +9,7 @@ from datetime import datetime, timedelta
 from time import time
 from functools import wraps
 import random
-from tracking.preprocessor import TextPreprocessor
-from tracking.retrainlander import preprocess_data_flow
+from modeloperator import Operator
 
 
 # Function to hash the input
@@ -51,6 +50,8 @@ app.config['JWT_SECRET_KEY'] = e.get('JWT_SECRET_KEY', 'very-secret-key')
 CORS(app)
 jwt = JWTManager(app)
 
+operator = Operator()
+model_version_global = operator.get_model_version().version
 
 @app.route('/api')
 def hello():
@@ -66,7 +67,7 @@ def login():
         if user['role'] == 'trial':
             access_token = create_access_token(identity={'username': username, 'role': user['role']}, expires_delta=timedelta(minutes=5))
         else:
-            access_token = create_access_token(identity={'username': username, 'role': user['role']}, expires_delta=timedelta(hours=168))
+            access_token = create_access_token(identity={'username': username, 'role': user['role']}, expires_delta=timedelta(days=365))
 
         return jsonify({"access_token": access_token, "role": user['role']}), 200
     return jsonify({"msg": "Bad username or password"}), 401
@@ -459,7 +460,6 @@ def add_mail_batch():
     if request.content_type != 'application/json':
         return jsonify({"error": "Unsupported Media Type"}), 415
 
-    MODEL_VERSION = 1.0
     responses = []
     
     # Get the data from the request
@@ -474,7 +474,7 @@ def add_mail_batch():
             hash = str(hash_input(data['body']))
             existing_record = db.mails.find_one({
                 "id": hash,
-                "versions.model_version": MODEL_VERSION
+                "versions.model_version": model_version_global
             }, {"_id": 0, "versions.$": 1})
             
             if existing_record:
@@ -494,16 +494,16 @@ def add_mail_batch():
                 responses.append(response)
                 continue
 
-            # Preprocess the data
-            preprocessor = TextPreprocessor()
-            preprocessor.load_keywords(keyword_file_path='./tracking/keywords.json')
+            email = {"body": data['body']}
+
             start_time = time()
+            
+            classification = operator.classify(email)
+            label = str(classification['predicted_label'][0])
+            keywords = classification['keywords']
+            certainty = max(classification['certainty'])
+            model_version = model_version_global
 
-            data['text_body'] = data['body']
-            keywords = preprocessor.preprocess(data)['keywords']
-
-            label = random.choice(['IRRELEVANT', 'BI_ENGINEER', 'DATA_ENGINEER'])
-            certainty = random.random()
             end_time = time()
             processing_time = end_time - start_time
 
@@ -515,7 +515,7 @@ def add_mail_batch():
                 "datetime_elapsed": processing_time,
                 "certainty": certainty,
                 "source": source,
-                "model_version": MODEL_VERSION
+                "model_version": model_version
             }
             
             db.mails.update_one(
@@ -574,9 +574,7 @@ def update_ratings():
                         else:
                             responses.append({"status": "failure", "message": "Illegal label", "id": entry['body']})
                             continue
-                    else:
-                        responses.append({"status": "failure", "message": "Actual label is missing", "id": entry['body']})
-                        continue
+
             else:
                 responses.append({"status": "failure", "message": "Illegal rating", "id": entry['body']})
                 continue
@@ -593,14 +591,6 @@ def update_ratings():
         return jsonify(responses[0]), 200
 
     return jsonify(responses), 200
-
-
-
-@app.route('/api/retrain', methods=['GET'])
-@check_role('admin')
-def retrain():
-    mails = preprocess_data_flow(get_mails_from_file=False)
-    return mails, 200
 
 @app.route('/api/hyperparameters', methods=['GET'])
 @check_role('admin')
