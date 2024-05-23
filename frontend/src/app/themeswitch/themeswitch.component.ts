@@ -163,7 +163,12 @@ export class ThemeswitchComponent {
     }
 
     ApexCharts.exec('server_load', 'updateOptions', {
-      colors: [this.theme.color_monochrome]
+      colors: [this.theme.color_monochrome],
+      title: {
+        style: {
+          color: this.theme.chart_textcolor
+        }
+      },
     }, true, true, true);
 
   }

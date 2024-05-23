@@ -112,7 +112,8 @@ export class ModelPerformanceComponent {
         offsetY: 10,
         style: {
           fontSize: '24px',
-          cssClass: 'apexcharts-yaxis-title'
+          cssClass: 'apexcharts-yaxis-title',
+          color: this.theme.chart_textcolor,
         }
       },
       subtitle: {
