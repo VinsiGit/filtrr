@@ -1,65 +1,67 @@
 #content {
-    height: fit-content;
-    width: 75vw;
-    padding: 2rem;
+  height: fit-content;
+  width: 75vw;
+  padding: 2rem;
 }
 
 main {
-    display: flex;
-    justify-content: center;
+  display: flex;
+  justify-content: center;
 }
 
 nav {
-    padding-left: 1.5rem;
-    display: flex;
-    flex-direction: row;
-    gap: 1px;
+  padding-left: 1.5rem;
+  display: flex;
+  flex-direction: row;
+  gap: 1px;
 }
 
 button {
-    padding: 4px 10px;
-    border-top-left-radius: .5rem;
-    border-top-right-radius: .5rem;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    color: white;
-    background-color: var(--page-color-button);
+  padding: 4px 10px;
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: white;
+  background-color: var(--page-color-button);
 }
 
 button:hover {
-    cursor: pointer;
-    background-color: var(--page-color-button-pressed);
+  cursor: pointer;
+  background-color: var(--page-color-button-pressed);
 }
 
-h1, h2, h3 {
-    color: var(--page-color-text);
+h1,
+h2,
+h3 {
+  color: var(--page-color-text);
 }
 .endpoint {
-    background-color: var(--module-color-background-secondary);
-    border-left: 6px solid var(--module-color-highlight-complementary);
-    margin: 20px 0px;
-    padding: 15px 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
+  background-color: var(--module-color-background-secondary);
+  border-left: 6px solid var(--module-color-highlight-complementary);
+  margin: 20px 0px;
+  padding: 15px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }
 code {
-    background-color: #e9ecef;
-    padding: 2px 4px;
-    border-radius: 4px;
+  background-color: #e9ecef;
+  padding: 2px 4px;
+  border-radius: 4px;
 }
 .endpoint li {
-    padding: 5px 0px;
+  padding: 5px 0px;
 }
 h1 {
-    font-size: larger;
+  font-size: larger;
 }
 h2 {
-    font-size: large;
+  font-size: large;
 }
-li{
-    /* list-style-type:circle; */
-    margin-left: 20px;
-    padding-left: 20px;
+li {
+  /* list-style-type:circle; */
+  margin-left: 20px;
+  padding-left: 20px;
 }
 li,
 p {
