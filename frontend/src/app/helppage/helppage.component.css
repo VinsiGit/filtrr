@@ -30,7 +30,7 @@ button:hover {
     background-color: var(--page-color-button-pressed);
 }
 
-h1, h2, h3 {
+p, li, h1, h2, h3 {
     color: var(--page-color-text);
 }
 

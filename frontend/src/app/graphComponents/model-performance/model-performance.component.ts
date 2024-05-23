@@ -85,8 +85,7 @@ export class ModelPerformanceComponent {
         }))
       }],
       chart: {
-        id: 'sparkline1',
-        group: 'sparklines',
+        id: 'server_load',
         type: 'area',
         height: 290,
         width: 360,
