@@ -105,11 +105,11 @@ def preprocess_data_flow(mails_file_path: str = 'data.json', keyword_file_path: 
 
         collection2 = db['train_data']
         train_data = list(collection2.find())
+        client.close()
+        
         for mail in train_data:
             mail.pop('_id', None)
 
-        # Close the MongoDB connection
-        client.close()
         for mail in mails:
             mail.pop('_id', None)
         
