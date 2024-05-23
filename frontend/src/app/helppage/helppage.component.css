@@ -33,6 +33,7 @@ button:hover {
 h1, h2, h3 {
     color: var(--page-color-text);
 }
+
 .endpoint {
     background-color: var(--module-color-background-secondary);
     border-left: 6px solid var(--module-color-highlight-complementary);
