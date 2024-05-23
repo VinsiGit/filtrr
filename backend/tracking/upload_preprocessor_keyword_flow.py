@@ -17,3 +17,6 @@ def upload_test_data():
 
         db = client['filtrr_db']
 
+    open_file()
+    upload_to_database()
+upload_test_data()

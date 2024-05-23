@@ -1,4 +1,5 @@
 import mlflow
+from train_model_flow import main_flow
 class Operator:
     def __init__(self):
         sqlite_uri = "sqlite:///mlflow.db"
@@ -27,5 +28,8 @@ class Operator:
         label = self.classifier.predict(sparse_text_vector)
         email['label'] = label
         email['keywords'] = email_keywords
-        email['text_body'] = ""
+        email['body'] = ""
         return email
+
+    def retrain(self):
+        main_flow()
