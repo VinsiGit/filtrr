@@ -137,15 +137,12 @@ def preprocessor_flow(mails_file_path: str = 'tracking/data.json', keyword_file_
 
         collection2 = db['train_data']
         train_data = list(collection2.find())
-        client.close()
         
         for mail in train_data:
             mail.pop('_id', None)
 
         for mail in mails:
             mail.pop('_id', None)
-
-        print("------------------------------------------------------------------------------------------------------------------")
         
         mails.extend(train_data)
         return mails
