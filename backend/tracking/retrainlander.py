@@ -93,8 +93,7 @@ def preprocess_data_flow(mails_file_path: str = 'data.json', keyword_file_path: 
                 "document": {"$first": "$$ROOT"}  
             }},
             {"$replaceRoot": {"newRoot": "$document"}},
-            {"$project": {"id": 1,
-                          "label": "$versions.actual_label",
+            {"$project": {"label": "$versions.actual_label",
                           "keywords": "$versions.keywords"
             }}
         ]
@@ -103,11 +102,18 @@ def preprocess_data_flow(mails_file_path: str = 'data.json', keyword_file_path: 
 
         # Get all the mails from the collection
         mails = list(result)
+
+        collection2 = db['train_data']
+        train_data = list(collection2.find())
+        for mail in train_data:
+            mail.pop('_id', None)
+
         # Close the MongoDB connection
         client.close()
         for mail in mails:
             mail.pop('_id', None)
         
+        mails.extend(train_data)
 
         return mails
     
