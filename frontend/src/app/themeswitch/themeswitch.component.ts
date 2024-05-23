@@ -155,11 +155,21 @@ export class ThemeswitchComponent {
       }
     }, true, true, true);
 
+    //certainty charts
     for (let label of this.data.labels){
       ApexCharts.exec(`certaintyGraph-${label}`, 'updateOptions', {
         colors: [getComputedStyle(document.documentElement).getPropertyValue('--module-color-highlight-monochrome')],
       }, true, true, true);
     }
+
+    ApexCharts.exec('server_load', 'updateOptions', {
+      colors: [this.theme.color_monochrome],
+      title: {
+        style: {
+          color: this.theme.chart_textcolor
+        }
+      },
+    }, true, true, true);
 
   }
 
