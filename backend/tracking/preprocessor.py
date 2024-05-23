@@ -29,6 +29,7 @@ class TextPreprocessor:
 
     def load_keywords(self,keyword_file_path:str):
         log = get_logger()
+        # ____________________________________________________________________________________
         def read_keywords(file_path) -> List[str]:
             try:
                 with open(file=file_path, mode='r', encoding='utf-8') as f:
@@ -37,6 +38,7 @@ class TextPreprocessor:
             except FileNotFoundError:
                 log.info(f"File '{file_path}' not found.")
                 return ["data analytics", "machine learning", "cloud computing", "devops", "infrastructure-as-code"]
+        # ____________________________________________________________________________________
 
         def normalize_keyword(keyword: str) -> str:
             cleaned_keyword = re.sub(r'[^a-zA-Z0-9\s]', '', keyword.lower())
@@ -79,6 +81,9 @@ class TextPreprocessor:
             return list(set(interesting_tokens))
 
         text = email.get('body', '')
+        if email.get('keywords'):
+            return email
+
         tokens = get_tokens(text)
         keywords = extract_keyword_tokens(tokens)
         keywords.sort()

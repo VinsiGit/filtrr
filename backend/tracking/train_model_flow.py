@@ -26,9 +26,9 @@ def load_parameters_flow(parameter_file_path: str = 'parameters.json') -> tuple:
         tuple: Tuple containing train-test split parameters, vectorizer parameters,
                AdaBoost parameters, and Bagging parameters.
     """
+    #____________________________________________________________________________________
     @task(name="Read Parameters From File", description="Read parameters from a JSON file.")
     def read_parameters(file_path: str) -> dict:
-        #TODO: change this to a request
         log = get_logger()
         try:
             with open(file=file_path, mode='r', encoding='utf-8') as f:
@@ -37,6 +37,7 @@ def load_parameters_flow(parameter_file_path: str = 'parameters.json') -> tuple:
         except FileNotFoundError:
             log.info(f"Error: File '{file_path}' not found.")
             return {}
+    # ____________________________________________________________________________________
 
     @task(name="Extract Model Specific Parameters", description="Extract model-specific parameters from loaded parameters.")
     def extract_params(params: dict) -> tuple:
@@ -71,12 +72,13 @@ def preprocessor_flow(mails_file_path: str = 'data.json', keyword_file_path: str
     Returns:
         tuple: Tuple containing preprocessed mails and text preprocessor instance.
     """
+    # ____________________________________________________________________________________
     @task(name="Import Mails From 'data.json'", description="Read mails data from JSON file.")
     def read_mails_from_file(mails_file: str) -> List[Dict]:
         with open(file=mails_file, mode='r', encoding='utf-8') as f:
             m = json.load(f)
         return m
-
+    # ____________________________________________________________________________________
     @task(name="Preprocess Mails", description="Preprocess mails using text preprocessor.")
     def preprocess_mails(data: List[Dict], keyword_file: str) -> tuple:
         p = TextPreprocessor()
@@ -212,7 +214,7 @@ def train_model_flow(x: list, y: list, train_test_parameters: dict, adaboost_par
         study1 = optuna.create_study(study_name=f"Tree Optimization - {formatted_datetime} - Step 1",
                                     directions=['maximize','maximize'],
                                     sampler=sampler, pruner=pruner, storage=storage)
-        study1.optimize(objective1, n_trials=10)
+        study1.optimize(objective1, n_trials=50)
 
         trial1 = study1.best_trials.pop()
         params1 = trial1.params
@@ -246,7 +248,7 @@ def train_model_flow(x: list, y: list, train_test_parameters: dict, adaboost_par
         study2 = optuna.create_study(study_name=f"Model Optimization - {formatted_datetime} - Step 2",
                                     directions=['maximize','maximize','maximize'],
                                     sampler=sampler, pruner=pruner, storage=storage)
-        study2.optimize(objective2, n_trials=5)
+        study2.optimize(objective2, n_trials=150)
 
         trial2 = study2.best_trials.pop()
         params2 = trial2.params
@@ -327,3 +329,5 @@ def main_flow():
     train_model_flow(keywords_per_mail, label_per_mail, trn_tst_parameters,
                      adaboost_parameters, tree_parameters, vectorizer, preprocessor)
 
+if __name__ == '__main__':
+    main_flow()
