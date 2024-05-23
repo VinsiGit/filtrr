@@ -88,7 +88,7 @@ export class ModelPerformanceComponent {
         id: 'sparkline1',
         group: 'sparklines',
         type: 'area',
-        height: 350,
+        height: 290,
         width: 360,
         sparkline: {
           enabled: true
@@ -108,8 +108,9 @@ export class ModelPerformanceComponent {
       },
       colors: [this.theme.color_monochrome],
       title: {
-        text: '$424,652',
-        offsetX: 30,
+        text: 'server load: 14%',
+        offsetX: 10,
+        offsetY: 10,
         style: {
           fontSize: '24px',
           cssClass: 'apexcharts-yaxis-title'
