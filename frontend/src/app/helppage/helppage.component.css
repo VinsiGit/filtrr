@@ -54,3 +54,13 @@ code {
 .endpoint li {
     padding: 5px 0px;
 }
+
+.foldable {
+  cursor: pointer;
+  color: blue;
+  text-decoration: underline;
+}
+
+.folded-content {
+  display: none;
+}
