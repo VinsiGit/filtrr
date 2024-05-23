@@ -20,9 +20,15 @@ RUN python -m nltk.downloader stopwords
 # Copy the current directory contents into the container at /app
 COPY . /app
 
-# Expose the port that Gunicorn will run on
-EXPOSE 5000
+RUN train_model_flow.py
 
-# Command to run the application using Gunicorn
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]
+# Make the start.sh script executable
+RUN chmod +x start_api.sh
 
+# Expose the ports used by the services
+EXPOSE 5000  # Web server port
+EXPOSE 8070  # MLflow port
+EXPOSE 8080  # Optuna port
+
+# Run the shell script
+CMD ["start_api.sh"]

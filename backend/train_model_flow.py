@@ -12,10 +12,27 @@ import datetime
 import json
 import mlflow
 import optuna
+from pymongo import MongoClient
+from os import environ as e
+
+# Get the MongoDB connection details from environment variables
+mongo_host = e.get('MONGO_HOST', 'db') 
+mongo_port = int(e.get('MONGO_PORT', '27017'))
+mongo_username = e.get('MONGO_USERNAME', 'root')
+mongo_password = e.get('MONGO_PASSWORD', 'mongo')
+
+print(mongo_host, mongo_port, mongo_username, mongo_password)
+
+
+# Create a MongoDB client
+client = MongoClient(host=mongo_host, port=mongo_port, username=mongo_username, password=mongo_password)
+
+# Get the MongoDB database
+db = client['filtrr_db']
 
 @flow(name="Load Parameters Flow", description="Load parameters from a JSON \
 file and extract model-specific parameters.")
-def load_parameters_flow(parameter_file_path: str = 'parameters.json') -> tuple:
+def load_parameters_flow(parameter_file_path: str = 'tracking/parameters.json', retrain:bool = False) -> tuple:
     """
     Flow to load parameters from a JSON file and extract model-specific parameters.
 
@@ -26,9 +43,9 @@ def load_parameters_flow(parameter_file_path: str = 'parameters.json') -> tuple:
         tuple: Tuple containing train-test split parameters, vectorizer parameters,
                AdaBoost parameters, and Bagging parameters.
     """
+    #____________________________________________________________________________________
     @task(name="Read Parameters From File", description="Read parameters from a JSON file.")
     def read_parameters(file_path: str) -> dict:
-        #TODO: change this to a request
         log = get_logger()
         try:
             with open(file=file_path, mode='r', encoding='utf-8') as f:
@@ -36,6 +53,18 @@ def load_parameters_flow(parameter_file_path: str = 'parameters.json') -> tuple:
                 return j
         except FileNotFoundError:
             log.info(f"Error: File '{file_path}' not found.")
+            return {}
+    # ____________________________________________________________________________________
+
+    @task(name="Read Parameters From db", description="Read parameters from a MongoDB collection.")
+    def read_parameters_from_db(collection_name: str) -> dict:
+        log = get_logger()
+        try:
+            hyperparameters = db.hyperparameters.find_one()
+            hyperparameters.pop('_id', None)
+            return hyperparameters
+        except Exception as e:
+            log.info(f"Error: {e}")
             return {}
 
     @task(name="Extract Model Specific Parameters", description="Extract model-specific parameters from loaded parameters.")
@@ -53,12 +82,15 @@ def load_parameters_flow(parameter_file_path: str = 'parameters.json') -> tuple:
 
         return trn_tst_p, vectorizer_p, adaboost_p, tree_p
 
-    parameters = read_parameters(parameter_file_path)
+    if retrain:
+        parameters = read_parameters_from_db('hyperparameters')
+    else:
+        parameters = read_parameters(parameter_file_path)
     return extract_params(parameters)
 
 
 @flow(name="Preprocess Data Flow", description="Read and preprocess mails from JSON files.")
-def preprocessor_flow(mails_file_path: str = 'data.json', keyword_file_path: str = 'keywords.json', get_mails_from_file:bool=True) -> tuple:
+def preprocessor_flow(mails_file_path: str = 'tracking/data.json', keyword_file_path: str = 'tracking/keywords.json', retrain:bool=False) -> tuple:
     """
     Flow to read and preprocess mails from JSON files.
 
@@ -71,15 +103,53 @@ def preprocessor_flow(mails_file_path: str = 'data.json', keyword_file_path: str
     Returns:
         tuple: Tuple containing preprocessed mails and text preprocessor instance.
     """
+    # ____________________________________________________________________________________
     @task(name="Import Mails From 'data.json'", description="Read mails data from JSON file.")
     def read_mails_from_file(mails_file: str) -> List[Dict]:
         with open(file=mails_file, mode='r', encoding='utf-8') as f:
             m = json.load(f)
         return m
+    # ____________________________________________________________________________________
 
+    @task(name="Read mails from MongoDB", description="Read mails data from MongoDB.")
+    def read_mails_from_db() -> List[Dict]:
+        # Get the MongoDB collection
+        collection = db['mails']
+
+        pipeline = [
+            {"$unwind": "$versions"},
+            {"$match": {"versions.actual_label": {"$exists": True}}},
+            {"$sort": {"versions.model_version": -1}},
+            {"$group": {
+                "_id": "$id",  
+                "document": {"$first": "$$ROOT"}  
+            }},
+            {"$replaceRoot": {"newRoot": "$document"}},
+            {"$project": {"label": "$versions.actual_label",
+                          "keywords": "$versions.keywords"
+            }}
+        ]
+
+        result = collection.aggregate(pipeline)
+
+        # Get all the mails from the collection
+        mails = list(result)
+
+        collection2 = db['train_data']
+        train_data = list(collection2.find())
+        
+        for mail in train_data:
+            mail.pop('_id', None)
+
+        for mail in mails:
+            mail.pop('_id', None)
+        
+        mails.extend(train_data)
+        return mails
+    
     @task(name="Preprocess Mails", description="Preprocess mails using text preprocessor.")
     def preprocess_mails(data: List[Dict], keyword_file: str) -> tuple:
-        p = TextPreprocessor()
+        p = TextPreprocessor(retrain=retrain)
         p.load_keywords(keyword_file_path=keyword_file)
 
         mails_preprocessed = []
@@ -88,7 +158,10 @@ def preprocessor_flow(mails_file_path: str = 'data.json', keyword_file_path: str
             mails_preprocessed.append(preprocessed_mail)
         return mails_preprocessed, p
 
-    mails = read_mails_from_file(mails_file=mails_file_path)
+    if retrain:
+        mails = read_mails_from_db()
+    else:
+        mails = read_mails_from_file(mails_file=mails_file_path)
 
     preprocessed_mails, preprocessor = preprocess_mails(data=mails, keyword_file=keyword_file_path)
 
@@ -212,7 +285,7 @@ def train_model_flow(x: list, y: list, train_test_parameters: dict, adaboost_par
         study1 = optuna.create_study(study_name=f"Tree Optimization - {formatted_datetime} - Step 1",
                                     directions=['maximize','maximize'],
                                     sampler=sampler, pruner=pruner, storage=storage)
-        study1.optimize(objective1, n_trials=10)
+        study1.optimize(objective1, n_trials=50)
 
         trial1 = study1.best_trials.pop()
         params1 = trial1.params
@@ -246,7 +319,7 @@ def train_model_flow(x: list, y: list, train_test_parameters: dict, adaboost_par
         study2 = optuna.create_study(study_name=f"Model Optimization - {formatted_datetime} - Step 2",
                                     directions=['maximize','maximize','maximize'],
                                     sampler=sampler, pruner=pruner, storage=storage)
-        study2.optimize(objective2, n_trials=5)
+        study2.optimize(objective2, n_trials=150)
 
         trial2 = study2.best_trials.pop()
         params2 = trial2.params
@@ -285,8 +358,8 @@ def train_model_flow(x: list, y: list, train_test_parameters: dict, adaboost_par
         preprocessor_uri = f"runs:/{mlflow.active_run().info.run_id}/preprocessor"
         adaboost_uri = f"runs:/{mlflow.active_run().info.run_id}/model"
 
-        mlflow.register_model(vectorizer_uri, "Vectorizer")
-        mlflow.register_model(preprocessor_uri, "Preprocessor")
+        mlflow.register_model(vectorizer_uri, "Vect")
+        mlflow.register_model(preprocessor_uri, "Prep")
         mlflow.register_model(adaboost_uri, "Model")
 
         mlflow.log_params({"TREE - Test Parameters": tree_parameters})
@@ -305,25 +378,33 @@ def train_model_flow(x: list, y: list, train_test_parameters: dict, adaboost_par
         latest_version_number = latest_model_version[0].version if latest_model_version else None
 
         client.set_registered_model_alias("Model", "Production", latest_version_number)
-        client.set_registered_model_alias("Vectorizer", "Production", latest_version_number)
-        client.set_registered_model_alias("Preprocessor", "Production", latest_version_number)
+        client.set_registered_model_alias("Vect", "Production", latest_version_number)
+        client.set_registered_model_alias("Prep", "Production", latest_version_number)
 
 
 @flow(name="Main", description="Main flow that runs all other flows for the full train cycle of a model")
-def main_flow():
+def main_flow(retrain = False):
     """
     Main flow for training an AdaBoost classifier on email data.
 
     This flow loads parameters, preprocesses data, prepares training data,
     trains a TF-IDF vectorizer, and trains an AdaBoost classifier.
     """
+    if retrain:
+        trn_tst_parameters, vectorizer_parameters, adaboost_parameters, tree_parameters = load_parameters_flow(retrain=True)
 
-    trn_tst_parameters, vectorizer_parameters, adaboost_parameters, tree_parameters = load_parameters_flow()
+        preprocessed_mails, preprocessor = preprocessor_flow(retrain=True)
 
-    preprocessed_mails, preprocessor = preprocessor_flow()
+    else:
+        trn_tst_parameters, vectorizer_parameters, adaboost_parameters, tree_parameters = load_parameters_flow()
+
+        preprocessed_mails, preprocessor = preprocessor_flow()
+    
     keywords, keywords_per_mail, label_per_mail = prepare_training_data_flow(preprocessed_mails)
 
     vectorizer = train_vectorizer_flow(keywords, vectorizer_parameters)
     train_model_flow(keywords_per_mail, label_per_mail, trn_tst_parameters,
-                     adaboost_parameters, tree_parameters, vectorizer, preprocessor)
+                    adaboost_parameters, tree_parameters, vectorizer, preprocessor)
 
+if __name__ == '__main__':
+    main_flow(retrain=False)

@@ -4,12 +4,30 @@ from nltk.corpus import stopwords
 from nltk.stem import SnowballStemmer
 from typing import List, Dict
 from prefect.logging import get_logger
+from pymongo import MongoClient
+from os import environ as e
+
+# Get the MongoDB connection details from environment variables
+mongo_host = e.get('MONGO_HOST', 'db') 
+mongo_port = int(e.get('MONGO_PORT', '27017'))
+mongo_username = e.get('MONGO_USERNAME', 'root')
+mongo_password = e.get('MONGO_PASSWORD', 'mongo')
+
+print(mongo_host, mongo_port, mongo_username, mongo_password)
+
+
+# Create a MongoDB client
+client = MongoClient(host=mongo_host, port=mongo_port, username=mongo_username, password=mongo_password)
+
+# Get the MongoDB database
+db = client['filtrr_db']
+
 
 class TextPreprocessor:
     """
     Class for preprocessing text data, including loading keywords and extracting relevant tokens.
     """
-    def __init__(self):
+    def __init__(self, retrain = False):
         """
         Initialize TextPreprocessor.
 
@@ -25,10 +43,13 @@ class TextPreprocessor:
         self.__stopwords.update(stopwords.words('french'))
         self.__stopwords.update(stopwords.words('dutch'))
         self.__stopwords.update(stopwords.words('german'))
+        self.retrain = retrain
+
 
 
     def load_keywords(self,keyword_file_path:str):
         log = get_logger()
+        # ____________________________________________________________________________________
         def read_keywords(file_path) -> List[str]:
             try:
                 with open(file=file_path, mode='r', encoding='utf-8') as f:
@@ -37,14 +58,25 @@ class TextPreprocessor:
             except FileNotFoundError:
                 log.info(f"File '{file_path}' not found.")
                 return ["data analytics", "machine learning", "cloud computing", "devops", "infrastructure-as-code"]
+        # ____________________________________________________________________________________
+
+        def read_keywords_from_db() -> List[str]:
+            keywords = db.keywords.find_one()
+            keywords.pop('_id', None)
+            keywords = keywords.get('keywords', [])
+            return keywords
+
 
         def normalize_keyword(keyword: str) -> str:
             cleaned_keyword = re.sub(r'[^a-zA-Z0-9\s]', '', keyword.lower())
             stemmed_keyword = self.stemmer.stem(cleaned_keyword)
             return stemmed_keyword
 
+        if self.retrain:
+            keywords = read_keywords_from_db()
 
-        keywords = read_keywords(keyword_file_path)
+        else:
+            keywords = read_keywords(keyword_file_path)
 
         normalized_keywords = [normalize_keyword(keyword) for keyword in keywords]
         self._keywords = list(set(normalized_keywords))
@@ -79,6 +111,11 @@ class TextPreprocessor:
             return list(set(interesting_tokens))
 
         text = email.get('body', '')
+
+        if email.get('keywords'):
+            return email
+        
+
         tokens = get_tokens(text)
         keywords = extract_keyword_tokens(tokens)
         keywords.sort()

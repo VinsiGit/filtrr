@@ -1,37 +1,36 @@
 {
     "tfidf_vectorizer": {
-        "max_features": 5000,
+        "max_features": 7500,
         "sublinear_tf": true
     },
     "ada_boost": {
         "n_estimators": [
             10,
-            50
+            50,
+            5
         ],
         "learning_rate": [
             0.01,
             0.75,
-            0.01
+            0.015
         ],
         "algorithm": "SAMME"
     },
     "decision_tree": {
         "splitter": [
-            "best",
-            "random"
+            "best"
         ],
         "max_depth": [
             1,
-            5
+            6
         ],
         "criterion": [
             "gini",
-            "entropy",
-            "log_loss"
+            "entropy"
         ]
     },
     "train_test_split": {
-        "test_size": 0.33
+        "test_size": 0.25
     },
     "random_state": 42
 }

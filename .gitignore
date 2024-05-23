@@ -2,7 +2,7 @@ venv/
 *.sh
 output.txt
 models/
-mlruns
+mlruns/
 *.db
 *prefect*
 .devcontainer/
@@ -10,6 +10,7 @@ __pycache__/
 dist
 node_modules
 !start.sh
+!start_api.sh
 prefect.yaml
 test.py
 .env

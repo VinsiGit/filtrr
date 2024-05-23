@@ -8,10 +8,8 @@ from hashlib import sha256
 from datetime import datetime, timedelta
 from time import time
 from functools import wraps
-import random
-from db import create_collection, create_index, insert_data, insert_data_from_file
-from tracking.preprocessor import TextPreprocessor
-from tracking.retrainlander import preprocess_data_flow
+from modeloperator import Operator
+from threading import Thread
 
 
 # Function to hash the input
@@ -46,36 +44,14 @@ client = MongoClient(host=mongo_host, port=mongo_port, username=mongo_username, 
 # Get the MongoDB database
 db = client['filtrr_db']
 
-create_collection(db, 'mails')
-create_collection(db, 'users')
-create_collection(db, 'train_data')
-create_collection(db, 'keywords')
-create_collection(db, 'hyperparameters')
-
-# Create a list of users
-users = [
-    {'username': e.get('ADMIN_USERNAME', 'admin'), 'password_hash': generate_password_hash(e.get('ADMIN_PASSWORD', 'password')), 'role': 'admin'}
-]
-
-insert_data(db.users, users)
-insert_data_from_file(db.train_data, 'tracking/data.json')
-insert_data_from_file(db.keywords, 'tracking/keywords.json')
-insert_data_from_file(db.hyperparameters, 'tracking/parameters.json')
-
-create_index(db.mails, 'id')
-create_index(db.mails, 'versions.model_version')
-create_index(db.mails, 'versions.predicted_label')
-create_index(db.mails, 'versions.actual_label')
-create_index(db.mails, 'versions.rating')
-create_index(db.mails, 'versions.source')
-create_index(db.mails, 'versions.date')
-
 # Create a Flask app
 app = Flask(__name__)
 app.config['JWT_SECRET_KEY'] = e.get('JWT_SECRET_KEY', 'very-secret-key')
 CORS(app)
 jwt = JWTManager(app)
 
+operator = Operator()
+model_version_global = operator.get_model_version().version
 
 @app.route('/api')
 def hello():
@@ -91,7 +67,7 @@ def login():
         if user['role'] == 'trial':
             access_token = create_access_token(identity={'username': username, 'role': user['role']}, expires_delta=timedelta(minutes=5))
         else:
-            access_token = create_access_token(identity={'username': username, 'role': user['role']}, expires_delta=timedelta(hours=168))
+            access_token = create_access_token(identity={'username': username, 'role': user['role']}, expires_delta=timedelta(days=365))
 
         return jsonify({"access_token": access_token, "role": user['role']}), 200
     return jsonify({"msg": "Bad username or password"}), 401
@@ -291,7 +267,9 @@ def get_data():
         unique_actual_labels = [actual_label]
         query['versions.actual_label'] = actual_label
     else:
-        unique_actual_labels = [label for label in db.mails.distinct("versions.actual_label") if label is not None]
+        unique_actual_labels = db.mails.distinct("versions.actual_label")
+        if None in unique_actual_labels:
+            unique_actual_labels.remove(None)
 
     pipeline = [
         # Unwind the versions array to treat each version as a document
@@ -484,8 +462,9 @@ def add_mail_batch():
     if request.content_type != 'application/json':
         return jsonify({"error": "Unsupported Media Type"}), 415
 
-    MODEL_VERSION = 1.0
     responses = []
+
+    model_version = model_version_global
     
     # Get the data from the request
     data_batch = request.json
@@ -499,7 +478,7 @@ def add_mail_batch():
             hash = str(hash_input(data['body']))
             existing_record = db.mails.find_one({
                 "id": hash,
-                "versions.model_version": MODEL_VERSION
+                "versions.model_version": model_version
             }, {"_id": 0, "versions.$": 1})
             
             if existing_record:
@@ -519,16 +498,15 @@ def add_mail_batch():
                 responses.append(response)
                 continue
 
-            # Preprocess the data
-            preprocessor = TextPreprocessor()
-            preprocessor.load_keywords(keyword_file_path='./tracking/keywords.json')
+            email = {"body": data['body']}
+
             start_time = time()
+            
+            classification = operator.classify(email)
+            label = str(classification['predicted_label'][0])
+            keywords = classification['keywords']
+            certainty = max(classification['certainty'])
 
-            data['text_body'] = data['body']
-            keywords = preprocessor.preprocess(data)['keywords']
-
-            label = random.choice(['IRRELEVANT', 'BI_ENGINEER', 'DATA_ENGINEER'])
-            certainty = random.random()
             end_time = time()
             processing_time = end_time - start_time
 
@@ -540,7 +518,7 @@ def add_mail_batch():
                 "datetime_elapsed": processing_time,
                 "certainty": certainty,
                 "source": source,
-                "model_version": MODEL_VERSION
+                "model_version": model_version
             }
             
             db.mails.update_one(
@@ -599,9 +577,7 @@ def update_ratings():
                         else:
                             responses.append({"status": "failure", "message": "Illegal label", "id": entry['body']})
                             continue
-                    else:
-                        responses.append({"status": "failure", "message": "Actual label is missing", "id": entry['body']})
-                        continue
+
             else:
                 responses.append({"status": "failure", "message": "Illegal rating", "id": entry['body']})
                 continue
@@ -619,28 +595,24 @@ def update_ratings():
 
     return jsonify(responses), 200
 
+def background_retrain():
+    operator.train(retrain=True)
 
-
-@app.route('/api/retrain', methods=['GET'])
+@app.route('/api/retrain', methods=['POST'])
 @check_role('admin')
 def retrain():
-    mails = preprocess_data_flow(get_mails_from_file=False)
-    return mails, 200
+    retrain_thread = Thread(target=background_retrain)
+    retrain_thread.start()
+    return jsonify({"msg": "Retraining started"}), 200
 
-@app.route('/api/hyperparameters', methods=['GET'])
+@app.route('/api/retrain', methods=['PUT'])
 @check_role('admin')
-def get_hyperparameters():
-    hyperparameters = db.hyperparameters.find_one()
-    hyperparameters.pop('_id', None)
-    return jsonify(hyperparameters), 200
-
-@app.route('/api/trainingdata', methods=['GET'])
-@check_role('admin')
-def get_training_data():
-    training_data = list(db.train_data.find())
-    for item in training_data:
-        item.pop('_id', None)
-    return jsonify(training_data), 200
+def update_model_version():
+    global operator
+    operator = Operator()
+    global model_version_global
+    model_version_global = operator.get_model_version().version
+    return jsonify({"msg": f"Model version updated to: {model_version_global}"}), 200
 
 @app.route('/api/tokencheck', methods=['GET'])
 @jwt_required()
