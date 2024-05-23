@@ -63,6 +63,7 @@ class TextPreprocessor:
         def read_keywords_from_db() -> List[str]:
             keywords = db.keywords.find_one()
             keywords.pop('_id', None)
+            keywords = keywords.get('keywords', [])
             return keywords
 
 
