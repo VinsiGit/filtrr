@@ -9,7 +9,6 @@ from datetime import datetime, timedelta
 from time import time
 from functools import wraps
 import random
-from db import create_collection, create_index, insert_data, insert_data_from_file
 from tracking.preprocessor import TextPreprocessor
 from tracking.retrainlander import preprocess_data_flow
 
@@ -45,30 +44,6 @@ client = MongoClient(host=mongo_host, port=mongo_port, username=mongo_username, 
 
 # Get the MongoDB database
 db = client['filtrr_db']
-
-create_collection(db, 'mails')
-create_collection(db, 'users')
-create_collection(db, 'train_data')
-create_collection(db, 'keywords')
-create_collection(db, 'hyperparameters')
-
-# Create a list of users
-users = [
-    {'username': e.get('ADMIN_USERNAME', 'admin'), 'password_hash': generate_password_hash(e.get('ADMIN_PASSWORD', 'password')), 'role': 'admin'}
-]
-
-insert_data(db.users, users)
-insert_data_from_file(db.train_data, 'tracking/data.json')
-insert_data_from_file(db.keywords, 'tracking/keywords.json')
-insert_data_from_file(db.hyperparameters, 'tracking/parameters.json')
-
-create_index(db.mails, 'id')
-create_index(db.mails, 'versions.model_version')
-create_index(db.mails, 'versions.predicted_label')
-create_index(db.mails, 'versions.actual_label')
-create_index(db.mails, 'versions.rating')
-create_index(db.mails, 'versions.source')
-create_index(db.mails, 'versions.date')
 
 # Create a Flask app
 app = Flask(__name__)
