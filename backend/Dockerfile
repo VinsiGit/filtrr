@@ -17,12 +17,15 @@ RUN pip install -r model_requirements.txt
 # Download the stopwords from nltk
 RUN python -m nltk.downloader stopwords
 
+# Make the start.sh script executable
+RUN chmod +x start_api.sh
+
 # Copy the current directory contents into the container at /app
 COPY . /app
 
 # Expose the port that Gunicorn will run on
 EXPOSE 5000
 
-# Command to run the application using Gunicorn
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]
+# Run the shell script
+CMD ["start_api.sh"]
 
