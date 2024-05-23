@@ -31,4 +31,4 @@ EXPOSE 8070
 EXPOSE 8080
 
 # Run the shell script
-CMD ["start.sh"]
+CMD ["./start.sh"]
