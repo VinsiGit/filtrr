@@ -8,8 +8,8 @@ from hashlib import sha256
 from datetime import datetime, timedelta
 from time import time
 from functools import wraps
-import random
 from modeloperator import Operator
+from threading import Thread
 
 
 # Function to hash the input
@@ -268,6 +268,8 @@ def get_data():
         query['versions.actual_label'] = actual_label
     else:
         unique_actual_labels = db.mails.distinct("versions.actual_label")
+        if None in unique_actual_labels:
+            unique_actual_labels.remove(None)
 
     pipeline = [
         # Unwind the versions array to treat each version as a document
@@ -461,6 +463,8 @@ def add_mail_batch():
         return jsonify({"error": "Unsupported Media Type"}), 415
 
     responses = []
+
+    model_version = model_version_global
     
     # Get the data from the request
     data_batch = request.json
@@ -474,7 +478,7 @@ def add_mail_batch():
             hash = str(hash_input(data['body']))
             existing_record = db.mails.find_one({
                 "id": hash,
-                "versions.model_version": model_version_global
+                "versions.model_version": model_version
             }, {"_id": 0, "versions.$": 1})
             
             if existing_record:
@@ -502,7 +506,6 @@ def add_mail_batch():
             label = str(classification['predicted_label'][0])
             keywords = classification['keywords']
             certainty = max(classification['certainty'])
-            model_version = model_version_global
 
             end_time = time()
             processing_time = end_time - start_time
@@ -592,20 +595,24 @@ def update_ratings():
 
     return jsonify(responses), 200
 
-@app.route('/api/hyperparameters', methods=['GET'])
-@check_role('admin')
-def get_hyperparameters():
-    hyperparameters = db.hyperparameters.find_one()
-    hyperparameters.pop('_id', None)
-    return jsonify(hyperparameters), 200
+def background_retrain():
+    operator.train(retrain=True)
 
-@app.route('/api/trainingdata', methods=['GET'])
+@app.route('/api/retrain', methods=['POST'])
 @check_role('admin')
-def get_training_data():
-    training_data = list(db.train_data.find())
-    for item in training_data:
-        item.pop('_id', None)
-    return jsonify(training_data), 200
+def retrain():
+    retrain_thread = Thread(target=background_retrain)
+    retrain_thread.start()
+    return jsonify({"msg": "Retraining started"}), 200
+
+@app.route('/api/retrain', methods=['PUT'])
+@check_role('admin')
+def update_model_version():
+    global operator
+    operator = Operator()
+    global model_version_global
+    model_version_global = operator.get_model_version().version
+    return jsonify({"msg": f"Model version updated to: {model_version_global}"}), 200
 
 @app.route('/api/tokencheck', methods=['GET'])
 @jwt_required()
