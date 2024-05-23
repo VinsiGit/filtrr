@@ -17,11 +17,13 @@ RUN pip install -r model_requirements.txt
 # Download the stopwords from nltk
 RUN python -m nltk.downloader stopwords
 
-# Make the start.sh script executable
-RUN chmod +x start_api.sh
-
 # Copy the current directory contents into the container at /app
 COPY . /app
+
+RUN tracking/train_model_flow.py
+
+# Make the start.sh script executable
+RUN chmod +x start_api.sh
 
 # Expose the port that Gunicorn will run on
 EXPOSE 5000
