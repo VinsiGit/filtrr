@@ -23,7 +23,7 @@ COPY . /app
 RUN python train_model_flow.py
 
 # Make the start.sh script executable
-RUN chmod +x start_api.sh
+RUN chmod +x start.sh
 
 # Expose the ports used by the services
 EXPOSE 5000
@@ -31,4 +31,4 @@ EXPOSE 8070
 EXPOSE 8080
 
 # Run the shell script
-CMD ["start_api.sh"]
+CMD ["start.sh"]
