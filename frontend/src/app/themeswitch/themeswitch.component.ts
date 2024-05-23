@@ -211,8 +211,8 @@ export class ThemeswitchComponent {
     } else {
       document.documentElement.style.setProperty('--shadow-float', '0 4px 12px 0 rgba(0, 0, 0, 0.2)');
       document.documentElement.style.setProperty('--shadow-indent', '0 4px 12px 0 rgba(0, 0, 0, 0.2) inset');
-      document.documentElement.style.setProperty('--review-green', '#62e262');
-      document.documentElement.style.setProperty('--review-red', '#f05964');
+      document.documentElement.style.setProperty('--color-review-green', '#62e262');
+      document.documentElement.style.setProperty('--color-review-red', '#f05964');
       document.documentElement.style.setProperty('--color-label_irrelevant', '#47426b');
       document.documentElement.style.setProperty('--color-label1', '#f05365');
       document.documentElement.style.setProperty('--color-label2', '#f68e5f');
