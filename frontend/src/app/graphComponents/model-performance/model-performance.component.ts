@@ -46,9 +46,7 @@ export class ModelPerformanceComponent {
   datapoints: ApexAxisChartSeries = [];
   days: string[] = [];
 
-
-  constructor(private theme: ThemeService, private route: ActivatedRoute, private data: AnalyticsdataService) {
-  }
+  constructor(private theme: ThemeService, private route: ActivatedRoute, private data: AnalyticsdataService) {}
 
   async ngOnInit(): Promise<void> {
     await this.loadChartData().then(() => {
@@ -56,82 +54,76 @@ export class ModelPerformanceComponent {
     });
   }
 
-  //instanciating the chart
+  randomizeArray(arg: number[]) {
+    var array = arg.slice();
+    var currentIndex = array.length, temporaryValue, randomIndex;
+  
+    while (0 !== currentIndex) {
+      randomIndex = Math.floor(Math.random() * currentIndex);
+      currentIndex -= 1;
+  
+      temporaryValue = array[currentIndex];
+      array[currentIndex] = array[randomIndex];
+      array[randomIndex] = temporaryValue;
+    }
+  
+    return array;
+  }
+
+  sparklineData: number[] = [47, 45, 54, 38, 56, 24, 65, 31, 37, 39, 62, 51, 35, 41, 35, 27, 93, 53, 61, 27, 54, 43, 19, 46];
+
+  // Instantiating the chart
   renderChart() {
+    const dateLabels = [...Array(24).keys()].map(n => `2018-09-${String(n + 1).padStart(2, '0')}`);
+
     this.chartOptions = {
-      series: this.datapoints,
+      series: [{
+        name: 'Sales',
+        data: this.sparklineData.map((value, index) => ({
+          x: new Date(dateLabels[index]).getTime(),
+          y: value
+        }))
+      }],
       chart: {
-        toolbar: {
-          offsetX: -5,
-          offsetY: 10
-        },
-        height: 320,
-        foreColor: this.theme.chart_textcolor,
-        redrawOnParentResize: true,
-        id: "evaluationGraph",
-        group: 'ratingData',
+        id: 'sparkline1',
+        group: 'sparklines',
         type: 'area',
-        zoom: {
-          enabled: true,
+        height: 350,
+        width: 360,
+        sparkline: {
+          enabled: true
         },
-        dropShadow: {
-          enabled: false,
-          top: 1,
-          left: 4,
-          blur: 2,
-          color: "#000",
-          opacity: 0.05,
-        },
-      },
-      colors: this.theme.labelcolors,
-      dataLabels: {
-        enabled: false,
       },
       stroke: {
-        curve: "smooth",
-        width: 5,
+        curve: 'straight'
       },
-      title: {
-        text: "evaluation",
-        align: "center",
-        margin: 20,
-      },
-      grid: {
-        borderColor: this.theme.chart_gridcolor,
-        row: {
-          opacity: 0.5,
-        },
-        padding: {
-          left: 25,
-        },
+      fill: {
+        opacity: 1,
       },
       xaxis: {
         type: 'datetime',
-        categories: this.days,
-        axisBorder: {
-          show: false,
-        },
-        labels: {
-          style: {
-            colors: this.theme.chart_axistextcolor,
-          },
-        },
       },
       yaxis: {
-        stepSize: 1,
-        labels: {
-          style: {
-            colors: this.theme.chart_axistextcolor,
-          },
-        },
+        min: 0
       },
-      markers: {
-        size: 3.5,
-        hover: {
-          size: 6,
-        },
+      colors: [this.theme.color_monochrome],
+      title: {
+        text: '$424,652',
+        offsetX: 30,
+        style: {
+          fontSize: '24px',
+          cssClass: 'apexcharts-yaxis-title'
+        }
       },
-    };
+      subtitle: {
+        text: 'Sales',
+        offsetX: 30,
+        style: {
+          fontSize: '14px',
+          cssClass: 'apexcharts-yaxis-title'
+        }
+      }
+    }
   }
 
   // loading the data
