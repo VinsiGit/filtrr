@@ -1,6 +1,6 @@
 #!/bin/bash
 
-mlflow ui --backend-store-uri sqlite:///mlflow.db --port 8070 &
+mlflow ui --backend-store-uri sqlite:///mlflow.db --port 5001 &
 
 python db.py
 

@@ -27,8 +27,7 @@ RUN chmod +x start.sh
 
 # Expose the ports used by the services
 EXPOSE 5000
-EXPOSE 8070
-EXPOSE 8080
+EXPOSE 5001
 
 # Run the shell script
 CMD ["./start.sh"]
