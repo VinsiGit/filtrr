@@ -23,7 +23,6 @@ class Operator:
         return c
 
     def classify(self,email):
-        client = mlflow.MlflowClient()
         email = self.preprocessor.preprocess(email)
         keywords = email['keywords']
         text_email_keywords = [' '.join(keywords)]
@@ -31,10 +30,8 @@ class Operator:
         probabilities = self.classifier.predict_proba(sparse_text_vector)[0]
         label = self.classifier.predict(sparse_text_vector)
         email['predicted_label'] = label
-        email['model_version'] = client.get_model_version_by_alias(name='Model', alias='Production')
         email['keywords'] = text_email_keywords
         email['certainty'] = probabilities
-        email['body'] = ""
         return email
     
     def get_model_version(self):
