@@ -3,7 +3,7 @@ import { BrowserModule } from '@angular/platform-browser';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule  } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { PasteinComponent } from './pastein/pastein.component';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
@@ -21,6 +21,7 @@ import { CertaintygraphComponent } from './graphComponents/certaintygraph/certai
 import { ConfusionmatrixComponent } from './graphComponents/confusionmatrix/confusionmatrix.component';
 import { RatingCountGraphComponent } from './graphComponents/rating-count-graph/rating-count-graph.component';
 import { EvaluationGraphComponent } from './graphComponents/evaluation-graph/evaluation-graph.component';
+import { ModelPerformanceComponent } from './graphComponents/model-performance/model-performance.component';
 
 @NgModule({
   declarations: [
@@ -37,7 +38,8 @@ import { EvaluationGraphComponent } from './graphComponents/evaluation-graph/eva
     CertaintygraphComponent,
     ConfusionmatrixComponent,
     RatingCountGraphComponent,
-    EvaluationGraphComponent
+    EvaluationGraphComponent,
+    ModelPerformanceComponent
   ],
   imports: [
     BrowserModule,
@@ -45,7 +47,8 @@ import { EvaluationGraphComponent } from './graphComponents/evaluation-graph/eva
     HttpClientModule,
     FormsModule,
     AppRoutingModule,
-    NgApexchartsModule
+    NgApexchartsModule,
+    ReactiveFormsModule 
   ],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },

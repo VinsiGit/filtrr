@@ -155,11 +155,21 @@ export class ThemeswitchComponent {
       }
     }, true, true, true);
 
+    //certainty charts
     for (let label of this.data.labels){
       ApexCharts.exec(`certaintyGraph-${label}`, 'updateOptions', {
         colors: [getComputedStyle(document.documentElement).getPropertyValue('--module-color-highlight-monochrome')],
       }, true, true, true);
     }
+
+    ApexCharts.exec('server_load', 'updateOptions', {
+      colors: [this.theme.color_monochrome],
+      title: {
+        style: {
+          color: this.theme.chart_textcolor
+        }
+      },
+    }, true, true, true);
 
   }
 
@@ -191,10 +201,11 @@ export class ThemeswitchComponent {
       document.documentElement.style.setProperty('--module-color-text', '#80848b');
       document.documentElement.style.setProperty('--module-color-text-secondary', '#bec1c4');
       document.documentElement.style.setProperty('--module-color-title', '#46494c');
-      document.documentElement.style.setProperty('--module-color-highlight-complementary', '#7a6ce4');
+      document.documentElement.style.setProperty('--module-color-highlight-complementary', "#b872de");
       document.documentElement.style.setProperty('--module-color-highlight-monochrome', '#f05365');
       
       this.theme.labelcolors = ["#dbdee4", "#6460af", "#b872de"];
+      this.theme.color_monochrome = "#f05365";
       
       this.theme.shadowcolor = "#607D8B";
       this.theme.shadowOpacity = 0.1;
@@ -211,8 +222,8 @@ export class ThemeswitchComponent {
     } else {
       document.documentElement.style.setProperty('--shadow-float', '0 4px 12px 0 rgba(0, 0, 0, 0.2)');
       document.documentElement.style.setProperty('--shadow-indent', '0 4px 12px 0 rgba(0, 0, 0, 0.2) inset');
-      document.documentElement.style.setProperty('--review-green', '#62e262');
-      document.documentElement.style.setProperty('--review-red', '#f05964');
+      document.documentElement.style.setProperty('--color-review-green', '#62e262');
+      document.documentElement.style.setProperty('--color-review-red', '#f05964');
       document.documentElement.style.setProperty('--color-label_irrelevant', '#47426b');
       document.documentElement.style.setProperty('--color-label1', '#f05365');
       document.documentElement.style.setProperty('--color-label2', '#f68e5f');
@@ -239,6 +250,7 @@ export class ThemeswitchComponent {
       document.documentElement.style.setProperty('--module-color-highlight-monochrome', '#7961f1');
 
       this.theme.labelcolors = ["#47426b", "#f05365", "#f68e5f"];
+      this.theme.color_monochrome = "#6460af";
 
       this.theme.shadowcolor = "rgba(0, 0, 0, 0.2)";
       this.theme.shadowOpacity = 0.3;

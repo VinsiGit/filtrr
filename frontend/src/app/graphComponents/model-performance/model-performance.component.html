@@ -1,0 +1,23 @@
+<div id="chart">
+    <div class="module-indent">
+        <div class="version">version v1.5</div>
+        <div class="stats">
+            <div>server latency: 0.0014ms</div>
+            <div>model latency: 0.08ms</div>
+        </div>
+        <apx-chart
+            [series]="chartOptions.series"
+            [chart]="chartOptions.chart"
+            [xaxis]="chartOptions.xaxis"
+            [yaxis]="chartOptions.yaxis"
+            [dataLabels]="chartOptions.dataLabels"
+            [colors]="chartOptions.colors"
+            [grid]="chartOptions.grid"
+            [markers]="chartOptions.markers"
+            [legend]="chartOptions.legend"
+            [stroke]="chartOptions.stroke"
+            [title]="chartOptions.title"
+            [tooltip]="chartOptions.tooltip"
+        ></apx-chart>
+    </div>
+  </div>

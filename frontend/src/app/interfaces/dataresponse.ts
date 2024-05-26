@@ -11,6 +11,12 @@ export interface PasteInText {
     body: string;
 }
 
+export interface Rating {
+    body: string;
+    rating: -1 | 0 | 1;
+    actual_label?: string;
+}
+
 export interface LabelData {
     data: DayData[];
     end_date: string;

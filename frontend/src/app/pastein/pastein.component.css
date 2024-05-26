@@ -1,3 +1,7 @@
+.module {
+    overflow: inherit;
+}
+
 main {
     display: flex;
     flex-direction: column;
@@ -36,7 +40,7 @@ textarea:focus, input:focus{
 h1 {
     padding-top: 1.5rem;
     padding-bottom: 1.5rem;
-    font-size: 3rem;
+    font-size: 2rem;
     color: var(--module-color-title);
 }
 
@@ -75,4 +79,120 @@ svg {
 apx-chart {
     display: block;
     width: 28vw;
+}
+
+.review {
+    padding: 1rem 0px;
+    padding-bottom: 0px;
+}
+
+.buttons {
+    display: flex;
+    justify-content: space-evenly;
+    margin: 1.5rem 0px;
+}
+
+#rate_positive:hover, .positiveSelected {
+    background-color: var(--color-review-green);
+}
+
+#rate_negative:hover, .negativeSelected {
+    background-color: var(--color-review-red);
+}
+
+.inactive {
+    background-color: var(--module-color-background-secondary);
+}
+
+#rate_positive, #rate_negative, .submit_feedback {
+    border: 1px solid var(--page-color-background);
+    padding: 1.5rem 2.5rem;
+    font-size: 2rem;
+    border-radius: .75rem;
+    box-sizing: border-box;
+    cursor: pointer;
+    flex: 0 0 auto;
+    line-height: 1.5rem;
+    text-align: center;
+    text-decoration: none #6B7280 solid;
+    text-decoration-thickness: auto;
+    transition-duration: .2s;
+    transition-property: background-color, border-color, color, fill, stroke;
+    transition-timing-function: cubic-bezier(.4, 0, 0.2, 1);
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    width: auto;
+    height: 50%;
+    right: 3rem;
+}
+
+li {
+    margin: .5rem 0px;
+    border-radius: .75rem;
+    background-color: var(--module-color-highlight-complementary);
+    padding: .5rem;
+    color: white;
+}
+
+li::marker {
+    color: var(--page-color-text);
+  }
+
+#rate_positive:focus, #rate_negative:focus {
+    box-shadow: none;
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+}
+
+.modelResponse {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    grid-template-rows: 1fr;
+    gap: 1rem;
+}
+
+
+.keywords {
+    padding: 1vw;
+    background-color: var(--module-color-background-secondary);
+    border-radius: 1rem;
+}
+
+apx-chart {
+    width: 100%;
+    min-width: 16rem;
+}
+
+.chart {
+    display: flex;
+    flex-direction: column;
+}
+
+.chart > * {
+    align-self: center;
+}
+
+.form_layout {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    gap: .5rem;
+}
+
+.submit_feedback {
+    align-self: center;
+    background-color: var(--module-color-background-secondary);
+    padding: 2vh 1vw;
+    font-size: 1vw;
+    color: var(--page-color-text);
+}
+
+.submit_feedback:hover {
+    background-color: var(--page-color-background);
+}
+
+.extra-fields {
+    margin: 0px 2vw;
 }

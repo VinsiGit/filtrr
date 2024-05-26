@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { lastValueFrom } from 'rxjs';
-import { PasteInResponse, PasteInText } from '../interfaces/dataresponse';
+import { PasteInResponse, PasteInText, Rating } from '../interfaces/dataresponse';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -17,5 +17,11 @@ export class PostService {
     const headers = new HttpHeaders().set('Source', 'site');
     const options = { headers: headers };
     return await lastValueFrom(this.http.post(`https://${this.hostname}/api`, mail, options));
+  }
+
+  async rate(rating: Rating): Promise<any> {
+    const headers = new HttpHeaders().set('Source', 'site');
+    const options = { headers: headers };
+    return await lastValueFrom(this.http.put(`https://${this.hostname}/api`, rating, options));
   }
 }
