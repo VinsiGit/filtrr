@@ -27,6 +27,11 @@ export class UserService {
     const options = { headers: headers, body: { "username": username } };
     return this.http.delete(`https://${this.hostname}/api/users`, options);
   }
+
+  retrain() {
+    const headers = new HttpHeaders().set('Content-Type', 'application/json');
+    return this.http.post(`https://${this.hostname}/api/TODO`, { retrain: true }, { headers });
+  }
 }
 
 
