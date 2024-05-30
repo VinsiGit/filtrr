@@ -19,16 +19,17 @@ export class RetrainComponent implements OnInit{
   ngOnInit() {
     this.title.pageTitle = "retrain model";
   }
-
+  
   retrain(): void {
     this.user.retrain().subscribe({
       next: (response: any) => {
+        console.log(response.msg);
         this.startLoading();
         this.disableButton();
       },
       error: (error) => {
         this.msg = 'error retraining, please try again';
-        console.error('error trying to retrain', 'error');
+        console.error('error trying to retrain', error);
         setTimeout(() => {
           this.msg = undefined;
         }, 2000);
