@@ -7,7 +7,42 @@
             <button (click)="changePage('model')">model</button>
         </nav>
         <div id="content" class="module" *ngIf="page === 'site'">
-            <p>just git gud lol</p>
+            <h1>Documentatie voor de Website</h1>
+
+            <h2>Dashboard</h2>
+            <p>Het dashboard geeft een overzicht van de prestaties en de classificaties van de modellen.</p>
+            <ul class="endpoint">
+                <li><strong>Grafiek</strong>: toont de hoeveelheid data geclassificeerd als
+                    'irrelevant', 'bi-engineer', en 'data-engineer'.</li>
+                <li><strong>Server Load</strong>: geeft de huidige serverbelasting en latentie weer.</li>
+                <li><strong>Certainty Scores</strong>: toont de gemiddelde zekerheidsscores van de classificaties per
+                    categorie ('irrelevant', 'bi-engineer', 'data-engineer').</li>
+            </ul>
+
+            <h2>Paste-in</h2>
+            <p>Op deze pagina kunnen gebruikers tekst invoeren die geanalyseerd moet worden.</p>
+            <ul class="endpoint">
+                <li><strong>Invoerveld</strong>: plak hier de tekst die geanalyseerd moet worden.</li>
+                <li><strong>Filter-icoon</strong>: start de analyse van de ingevoerde tekst.</li>
+            </ul>
+
+            <h2>Instellingen</h2>
+            <p>De instellingenpagina biedt beheerders de mogelijkheid gebruikers toe te voegen of te verwijderen.</p>
+            <ul class="endpoint">
+                <li><strong>Huidige Gebruiker</strong>: toont de huidige ingelogde gebruiker.</li>
+                <li><strong>Nieuwe Gebruiker Toevoegen</strong>: selecteer een gebruikersrol, voer een gebruikersnaam en
+                    wachtwoord in, en klik op 'Add User'.</li>
+                <li><strong>Gebruiker Verwijderen</strong>: selecteer een gebruiker en klik op 'delete user'.</li>
+            </ul>
+
+            <h2>Help</h2>
+            <p>De help-pagina biedt documentatie en uitleg over het gebruik van de applicatie.</p>
+            <ul class="endpoint">
+                <li><strong>Outlook Documentatie</strong>: informatie over de installatie en het gebruik van de Outlook
+                    add-on.</li>
+                <li><strong>Stroomdiagram</strong>: geeft een visuele representatie van het proces van de mailanalyse,
+                    van preprocessing tot classificatie door het model.</li>
+            </ul>
         </div>
         <div id="content" class="module" *ngIf="this.page=='outlook'">
             <h1>Outlook Documentatie:</h1>
@@ -385,18 +420,18 @@
                                 href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostClassifier.html">sklearn.ensemble.AdaBoostClassifier</a>
                         </p>
                     </div>
-                <script>
-                    function toggleContent(id) {
-                        let content = document.getElementById(id);
-                        if (content.style.display === "none") {
-                          content.style.display = "block";
-                        } else {
-                          content.style.display = "none";
+                    <script>
+                        function toggleContent(id) {
+                            let content = document.getElementById(id);
+                            if (content.style.display === "none") {
+                                content.style.display = "block";
+                            } else {
+                                content.style.display = "none";
+                            }
                         }
-                    }
-                </script>
+                    </script>
+                </div>
             </div>
-        </div>
         </div>
     </div>
 </main>
