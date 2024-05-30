@@ -38,3 +38,17 @@ main {
     align-items: center;
     height: 60vh;
 }
+
+button:disabled {
+    background-color: var(--page-color-button-pressed);
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+button:disabled:hover {
+    background-color: var(--page-color-button-pressed);
+}
+
+p {
+    margin: 2px .5rem;
+}

@@ -1,3 +1,7 @@
 <main>
-    <button>⚠️retrain model⚠️</button>
+    <div>
+        <button (click)="retrain()" [disabled]="this.buttonDisabled">⚠️retrain model⚠️</button>
+        <p *ngIf="this.loadingMessage">{{ this.loadingMessage }}</p>
+        <p *ngIf="msg">{{ this.msg }}</p>
+    </div>
 </main>
