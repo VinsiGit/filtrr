@@ -30,9 +30,6 @@ export class UserService {
 
   retrain() {
     const headers = new HttpHeaders().set('Content-Type', 'application/json');
-    return this.http.post(`https://${this.hostname}/api/TODO`, { retrain: true }, { headers });
+    return this.http.post(`https://${this.hostname}/api/retrain`, { retrain: true }, { headers });
   }
 }
-
-
-/*https://s144272.devops-ap.be/api/users*/
