@@ -4,7 +4,7 @@ const devCerts = require("office-addin-dev-certs");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 
-const urlDev = "https://s144272.devops-ap.be/addin"; //localhost.be
+const urlDev = "https://localhost:3000"; // moet https://localhost:3000 zijn 
 const urlProd = "https://s144272.devops-ap.be/addin"; // CHANGE THIS TO YOUR PRODUCTION DEPLOYMENT LOCATION
 
 async function getHttpsOptions() {
