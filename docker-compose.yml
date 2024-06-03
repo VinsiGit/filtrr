@@ -1,0 +1,70 @@
+version: "3"
+services:
+  backend:
+    image: ghcr.io/bazaaer/filtrr-backend:latest
+    environment:
+      MONGO_USERNAME: ${MONGO_USERNAME}
+      MONGO_PASSWORD: ${MONGO_PASSWORD}
+      ADMIN_USERNAME: ${ADMIN_USERNAME}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+    labels:
+      - "traefik.enable=true"
+      # Backend
+      - "traefik.http.routers.backend.rule=Host(`${HOSTNAME}`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.backend.entrypoints=websecure"
+      - "traefik.http.routers.backend.service=backend"
+      - "traefik.http.routers.backend.tls=true"
+      - "traefik.http.routers.backend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.backend.loadbalancer.server.port=5000"
+      # Mlflow ui
+      - "traefik.http.routers.mlflow.rule=Host(`${MLFLOW_HOSTNAME}`)"
+      - "traefik.http.routers.mlflow.entrypoints=websecure"
+      - "traefik.http.routers.mlflow.service=mlflow"
+      - "traefik.http.routers.mlflow.tls=true"
+      - "traefik.http.routers.mlflow.tls.certresolver=letsencrypt"
+      - "traefik.http.services.mlflow.loadbalancer.server.port=5001"
+    restart: always
+    networks:
+      - proxy
+      - database
+
+  frontend:
+    image: ghcr.io/bazaaer/filtrr-frontend:lastest
+    labels:
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefik.http.routers.frontend.rule=Host(`${HOSTNAME}`) && !PathPrefix(`/api`)"
+      - "traefik.http.routers.frontend.tls=true"
+      - "traefik.http.routers.frontend.tls.certresolver=letsencrypt"
+    networks:
+      - proxy
+
+  addin:
+    image: ghcr.io/bazaaer/filtrr-addin:latest
+    labels:
+      - "traefik.http.routers.addin.entrypoints=websecure"
+      - "traefik.http.routers.addin.rule=Host(`${HOSTNAME}`) && PathPrefix(`/addin`)"
+      - "traefik.http.routers.addin.tls=true"
+      - "traefik.http.routers.addin.tls.certresolver=letsencrypt"
+    networks:
+      - proxy
+
+  db:
+    image: mongo:4.4
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+    volumes:
+      - filtrr-db:/data/db
+    networks:
+      - database
+
+volumes:
+  filtrr-db:
+
+networks:
+  proxy:
+    external: true
+    name: traefik
+  database:
