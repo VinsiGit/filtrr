@@ -14,21 +14,9 @@ import mlflow
 import optuna
 from pymongo import MongoClient
 from os import environ as e
+from db import get_db
 
-# Get the MongoDB connection details from environment variables
-mongo_host = e.get('MONGO_HOST', 'db') 
-mongo_port = int(e.get('MONGO_PORT', '27017'))
-mongo_username = e.get('MONGO_USERNAME', 'root')
-mongo_password = e.get('MONGO_PASSWORD', 'mongo')
-
-print(mongo_host, mongo_port, mongo_username, mongo_password)
-
-
-# Create a MongoDB client
-client = MongoClient(host=mongo_host, port=mongo_port, username=mongo_username, password=mongo_password)
-
-# Get the MongoDB database
-db = client['filtrr_db']
+db = get_db()
 
 @flow(name="Load Parameters Flow", description="Load parameters from a JSON \
 file and extract model-specific parameters.")
@@ -192,10 +180,6 @@ def prepare_training_data_flow(mails: List[Dict]) -> tuple:
             keywords_per_mail.append(mail['keywords'])
             label_per_mail.append(mail['label'])
         return keywords_per_mail, label_per_mail
-    keywords = get_all_keywords(data=mails)
-    keywords_p_mail, label_p_mail = prepare_train_data(data=mails)
-    return keywords, keywords_p_mail, label_p_mail
-
     keywords = get_all_keywords(data=mails)
     keywords_p_mail, label_p_mail = prepare_train_data(data=mails)
     return keywords, keywords_p_mail, label_p_mail

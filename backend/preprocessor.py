@@ -6,21 +6,9 @@ from typing import List, Dict
 from prefect.logging import get_logger
 from pymongo import MongoClient
 from os import environ as e
+from db import get_db
 
-# Get the MongoDB connection details from environment variables
-mongo_host = e.get('MONGO_HOST', 'db') 
-mongo_port = int(e.get('MONGO_PORT', '27017'))
-mongo_username = e.get('MONGO_USERNAME', 'root')
-mongo_password = e.get('MONGO_PASSWORD', 'mongo')
-
-print(mongo_host, mongo_port, mongo_username, mongo_password)
-
-
-# Create a MongoDB client
-client = MongoClient(host=mongo_host, port=mongo_port, username=mongo_username, password=mongo_password)
-
-# Get the MongoDB database
-db = client['filtrr_db']
+db = get_db()
 
 
 class TextPreprocessor:
