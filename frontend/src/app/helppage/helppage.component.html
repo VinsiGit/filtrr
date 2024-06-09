@@ -1,438 +1,713 @@
 <main>
-    <div>
-        <nav>
-            <button (click)="changePage('site')">site</button>
-            <button (click)="changePage('outlook')">outlook</button>
-            <button (click)="changePage('api')">api</button>
-            <button (click)="changePage('model')">model</button>
-        </nav>
-        <div id="content" class="module" *ngIf="page === 'site'">
-            <h1>Documentatie voor de Website</h1>
+  <div>
+    <nav>
+      <button (click)="changePage('site')">site</button>
+      <button (click)="changePage('outlook')">outlook</button>
+      <button (click)="changePage('api')">api</button>
+      <button (click)="changePage('model')">model</button>
+    </nav>
+    <div id="content" class="module" *ngIf="page === 'site'">
+      <h1>Documentatie voor de Website</h1>
 
-            <h2>Dashboard</h2>
-            <p>Het dashboard geeft een overzicht van de prestaties en de classificaties van de modellen.</p>
-            <ul class="endpoint">
-                <li><strong>Grafiek</strong>: toont de hoeveelheid data geclassificeerd als
-                    'irrelevant', 'bi-engineer', en 'data-engineer'.</li>
-                <li><strong>Server Load</strong>: geeft de huidige serverbelasting en latentie weer.</li>
-                <li><strong>Certainty Scores</strong>: toont de gemiddelde zekerheidsscores van de classificaties per
-                    categorie ('irrelevant', 'bi-engineer', 'data-engineer').</li>
-            </ul>
+      <h2>Dashboard</h2>
+      <p>
+        Het dashboard geeft een overzicht van de prestaties en de classificaties
+        van de modellen.
+      </p>
+      <ul class="endpoint">
+        <li>
+          <strong>Grafiek</strong>: toont de hoeveelheid data geclassificeerd
+          als 'irrelevant', 'bi-engineer', en 'data-engineer'.
+        </li>
+        <li>
+          <strong>Server Load</strong>: geeft de huidige serverbelasting en
+          latentie weer.
+        </li>
+        <li>
+          <strong>Certainty Scores</strong>: toont de gemiddelde
+          zekerheidsscores van de classificaties per categorie ('irrelevant',
+          'bi-engineer', 'data-engineer').
+        </li>
+      </ul>
 
-            <h2>Paste-in</h2>
-            <p>Op deze pagina kunnen gebruikers tekst invoeren die geanalyseerd moet worden.</p>
-            <ul class="endpoint">
-                <li><strong>Invoerveld</strong>: plak hier de tekst die geanalyseerd moet worden.</li>
-                <li><strong>Filter-icoon</strong>: start de analyse van de ingevoerde tekst.</li>
-            </ul>
+      <h2>Paste-in</h2>
+      <p>
+        Op deze pagina kunnen gebruikers tekst invoeren die geanalyseerd moet
+        worden.
+      </p>
+      <ul class="endpoint">
+        <li>
+          <strong>Invoerveld</strong>: plak hier de tekst die geanalyseerd moet
+          worden.
+        </li>
+        <li>
+          <strong>Filter-icoon</strong>: start de analyse van de ingevoerde
+          tekst.
+        </li>
+      </ul>
 
-            <h2>Instellingen</h2>
-            <p>De instellingenpagina biedt beheerders de mogelijkheid gebruikers toe te voegen of te verwijderen.</p>
-            <ul class="endpoint">
-                <li><strong>Huidige Gebruiker</strong>: toont de huidige ingelogde gebruiker.</li>
-                <li><strong>Nieuwe Gebruiker Toevoegen</strong>: selecteer een gebruikersrol, voer een gebruikersnaam en
-                    wachtwoord in, en klik op 'Add User'.</li>
-                <li><strong>Gebruiker Verwijderen</strong>: selecteer een gebruiker en klik op 'delete user'.</li>
-            </ul>
+      <h2>Instellingen</h2>
+      <p>
+        De instellingenpagina biedt beheerders de mogelijkheid gebruikers toe te
+        voegen of te verwijderen.
+      </p>
+      <ul class="endpoint">
+        <li>
+          <strong>Huidige Gebruiker</strong>: toont de huidige ingelogde
+          gebruiker.
+        </li>
+        <li>
+          <strong>Nieuwe Gebruiker Toevoegen</strong>: selecteer een
+          gebruikersrol, voer een gebruikersnaam en wachtwoord in, en klik op
+          'Add User'.
+        </li>
+        <li>
+          <strong>Gebruiker Verwijderen</strong>: selecteer een gebruiker en
+          klik op 'delete user'.
+        </li>
+      </ul>
 
-            <h2>Help</h2>
-            <p>De help-pagina biedt documentatie en uitleg over het gebruik van de applicatie.</p>
-            <ul class="endpoint">
-                <li><strong>Outlook Documentatie</strong>: informatie over de installatie en het gebruik van de Outlook
-                    add-on.</li>
-                <li><strong>Stroomdiagram</strong>: geeft een visuele representatie van het proces van de mailanalyse,
-                    van preprocessing tot classificatie door het model.</li>
-            </ul>
-        </div>
-        <div id="content" class="module" *ngIf="this.page=='outlook'">
-            <h1>Outlook Documentatie:</h1>
-
-            <div class="endpoint">
-                <p>Dit is de Outlook add-on voor FILTRR. </p>
-                <p>De manifest-file kan hier gedownload worden: <a
-                        href="https://s144272.devops-ap.be/addin/manifest.xml">manifest file</a>.</p>
-                <p>Om deze te installeren moet men naar deze link gaan: <a href="https://aka.ms/olksideload"
-                        target="_blank">outlook link</a>.</p>
-                <p>Gaan naar 'My add-ins' en de manifest-file kan men in custom addins toevoegen.</p>
-                <p>Eens geïnstalleerd, kan je op Outlook de mails laten nakijken door FILTRR.</p>
-                <p>Om dit te doen, klik je eerst in Outlook op een mail (die je wil laten analyseren).</p>
-                <p>Rechts zie je een vakje waar je op add-ons kan klikken.</p>
-                <p>Na het klikken start er een nieuw vak op met de uitleg over de geanalyseerde email.</p>
-            </div>
-            <h1>Documentatie Outlook-programma:</h1>
-
-            <div class="endpoint">
-                <h2>Info over outlook-Addon:</h2>
-                <p>De addon is gemaakt in <a href="https://github.com/OfficeDev/generator-office"
-                        target="_blank">generator-office
-                        link</a> met javascript als taal.</p>
-                <p><b>webpack.config.js:</b> Dit is waar de website voor de manifest file wordt gegeven als deze wordt
-                    gemaakt.
-                </p>
-                <p><b>src/taskpane.js:</b> Vanboven kan de website en bearer key aangepast worden als deze veranderen of
-                    vervallen.</p>
-            </div>
-            <div class="endpoint">
-
-                <h2>Componenten:</h2>
-                <ul>
-                    <li>
-                        <b>Office.js Initialisatie:</b> Initialiseert met Office.js, dat toegang biedt tot de
-                        Outlook-API.
-                    </li>
-                    <li>
-                        <b>Gegevensmodel:</b> Gebruikt een gegevensmodel om informatie over elk e-mailitem op
-                        te slaan, inclusief het item-ID, afzender, afzender-e-mail, ontvangen datum/tijd, onderwerp,
-                        body,
-                        voorspelde label, actuele label, zekerheid, en rating.
-                    </li>
-                    <li>
-                        <b>UI-componenten:</b> Heeft verschillende UI-componenten, inclusief knoppen voor het
-                        beoordelen van e-mails, een grafiek om de zekerheid weer te geven en een laadscherm.
-                    </li>
-                    <li>
-                        <b>Server-API:</b> Communiceert met een server-side API om e-mailbodies te verwerken
-                        en voorspellingen en ratings op te halen.
-                    </li>
-                </ul>
-            </div>
-            <div class="endpoint">
-
-                <h2>Flow:</h2>
-                <p>Hier is de stroom van het programma:</p>
-                <ul>
-                    <li>
-                        <b>Initialisatie:</b> Initialiseert met Office.js en stelt gebeurtenishandlers in voor
-                        itemwijzigingen.
-                    </li>
-                    <li>
-                        <b>E-mailbody naar Server sturen:</b> Stuurt de e-mailbody naar de server-API om
-                        voorspellingen en ratings op te
-                        halen.
-                    </li>
-                    <li>
-                        <b>Gegevens aanpassen:</b> Past het gegevensmodel aan met de response van de
-                        server-API.
-                    </li>
-                    <li>
-                        <b>UI aanpassen:</b> Past de UI-componenten, inclusief de grafiek en knoppen, op
-                        basis van het bijgewerkte gegevensmodel.
-                    </li>
-                    <li>
-                        <b>Beoordeling:</b> Wanneer een gebruiker een e-mail beoordeelt, werkt het programma bij met het
-                        gegevensmodel en stuurt de beoordeling naar de server-API.
-                    </li>
-                    <li>
-                        <b>Foutafhandeling:</b> Behandelt serverfouten door een inlog-URL en een knop om de
-                        serverstatus te controleren weer te geven.
-                    </li>
-                </ul>
-            </div>
-            <div class="endpoint">
-
-                <h2>Functies:</h2>
-                <p>Hier zijn de belangrijkste functies van het programma:</p>
-                <ul>
-                    <li>
-                        <b>updateDataOnItemChange:</b> Werkt het gegevensmodel bij met nieuwe iteminformatie en stuurt de
-                        e-mailbody naar de server-API.
-                    </li>
-                    <li>
-                        <b>sendEmailBodyToServer:</b> Stuurt de e-mailbody naar de server-API om voorspellingen en
-                        ratings
-                        op te halen.
-                    </li>
-                    <li>
-                        <b>updateData:</b> Werkt het gegevensmodel bij met de respons van de server-API.
-                    </li>
-                    <li>
-                        <b>updateChart:</b> Werkt de grafiek bij met de zekerheid en voorspelde label.
-                    </li>
-                    <li>
-                        <b>rate:</b> Werkt het bij gegevensmodel met de gebruikersbeoordeling en stuurt de beoordeling
-                        naar
-                        de server-API.
-                    </li>
-                    <li>
-                        <b>handleServerError:</b> Behandelt serverfouten door een inlog-URL en een knop om de
-                        serverstatus te controleren weer te geven.
-                    </li>
-                    <li>
-                        <b>checkServerStatus:</b> Controleert de serverstatus door een GET-verzoek naar de server-API te
-                        sturen.
-                    </li>
-                </ul>
-            </div>
-
-            <h1>Documentatie google:</h1>
-            <div class="endpoint">
-
-                <p>De 2 files in de google folder zijn appsscripts.json en code.gs .</p>
-                <p>De code moet in een project gezet worden op <a href="https://script.google.com"
-                        target="_blank">script.google.com</a></p>
-            </div>
-
-        </div>
-        <div id="content" class="module" *ngIf="this.page=='api'">
-            <h1>API Documentatie</h1>
-            <p>Welkom bij de API-documentatie. Hieronder vindt u een overzicht van alle beschikbare endpoints en de
-                bijbehorende queryparameters, bodyparameters en toegestane gebruikersrollen.</p>
-
-            <div class="endpoint">
-                <h2>GET /api</h2>
-                <p>Haalt de status van de API op.</p>
-                <h3>Toegestane rollen:</h3>
-                <ul>
-                    <li>Geen authenticatie vereist</li>
-                </ul>
-            </div>
-
-            <div class="endpoint">
-                <h2>POST /api/login</h2>
-                <p>Verifieert de gebruiker en retourneert een JWT-token.</p>
-                <h3>Body Parameters:</h3>
-                <ul>
-                    <li><code>username</code>: <em>string</em> (vereist) - De gebruikersnaam van de gebruiker.</li>
-                    <li><code>password</code>: <em>string</em> (vereist) - Het wachtwoord van de gebruiker.</li>
-                </ul>
-                <h3>Toegestane rollen:</h3>
-                <ul>
-                    <li>Geen authenticatie vereist</li>
-                </ul>
-            </div>
-
-            <div class="endpoint">
-                <h2>GET /api/users</h2>
-                <p>Haalt een lijst van alle gebruikers op.</p>
-                <h3>Toegestane rollen:</h3>
-                <ul>
-                    <li>admin</li>
-                </ul>
-            </div>
-
-            <div class="endpoint">
-                <h2>POST /api/users</h2>
-                <p>Voegt een nieuwe gebruiker toe.</p>
-                <h3>Body Parameters:</h3>
-                <ul>
-                    <li><code>username</code>: <em>string</em> (vereist) - De gebruikersnaam van de nieuwe gebruiker.
-                    </li>
-                    <li><code>password</code>: <em>string</em> (vereist) - Het wachtwoord van de nieuwe gebruiker.</li>
-                </ul>
-                <h3>Toegestane rollen:</h3>
-                <ul>
-                    <li>admin</li>
-                </ul>
-            </div>
-
-            <div class="endpoint">
-                <h2>PUT /api/users</h2>
-                <p>Wijzigt een bestaande gebruiker.</p>
-                <h3>Body Parameters:</h3>
-                <ul>
-                    <li><code>username</code>: <em>string</em> (vereist) - De gebruikersnaam van de te wijzigen
-                        gebruiker.</li>
-                    <li><code>password</code>: <em>string</em> (optioneel) - Het nieuwe wachtwoord van de gebruiker.
-                    </li>
-                </ul>
-                <h3>Toegestane rollen:</h3>
-                <ul>
-                    <li>admin</li>
-                </ul>
-            </div>
-
-            <div class="endpoint">
-                <h2>DELETE /api/users</h2>
-                <p>Verwijdert een bestaande gebruiker.</p>
-                <h3>Body Parameters:</h3>
-                <ul>
-                    <li><code>username</code>: <em>string</em> (vereist) - De gebruikersnaam van de te verwijderen
-                        gebruiker.</li>
-                </ul>
-                <h3>Toegestane rollen:</h3>
-                <ul>
-                    <li>admin</li>
-                </ul>
-            </div>
-
-            <div class="endpoint">
-                <h2>GET /api/mails</h2>
-                <p>Haalt een lijst van alle mails op.</p>
-                <h3>Query Parameters:</h3>
-                <ul>
-                    <li><code>sender</code>: <em>string</em> (optioneel) - Filter op afzender van de e-mail.</li>
-                    <li><code>recipient</code>: <em>string</em> (optioneel) - Filter op ontvanger van de e-mail.</li>
-                    <li><code>subject</code>: <em>string</em> (optioneel) - Filter op onderwerp van de e-mail.</li>
-                    <li><code>start_date</code>: <em>string</em> (optioneel) - Filter op startdatum.</li>
-                    <li><code>end_date</code>: <em>string</em> (optioneel) - Filter op einddatum.</li>
-                </ul>
-                <h3>Toegestane rollen:</h3>
-                <ul>
-                    <li>admin</li>
-                </ul>
-            </div>
-
-            <div class="endpoint">
-                <h2>GET /api/db</h2>
-                <p>Haalt informatie over de database op.</p>
-                <h3>Query Parameters:</h3>
-                <ul>
-                    <li><code>collection</code>: <em>string</em> (optioneel) - Specificeer de collectie binnen de
-                        database.</li>
-                    <li><code>stats</code>: <em>string</em> (optioneel) - Specificeer welke statistieken moeten worden
-                        opgevraagd (bijv. "size", "count").</li>
-                </ul>
-                <h3>Toegestane rollen:</h3>
-                <ul>
-                    <li>admin</li>
-                </ul>
-            </div>
-
-            <div class="endpoint">
-                <h2>GET /api/stats</h2>
-                <p>Haalt statistieken van de API op.</p>
-                <h3>Query Parameters:</h3>
-                <ul>
-                    <li><code>rating</code>: <em>int</em> (optioneel) - Filter op beoordeling, standaard is
-                        "all_ratings".</li>
-                    <li><code>predicted_label</code>: <em>string</em> (optioneel) - Filter op voorspeld label, standaard
-                        is "all_labels".</li>
-                    <li><code>actual_label</code>: <em>string</em> (optioneel) - Filter op daadwerkelijk label,
-                        standaard is "all_labels".</li>
-                    <li><code>source</code>: <em>string</em> (optioneel) - Filter op bron, standaard is "all_sources".
-                    </li>
-                    <li><code>model_version</code>: <em>float</em> (optioneel) - Filter op modelversie, standaard is
-                        "all_versions".</li>
-                    <li><code>start_date</code>: <em>string</em> (optioneel) - Filter op startdatum.</li>
-                    <li><code>end_date</code>: <em>string</em> (optioneel) - Filter op einddatum.</li>
-                </ul>
-                <h3>Toegestane rollen:</h3>
-                <ul>
-                    <li>admin</li>
-                    <li>user</li>
-                </ul>
-            </div>
-
-            <div class="endpoint">
-                <h2>GET /api/cnfmtrx</h2>
-                <p>Haalt de verwarringsmatrix op.</p>
-                <h3>Toegestane rollen:</h3>
-                <ul>
-                    <li>admin</li>
-                    <li>user</li>
-                </ul>
-            </div>
-
-            <div class="endpoint">
-                <h2>GET /api/stats/labels</h2>
-                <p>Haalt de labels van statistieken op.</p>
-                <h3>Toegestane rollen:</h3>
-                <ul>
-                    <li>admin</li>
-                    <li>user</li>
-                </ul>
-            </div>
-
-            <div class="endpoint">
-                <h2>POST /api</h2>
-                <p>Algemene POST endpoint voor de API.</p>
-                <h3>Body Parameters:</h3>
-                <ul>
-                    <li>Afhankelijk van de specifieke functionaliteit.</li>
-                </ul>
-                <h3>Toegestane rollen:</h3>
-                <ul>
-                    <li>admin</li>
-                    <li>user</li>
-                </ul>
-            </div>
-
-            <div class="endpoint">
-                <h2>PUT /api</h2>
-                <p>Algemene PUT endpoint voor de API.</p>
-                <h3>Body Parameters:</h3>
-                <ul>
-                    <li>Afhankelijk van de specifieke functionaliteit.</li>
-                </ul>
-                <h3>Toegestane rollen:</h3>
-                <ul>
-                    <li>admin</li>
-                </ul>
-            </div>
-
-            <div class="endpoint">
-                <h2>GET /api/settings</h2>
-                <p>Haalt de instellingen van de API op.</p>
-                <h3>Toegestane rollen:</h3>
-                <ul>
-                    <li>admin</li>
-                </ul>
-            </div>
-
-            <div class="endpoint">
-                <h2>GET /api/retrain</h2>
-                <p>Start het retrain proces.</p>
-                <h3>Toegestane rollen:</h3>
-                <ul>
-                    <li>admin</li>
-                </ul>
-            </div>
-
-            <div class="endpoint">
-                <h2>GET /api/tokencheck</h2>
-                <p>Controleert de geldigheid van het token.</p>
-                <h3>Toegestane rollen:</h3>
-                <ul>
-                    <li>admin</li>
-                    <li>user</li>
-                </ul>
-            </div>
-        </div>
-        <div id="content" class="module" *ngIf="page === 'model'">
-            <img src="..\..\assets\pngs\drawio_model.png" alt="draw.io diagram of the model">
-            <div id="content">
-                <div class="endpoint">
-                    <h2>Model configuratie</h2>
-                    <div>
-                        Voor de hyperparameter optimization heb ik hierboven een test json geplaatst hierin kun je
-                        dynamisch hyperparameters aanmaken die dan worden gebruikt tijdens het HPO process. De
-                        hyperparameters zijn oftwel vast, hebben een start,end ( en stapgrote ) of hebben verschillende
-                        choices
-                    </div>
-                    <div class="foldable" onclick="toggleContent('tfidf')">
-                        sklearn.feature_extraction.text.TfidfVectorizer</div>
-                    <div id="tfidf" class="folded-content">
-                        <p><a
-                                href="https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfVectorizer.html">sklearn.feature_extraction.text.TfidfVectorizer</a>
-                        </p>
-                    </div>
-                    <br>
-                    <div class="foldable" onclick="toggleContent('decision-tree')">sklearn.tree.DecisionTreeClassifier
-                    </div>
-                    <div id="decision-tree" class="folded-content">
-                        <p><a
-                                href="https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html">sklearn.tree.DecisionTreeClassifier</a>
-                        </p>
-                    </div>
-                    <br>
-                    <div class="foldable" onclick="toggleContent('adaboost')">sklearn.ensemble.AdaBoostClassifier</div>
-                    <div id="adaboost" class="folded-content">
-                        <p><a
-                                href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostClassifier.html">sklearn.ensemble.AdaBoostClassifier</a>
-                        </p>
-                    </div>
-                    <script>
-                        function toggleContent(id) {
-                            let content = document.getElementById(id);
-                            if (content.style.display === "none") {
-                                content.style.display = "block";
-                            } else {
-                                content.style.display = "none";
-                            }
-                        }
-                    </script>
-                </div>
-            </div>
-        </div>
+      <h2>Help</h2>
+      <p>
+        De help-pagina biedt documentatie en uitleg over het gebruik van de
+        applicatie.
+      </p>
+      <ul class="endpoint">
+        <li>
+          <strong>Outlook Documentatie</strong>: informatie over de installatie
+          en het gebruik van de Outlook add-on.
+        </li>
+        <li>
+          <strong>Stroomdiagram</strong>: geeft een visuele representatie van
+          het proces van de mailanalyse, van preprocessing tot classificatie
+          door het model.
+        </li>
+      </ul>
     </div>
+    <div id="content" class="module" *ngIf="this.page == 'outlook'">
+      <h1>Outlook Documentatie:</h1>
+
+      <div class="endpoint">
+        <p>Dit is de Outlook add-on voor FILTRR.</p>
+        <p>
+          De manifest-file kan hier gedownload worden:
+          <a href="https://s144272.devops-ap.be/addin/manifest.xml"
+            >manifest file</a
+          >.
+        </p>
+        <p>
+          Om deze te installeren moet men naar deze link gaan:
+          <a href="https://aka.ms/olksideload" target="_blank">outlook link</a>.
+        </p>
+        <p>
+          Gaan naar 'My add-ins' en de manifest-file kan men in custom addins
+          toevoegen.
+        </p>
+        <p>
+          Eens geïnstalleerd, kan je op Outlook de mails laten nakijken door
+          FILTRR.
+        </p>
+        <p>
+          Om dit te doen, klik je eerst in Outlook op een mail (die je wil laten
+          analyseren).
+        </p>
+        <p>Rechts zie je een vakje waar je op add-ons kan klikken.</p>
+        <p>
+          Na het klikken start er een nieuw vak op met de uitleg over de
+          geanalyseerde email.
+        </p>
+      </div>
+      <h1>Documentatie Outlook-programma:</h1>
+
+      <div class="endpoint">
+        <h2>Info over outlook-Addon:</h2>
+        <p>
+          De addon is gemaakt in
+          <a
+            href="https://github.com/OfficeDev/generator-office"
+            target="_blank"
+            >generator-office link</a
+          >
+          met javascript als taal.
+        </p>
+        <p>
+          <b>webpack.config.js:</b> Dit is waar de website voor de manifest file
+          wordt gegeven als deze wordt gemaakt.
+        </p>
+        <p>
+          <b>src/taskpane.js:</b> Vanboven kan de website en bearer key
+          aangepast worden als deze veranderen of vervallen.
+        </p>
+      </div>
+      <div class="endpoint">
+        <h2>Componenten:</h2>
+        <ul>
+          <li>
+            <b>Office.js Initialisatie:</b> Initialiseert met Office.js, dat
+            toegang biedt tot de Outlook-API.
+          </li>
+          <li>
+            <b>Gegevensmodel:</b> Gebruikt een gegevensmodel om informatie over
+            elk e-mailitem op te slaan, inclusief het item-ID, afzender,
+            afzender-e-mail, ontvangen datum/tijd, onderwerp, body, voorspelde
+            label, actuele label, zekerheid, en rating.
+          </li>
+          <li>
+            <b>UI-componenten:</b> Heeft verschillende UI-componenten, inclusief
+            knoppen voor het beoordelen van e-mails, een grafiek om de zekerheid
+            weer te geven en een laadscherm.
+          </li>
+          <li>
+            <b>Server-API:</b> Communiceert met een server-side API om
+            e-mailbodies te verwerken en voorspellingen en ratings op te halen.
+          </li>
+        </ul>
+      </div>
+      <div class="endpoint">
+        <h2>Flow:</h2>
+        <p>Hier is de stroom van het programma:</p>
+        <ul>
+          <li>
+            <b>Initialisatie:</b> Initialiseert met Office.js en stelt
+            gebeurtenishandlers in voor itemwijzigingen.
+          </li>
+          <li>
+            <b>E-mailbody naar Server sturen:</b> Stuurt de e-mailbody naar de
+            server-API om voorspellingen en ratings op te halen.
+          </li>
+          <li>
+            <b>Gegevens aanpassen:</b> Past het gegevensmodel aan met de
+            response van de server-API.
+          </li>
+          <li>
+            <b>UI aanpassen:</b> Past de UI-componenten, inclusief de grafiek en
+            knoppen, op basis van het bijgewerkte gegevensmodel.
+          </li>
+          <li>
+            <b>Beoordeling:</b> Wanneer een gebruiker een e-mail beoordeelt,
+            werkt het programma bij met het gegevensmodel en stuurt de
+            beoordeling naar de server-API.
+          </li>
+          <li>
+            <b>Foutafhandeling:</b> Behandelt serverfouten door een inlog-URL en
+            een knop om de serverstatus te controleren weer te geven.
+          </li>
+        </ul>
+      </div>
+      <div class="endpoint">
+        <h2>Functies:</h2>
+        <p>Hier zijn de belangrijkste functies van het programma:</p>
+        <ul>
+          <li>
+            <b>updateDataOnItemChange:</b> Werkt het gegevensmodel bij met
+            nieuwe iteminformatie en stuurt de e-mailbody naar de server-API.
+          </li>
+          <li>
+            <b>sendEmailBodyToServer:</b> Stuurt de e-mailbody naar de
+            server-API om voorspellingen en ratings op te halen.
+          </li>
+          <li>
+            <b>updateData:</b> Werkt het gegevensmodel bij met de respons van de
+            server-API.
+          </li>
+          <li>
+            <b>updateChart:</b> Werkt de grafiek bij met de zekerheid en
+            voorspelde label.
+          </li>
+          <li>
+            <b>rate:</b> Werkt het bij gegevensmodel met de
+            gebruikersbeoordeling en stuurt de beoordeling naar de server-API.
+          </li>
+          <li>
+            <b>handleServerError:</b> Behandelt serverfouten door een inlog-URL
+            en een knop om de serverstatus te controleren weer te geven.
+          </li>
+          <li>
+            <b>checkServerStatus:</b> Controleert de serverstatus door een
+            GET-verzoek naar de server-API te sturen.
+          </li>
+        </ul>
+      </div>
+
+      <h1>Documentatie google:</h1>
+      <div class="endpoint">
+        <p>De 2 files in de google folder zijn appsscripts.json en code.gs .</p>
+        <p>
+          De code moet in een project gezet worden op
+          <a href="https://script.google.com" target="_blank"
+            >script.google.com</a
+          >
+        </p>
+      </div>
+    </div>
+    <div id="content" class="module" *ngIf="this.page == 'api'">
+      <h1>API Documentatie</h1>
+      <p>
+        Hierin vindt u een gedetailleerd overzicht van alle beschikbare
+        endpoints, inclusief de bijbehorende queryparameters, bodyparameters en
+        de toegestane gebruikersrollen. Elk endpoint is zorgvuldig
+        gedocumenteerd om u te helpen bij de integratie en het gebruik van onze
+        API.
+      </p>
+      <p>
+        Voor elk endpoint worden de volgende informatie-elementen verstrekt:
+      </p>
+      <ul>
+        <li>
+          <strong>Queryparameters</strong>: Dit zijn de parameters die u kunt
+          toevoegen aan de URL om specifieke gegevens op te vragen of om de
+          output te filteren. Ze moeten correct worden geformuleerd om de
+          gewenste resultaten te verkrijgen. Indien niet gespecifieerd worden
+          standaard alle resultaten opgehaald.
+        </li>
+        <li>
+          <strong>Bodyparameters</strong>: Deze parameters worden meegestuurd in
+          de body van de HTTP-verzoeken. Alle bodyparameters moeten in
+          JSON-formaat worden verzonden, met behulp van specifieke key-value
+          paren. Zorg ervoor dat de JSON-structuur correct is om succesvolle
+          communicatie met de API te garanderen.
+        </li>
+        <li>
+          <strong>Toegestane gebruikersrollen</strong>: Voor elk endpoint is het
+          essentieel om te weten welke gebruikersrollen toegang hebben. Deze
+          informatie helpt u te begrijpen wie welk endpoint kan aanroepen,
+          gebaseerd op hun toegangsrechten en rol binnen het systeem. De toegang
+          wordt gecontroleerd door middel van JWT-tokens (JSON Web Tokens), die
+          de gebruikersrollen en toegangsrechten analyseren en verifiëren.
+        </li>
+      </ul>
+
+      <div class="endpoint">
+        <h2>GET /api</h2>
+        <p>Haalt de status van de API op.</p>
+        <h3>Toegestane rollen:</h3>
+        <ul>
+          <li>Geen authenticatie vereist</li>
+        </ul>
+      </div>
+
+      <div class="endpoint">
+        <h2>POST /api/login</h2>
+        <p>Verifieert de gebruiker en retourneert een JWT-token.</p>
+        <h3>Body Parameters:</h3>
+        <ul>
+          <li>
+            <code>username</code>: <em>string</em> (vereist) - De gebruikersnaam
+            van de gebruiker.
+          </li>
+          <li>
+            <code>password</code>: <em>string</em> (vereist) - Het wachtwoord
+            van de gebruiker.
+          </li>
+        </ul>
+        <h3>Toegestane rollen:</h3>
+        <ul>
+          <li>Geen authenticatie vereist</li>
+        </ul>
+      </div>
+
+      <div class="endpoint">
+        <h2>GET /api/users</h2>
+        <p>Haalt een lijst van alle gebruikers op.</p>
+        <h3>Toegestane rollen:</h3>
+        <ul>
+          <li>admin</li>
+        </ul>
+      </div>
+
+      <div class="endpoint">
+        <h2>POST /api/users</h2>
+        <p>Voegt een nieuwe gebruiker toe.</p>
+        <h3>Body Parameters:</h3>
+        <ul>
+          <li>
+            <code>username</code>: <em>string</em> (vereist) - De gebruikersnaam
+            van de nieuwe gebruiker.
+          </li>
+          <li>
+            <code>password</code>: <em>string</em> (vereist) - Het wachtwoord
+            van de nieuwe gebruiker.
+          </li>
+        </ul>
+        <h3>Toegestane rollen:</h3>
+        <ul>
+          <li>admin</li>
+        </ul>
+      </div>
+
+      <div class="endpoint">
+        <h2>PUT /api/users</h2>
+        <p>Wijzigt een bestaande gebruiker.</p>
+        <h3>Body Parameters:</h3>
+        <ul>
+          <li>
+            <code>username</code>: <em>string</em> (vereist) - De gebruikersnaam
+            van de te wijzigen gebruiker.
+          </li>
+          <li>
+            <code>password</code>: <em>string</em> (optioneel) - Het nieuwe
+            wachtwoord van de gebruiker.
+          </li>
+        </ul>
+        <h3>Toegestane rollen:</h3>
+        <ul>
+          <li>admin</li>
+        </ul>
+      </div>
+
+      <div class="endpoint">
+        <h2>DELETE /api/users</h2>
+        <p>Verwijdert een bestaande gebruiker.</p>
+        <h3>Body Parameters:</h3>
+        <ul>
+          <li>
+            <code>username</code>: <em>string</em> (vereist) - De gebruikersnaam
+            van de te verwijderen gebruiker.
+          </li>
+        </ul>
+        <h3>Toegestane rollen:</h3>
+        <ul>
+          <li>admin</li>
+        </ul>
+      </div>
+
+      <div class="endpoint">
+        <h2>GET /api/mails</h2>
+        <p>Haalt een lijst van alle mails in de database op.</p>
+        <h3>Query Parameters:</h3>
+        <ul>
+          <li>
+            <code>source</code>: <em>string</em> (optioneel) - Filter op bron
+            van de e-mail (site of outlook).
+          </li>
+          <li>
+            <code>predicted_label</code>: <em>string</em> (optioneel) - Filter
+            op het door het model voorspelde label van de e-mail (IRRELEVANT,
+            DATA_ENGINEER, BI_ENGINEER, ...).
+          </li>
+          <li>
+            <code>actual_label</code>: <em>string</em> (optioneel) - Filter op
+            het werkelijke label van de e-mail (enkel voor e-mails die die user
+            feedback hebben gekregen).
+          </li>
+          <li>
+            <code>rating</code>: <em>string</em> (optioneel) - Filter op de user
+            rating (1 of -1).
+          </li>
+          <li><code>model_version</code>: <em>string</em> (optioneel)</li>
+          <li>
+            <code>start_date</code>: <em>string</em> (optioneel) - Formaat:
+            [YYYY-MM-DD]
+          </li>
+          <li>
+            <code>end_date</code>: <em>string</em> (optioneel) - Formaat:
+            [YYYY-MM-DD]
+          </li>
+        </ul>
+        <h3>Toegestane rollen:</h3>
+        <ul>
+          <li>admin</li>
+        </ul>
+      </div>
+
+      <div class="endpoint">
+        <h2>GET /api/db</h2>
+        <p>Haalt de exacte inhoud van de database mails op.</p>
+        <h3>Query Parameters:</h3>
+        <ul>
+          <li>
+            <code>source</code>: <em>string</em> (optioneel) - Filter op bron
+            van de e-mail (site of outlook).
+          </li>
+          <li>
+            <code>predicted_label</code>: <em>string</em> (optioneel) - Filter
+            op het door het model voorspelde label van de e-mail (IRRELEVANT,
+            DATA_ENGINEER, BI_ENGINEER, ...).
+          </li>
+          <li>
+            <code>actual_label</code>: <em>string</em> (optioneel) - Filter op
+            het werkelijke label van de e-mail (enkel voor e-mails die die user
+            feedback hebben gekregen).
+          </li>
+          <li>
+            <code>rating</code>: <em>string</em> (optioneel) - Filter op de user
+            rating (1 of -1).
+          </li>
+          <li><code>model_version</code>: <em>string</em> (optioneel)</li>
+          <li>
+            <code>start_date</code>: <em>string</em> (optioneel) - Formaat:
+            [YYYY-MM-DD]
+          </li>
+          <li>
+            <code>end_date</code>: <em>string</em> (optioneel) - Formaat:
+            [YYYY-MM-DD]
+          </li>
+        </ul>
+        <h3>Toegestane rollen:</h3>
+        <ul>
+          <li>admin</li>
+        </ul>
+      </div>
+
+      <div class="endpoint">
+        <h2>GET /api/stats</h2>
+        <p>Haalt statistieken van de API op.</p>
+        <h3>Query Parameters:</h3>
+        <ul>
+          <li>
+            <code>source</code>: <em>string</em> (optioneel) - Filter op bron
+            van de e-mail (site of outlook).
+          </li>
+          <li>
+            <code>predicted_label</code>: <em>string</em> (optioneel) - Filter
+            op het door het model voorspelde label van de e-mail (IRRELEVANT,
+            DATA_ENGINEER, BI_ENGINEER, ...).
+          </li>
+          <li>
+            <code>actual_label</code>: <em>string</em> (optioneel) - Filter op
+            het werkelijke label van de e-mail (enkel voor e-mails die die user
+            feedback hebben gekregen).
+          </li>
+          <li>
+            <code>rating</code>: <em>string</em> (optioneel) - Filter op de user
+            rating (1 of -1).
+          </li>
+          <li><code>model_version</code>: <em>string</em> (optioneel)</li>
+          <li>
+            <code>start_date</code>: <em>string</em> (optioneel) - Formaat:
+            [YYYY-MM-DD]
+          </li>
+          <li>
+            <code>end_date</code>: <em>string</em> (optioneel) - Formaat:
+            [YYYY-MM-DD]
+          </li>
+        </ul>
+        <h3>Toegestane rollen:</h3>
+        <ul>
+          <li>admin</li>
+          <li>user</li>
+        </ul>
+      </div>
+
+      <div class="endpoint">
+        <h2>GET /api/cnfmtrx</h2>
+        <p>
+          Haalt de confusion matrix op die wordt opgesteld op basis van user
+          feedback. Om de confusion matrix op te stellen zijn zowel predicted
+          label als actual label vereist.
+        </p>
+        <h3>Query Parameters:</h3>
+        <ul>
+          <li>
+            <code>source</code>: <em>string</em> (optioneel) - Filter op bron
+            van de e-mail (site of outlook).
+          </li>
+          <li><code>model_version</code>: <em>string</em> (optioneel)</li>
+          <li>
+            <code>start_date</code>: <em>string</em> (optioneel) - Formaat:
+            [YYYY-MM-DD]
+          </li>
+          <li>
+            <code>end_date</code>: <em>string</em> (optioneel) - Formaat:
+            [YYYY-MM-DD]
+          </li>
+        </ul>
+        <h3>Toegestane rollen:</h3>
+        <ul>
+          <li>admin</li>
+          <li>user</li>
+        </ul>
+      </div>
+
+      <div class="endpoint">
+        <h2>GET /api/stats/labels</h2>
+        <p>
+          Haalt een lijst van alle verschillende labels op die in de daatabase
+          zitten (al door het model geclassificeerd).
+        </p>
+        <p>Dit endpoind wordt gebruikt door de frontend ui scaling.</p>
+        <h3>Toegestane rollen:</h3>
+        <ul>
+          <li>admin</li>
+          <li>user</li>
+        </ul>
+      </div>
+
+      <div class="endpoint">
+        <h2>POST /api</h2>
+        <p>
+          Algemene POST endpoint voor de API. E-mail worden geclassificeerd en
+          de classificatie wordt in de database opgeslaan en terugestuurd naar
+          de gebruiker.
+        </p>
+        <h3>Body Parameters:</h3>
+        <ul>
+          <li>
+            <code>body</code>: <em>string</em> (vereist) - De volledige body van
+            de e-mail.
+          </li>
+        </ul>
+        <p>OF als een lijst:</p>
+        <ul>
+          [
+          <li>
+            <code>body</code>: <em>string</em> (vereist) - De volledige body van
+            de e-mail.
+          </li>
+          <li>
+            <code>body</code>: <em>string</em> (vereist) - De volledige body van
+            de 2de e-mail.
+          </li>
+          <li>
+            <code>body</code>: <em>string</em> (vereist) - De volledige body van
+            de 3de e-mail.
+          </li>
+          <li>...</li>
+          ]
+        </ul>
+        <h3>Toegestane rollen:</h3>
+        <ul>
+          <li>admin</li>
+          <li>user</li>
+        </ul>
+      </div>
+
+      <div class="endpoint">
+        <h2>PUT /api</h2>
+        <p>
+          Algemene PUT endpoint voor de API. Update de e-mails in de database
+          door user rating toe te voegen.
+        </p>
+        <h3>Body Parameters:</h3>
+        <ul>
+          <li>
+            <code>body</code>: <em>string</em> (vereist) - De volledige body van
+            de e-mail.
+          </li>
+          <li>
+            <code>rating</code>: <em>string</em> (vereist) - 1 OF -1 afhankelijk
+            van de correctheid van de e-mail.
+          </li>
+        </ul>
+        <p>OF als een lijst:</p>
+        <ul>
+          [
+          <li>
+            <code>body</code>: <em>string</em> (vereist) - De volledige body van
+            de e-mail.
+          </li>
+          <li>
+            <code>rating</code>: <em>string</em> (vereist) - 1 OF -1 afhankelijk
+            van de correctheid van de e-mail.
+          </li>
+          <li>
+            <code>body</code>: <em>string</em> (vereist) - De volledige body van
+            de 2de e-mail.
+          </li>
+          <li>
+            <code>rating</code>: <em>string</em> (vereist) - 1 OF -1 afhankelijk
+            van de correctheid van de e-mail.
+          </li>
+          <li>...</li>
+          ]
+        </ul>
+        <h3>Toegestane rollen:</h3>
+        <ul>
+          <li>admin</li>
+          <li>user</li>
+        </ul>
+      </div>
+
+      <div class="endpoint">
+        <h2>POST /api/retrain</h2>
+        <p>Start het retrain proces.</p>
+        <h3>Toegestane rollen:</h3>
+        <ul>
+          <li>admin</li>
+        </ul>
+      </div>
+
+      <div class="endpoint">
+        <h2>PUT /api/retrain</h2>
+        <p>Update het AI model naar die nieuwste versie.</p>
+        <h3>Toegestane rollen:</h3>
+        <ul>
+          <li>admin</li>
+        </ul>
+      </div>
+
+      <div class="endpoint">
+        <h2>GET /api/tokencheck</h2>
+        <p>Controleert de geldigheid van de JWT-token en retourneert de rol.</p>
+        <h3>Toegestane rollen:</h3>
+        <ul>
+          <li>admin</li>
+          <li>user</li>
+        </ul>
+      </div>
+    </div>
+    <div id="content" class="module" *ngIf="page === 'model'">
+      <img
+        src="..\..\assets\pngs\drawio_model.png"
+        alt="draw.io diagram of the model"
+      />
+      <div id="content">
+        <div class="endpoint">
+          <h2>Model configuratie</h2>
+          <div>
+            Voor de hyperparameter optimization heb ik hierboven een test json
+            geplaatst hierin kun je dynamisch hyperparameters aanmaken die dan
+            worden gebruikt tijdens het HPO process. De hyperparameters zijn
+            oftwel vast, hebben een start,end ( en stapgrote ) of hebben
+            verschillende choices
+          </div>
+          <div class="foldable" onclick="toggleContent('tfidf')">
+            sklearn.feature_extraction.text.TfidfVectorizer
+          </div>
+          <div id="tfidf" class="folded-content">
+            <p>
+              <a
+                href="https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfVectorizer.html"
+                >sklearn.feature_extraction.text.TfidfVectorizer</a
+              >
+            </p>
+          </div>
+          <br />
+          <div class="foldable" onclick="toggleContent('decision-tree')">
+            sklearn.tree.DecisionTreeClassifier
+          </div>
+          <div id="decision-tree" class="folded-content">
+            <p>
+              <a
+                href="https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html"
+                >sklearn.tree.DecisionTreeClassifier</a
+              >
+            </p>
+          </div>
+          <br />
+          <div class="foldable" onclick="toggleContent('adaboost')">
+            sklearn.ensemble.AdaBoostClassifier
+          </div>
+          <div id="adaboost" class="folded-content">
+            <p>
+              <a
+                href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostClassifier.html"
+                >sklearn.ensemble.AdaBoostClassifier</a
+              >
+            </p>
+          </div>
+          <script>
+            function toggleContent(id) {
+              let content = document.getElementById(id);
+              if (content.style.display === "none") {
+                content.style.display = "block";
+              } else {
+                content.style.display = "none";
+              }
+            }
+          </script>
+        </div>
+      </div>
+    </div>
+  </div>
 </main>
