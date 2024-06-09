@@ -145,7 +145,7 @@ def get_data():
 
 
 @dashboard_routes.route('/api/cnfmtrx', methods=['GET'])
-@check_role('admin')
+@check_role('admin', 'user')
 def get_cetainty():
     # Extract query parameters
     source = request.args.get('source', default="all_sources")
