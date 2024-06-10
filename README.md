@@ -2,7 +2,7 @@
 
 ## Overzicht
 
-Deze applicatie classificeert e-mails via een API, met een handige website frontend en een Outlook-add-in. Het categoriseert e-mails in drie soorten: IRRELEVANT, DATA-ENGINEER en BI-ENGINEER. Dit hulpmiddel is ontworpen om projectmanagers te helpen bij het beheren van hun inbox.
+Deze applicatie classificeert e-mails via een API, met een handige website frontend en een Outlook-add-in. Zonder te hertrainen categorseert het e-mails in drie soorten: IRRELEVANT, DATA-ENGINEER en BI-ENGINEER. Dit hulpmiddel is ontworpen om projectmanagers te helpen bij het beheren van hun inbox.
 
 ## Belangrijkste kenmerken
 
