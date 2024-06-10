@@ -253,13 +253,18 @@
         Voor elk endpoint worden de volgende informatie-elementen verstrekt:
       </p>
       <ul>
+        <br />
         <li>
           <strong>Queryparameters</strong>: Dit zijn de parameters die u kunt
           toevoegen aan de URL om specifieke gegevens op te vragen of om de
           output te filteren. Ze moeten correct worden geformuleerd om de
-          gewenste resultaten te verkrijgen. Indien niet gespecifieerd worden
-          standaard alle resultaten opgehaald.
+          gewenste resultaten te verkrijgen. Query parameters worden toegevoegd
+          achter een vraagteken aan het eind van de url. Meerdere parameters
+          worden gescheiden door een & teken. (voorbeeld:
+          https://s144272.devops-ap.be/api/stats?start_date=2023-05-17&end_date=2024-05-18&actual_label=IRRELEVANT)
+          Indien niet gespecifieerd worden standaard alle resultaten opgehaald.
         </li>
+        <br />
         <li>
           <strong>Bodyparameters</strong>: Deze parameters worden meegestuurd in
           de body van de HTTP-verzoeken. Alle bodyparameters moeten in
@@ -267,6 +272,7 @@
           paren. Zorg ervoor dat de JSON-structuur correct is om succesvolle
           communicatie met de API te garanderen.
         </li>
+        <br />
         <li>
           <strong>Toegestane gebruikersrollen</strong>: Voor elk endpoint is het
           essentieel om te weten welke gebruikersrollen toegang hebben. Deze
